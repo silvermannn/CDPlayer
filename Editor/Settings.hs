@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveAnyClass, NoGeneralizedNewtypeDeriving, DerivingStrategies #-}
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 
-module Editor.Command.Settings where
+module Editor.Settings where
 
 import GHC.Generics
 import Data.Aeson
@@ -21,16 +21,6 @@ data Settings = Settings {
         autoAddHistory :: Bool,
         maxRecursionDepth :: RecursionDepth
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
-
--- Field setters
-setHistoryFile :: Settings -> String -> Settings
-setHistoryFile settings historyFile = settings {historyFile = historyFile}
-
-setAutoAddHistory :: Settings -> Bool -> Settings
-setAutoAddHistory settings autoAddHistory = settings {autoAddHistory = autoAddHistory}
-
-setMaxRecursionDepth :: Settings -> RecursionDepth -> Settings
-setMaxRecursionDepth settings maxRecursionDepth = settings {maxRecursionDepth = maxRecursionDepth}
 
 -- Haskelline stuff
 haskelinePrefsFromSettings :: Settings -> HL.Prefs
@@ -67,4 +57,3 @@ writeSettings settings = do
 
 settingsFilename :: String
 settingsFilename = ".editor_state.json"
-

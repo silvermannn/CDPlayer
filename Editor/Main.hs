@@ -7,11 +7,27 @@ import System.Console.Haskeline
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Catch (catch, SomeException)
 
+import CDDB.CDDB
+
+import Editor.Settings
 import Editor.Commands
-import Editor.Command.Types
-import Editor.Command.Settings
+import Editor.Commands.Types
 
 import Support.Support
+
+initialProgramState :: Editor.Settings.Settings -> IO ProgramState
+initialProgramState settings = do
+    se <- initEngine
+    return $ ProgramState
+        {
+            settings = settings,
+            cddb = emptyCDDB,
+            currentRules = [],
+            isNotSaved = True,
+            currentTemplate = Nothing,
+            supportEngine = se,
+            taggedSentence = Nothing
+        }
 
 -- TODO: Use agreedNotToSave
 agreedNotToSave :: InputT IO Bool
@@ -34,7 +50,7 @@ main = do
                         liftIO $ writeSettings $ settings state
                         return ()
                 Just input -> flip catch exceptonHandler $ do
-                    res <- liftIO $ runMainCommand (words input) state
+                    res <- liftIO $ runMainCommand input state
                     case res of
                         Left errorMessage -> outputStrLn errorMessage >> loop state
                         Right state' -> loop state'
