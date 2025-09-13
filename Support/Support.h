@@ -16,17 +16,33 @@ Handle init();
 
 void clear(Handle handle);
 
-bool parse(Handle handle, char* path, char* parser);
-
-bool save(Handle handle, char* path);
-
 bool registerParser(Handle handle, char* parserName, void* parser);
 
 bool unregisterParser(Handle handle, char* parserName);
 
+bool parse(Handle handle, char* path, char* parser);
+
+bool trainTagger(Handle handle, float smoothingFactor);
+
 bool tag(Handle handle, char** words, size_t len, TagId* result);
 
 bool describeTag(Handle handle, TagId tag, char** result, size_t* len);
+
+bool saveTagger(Handle handle, char* path);
+
+bool loadTagger(Handle handle, char* path);
+
+bool saveSentences(Handle handle, char* path);
+
+bool loadSentences(Handle handle, char* path);
+
+bool saveEncoder(Handle handle, char* path);
+
+bool loadEncoder(Handle handle, char* path);
+
+bool saveTreeBuilder(Handle handle, char* path);
+
+bool loadTreeBuilder(Handle handle, char* path);
 
 void release(void* p);
 

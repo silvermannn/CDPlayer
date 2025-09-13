@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "Utility.h"
+#include "../ZLibFile/ZLibFile.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -79,9 +80,34 @@ void Engine::clearSentences(void)
     sentences.clear();
 }
 
-bool Engine::load(const std::string& fileName)
+bool Engine::saveSentences(const std::string& fileName) const
 {
-    spdlog::info("Loading binary");
+    spdlog::debug("Saving sentences {}", fileName);
+
+    ZLibFile zfile(fileName, true);
+
+    if (!zfile.isOpen())
+    {
+        spdlog::error("Could not open: {}", fileName);
+        return false;
+    }
+
+    zfile.writePtr(MAGIC, sizeof(MAGIC));
+
+    uint32_t size = sentences.size();
+    zfile.write(size);
+
+    for (const auto& sentence: sentences)
+    {
+        sentence.saveBinary(zfile);
+    }
+
+    return true;
+}
+
+bool Engine::loadSentences(const std::string& fileName)
+{
+    spdlog::info("Loading sentences");
 
     ZLibFile zfile(fileName, false);
 
@@ -96,20 +122,6 @@ bool Engine::load(const std::string& fileName)
     if (!zfile.readPtr(buffer, sizeof(MAGIC)) || memcmp(buffer, MAGIC, sizeof(MAGIC)) != 0)
     {
         spdlog::error("Wrong magic");
-        return false;
-    }
-
-    reset();
-
-    if (!encoder.loadBinary(zfile))
-    {
-        spdlog::error("Failed to load encoder");
-        return false;
-    }
-
-    if (!ml.loadBinary(zfile))
-    {
-        spdlog::error("Failed to load ml");
         return false;
     }
 
@@ -131,29 +143,12 @@ bool Engine::load(const std::string& fileName)
         }
     }
 
-    encoder.logStatistics();
     return true;
 }
 
-bool Engine::parseDirectory(const std::string& path, const std::string& parserName)
+bool Engine::saveEncoder(const std::string& fileName) const
 {
-    spdlog::debug("Loading directory {}", path);
-
-    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{path})
-    {
-        if (std::filesystem::is_regular_file(dir_entry))
-        {
-            parse(dir_entry.path(), parserName);
-            continue;
-        }
-    }
-
-    return true;
-}
-
-bool Engine::save(const std::string& fileName) const
-{
-    spdlog::debug("Saving {}", fileName);
+    spdlog::debug("Saving encoder {}", fileName);
 
     ZLibFile zfile(fileName, true);
 
@@ -167,14 +162,106 @@ bool Engine::save(const std::string& fileName) const
 
     encoder.saveBinary(zfile);
 
-    ml.saveBinary(zfile);
+    return true;
+}
 
-    uint32_t size = sentences.size();
-    zfile.write(size);
+bool Engine::loadEncoder(const std::string& fileName)
+{
+    spdlog::info("Loading encoder");
 
-    for (const auto& sentence: sentences)
+    ZLibFile zfile(fileName, false);
+
+    if (!zfile.isOpen())
     {
-        sentence.saveBinary(zfile);
+        spdlog::error("Could not open: {}", fileName);
+        return false;
+    }
+
+    char buffer[sizeof(MAGIC)] = {0};
+
+    if (!zfile.readPtr(buffer, sizeof(MAGIC)) || memcmp(buffer, MAGIC, sizeof(MAGIC)) != 0)
+    {
+        spdlog::error("Wrong magic");
+        return false;
+    }
+
+    if (!encoder.loadBinary(zfile))
+    {
+        spdlog::error("Failed to load encoder");
+        return false;
+    }
+
+    encoder.logStatistics();
+    return true;
+}
+
+bool Engine::saveTagger(const std::string& fileName) const
+{
+    spdlog::debug("Saving tagger {}", fileName);
+
+    ZLibFile zfile(fileName, true);
+
+    if (!zfile.isOpen())
+    {
+        spdlog::error("Could not open: {}", fileName);
+        return false;
+    }
+
+    zfile.writePtr(MAGIC, sizeof(MAGIC));
+
+    zfile.write(encoder.wordsSize());
+    zfile.write(encoder.tagsSize());
+    zfile.write(serviceWord.tags);
+
+    hmm.saveBinary(zfile);
+
+    return true;
+}
+
+bool Engine::loadTagger(const std::string& fileName)
+{
+    spdlog::info("Loading tagger");
+
+    ZLibFile zfile(fileName, false);
+
+    if (!zfile.isOpen())
+    {
+        spdlog::error("Could not open: {}", fileName);
+        return false;
+    }
+
+    char buffer[sizeof(MAGIC)] = {0};
+
+    if (!zfile.readPtr(buffer, sizeof(MAGIC)) || memcmp(buffer, MAGIC, sizeof(MAGIC)) != 0)
+    {
+        spdlog::error("Wrong magic");
+        return false;
+    }
+
+    WordId wordsSize = 0;
+    TagId tagsSize = 0;
+
+    if (!zfile.read(wordsSize) || !zfile.read(tagsSize) || !zfile.read(serviceWord.tags))
+    {
+        return false;
+    }
+
+    hmm.resize(tagsSize, wordsSize);
+
+    return hmm.loadBinary(zfile);
+}
+
+bool Engine::parseDirectory(const std::string& path, const std::string& parserName)
+{
+    spdlog::debug("Parse directory {}", path);
+
+    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{path})
+    {
+        if (std::filesystem::is_regular_file(dir_entry))
+        {
+            parse(dir_entry.path(), parserName);
+            continue;
+        }
     }
 
     return true;
@@ -212,12 +299,41 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
     return true;
 }
 
-void Engine::train(double smoothingFactor)
+void Engine::trainHMMOnSentence(const Sentence& sentence)
 {
-    spdlog::debug("Training");
+    hmm.addHiddenState2HiddenState(serviceWord.tags, sentence.words[0].tags);
+    hmm.addHiddenState2Emission(sentence.words[0].tags, sentence.words[0].word);
 
-    ml.trainTagger(smoothingFactor , encoder.wordsSize(), encoder.tagsSize(), encoder.serviceTagId(), sentences);
-    //ml.trainTreeBuilder(smoothingFactor, encoder.depRels.size(), encoder.tagsSize(), sentences);
+    for (size_t wix = 1; wix < sentence.words.size(); ++wix)
+    {
+        hmm.addHiddenState2HiddenState(sentence.words[wix-1].tags, sentence.words[wix].tags);
+        hmm.addHiddenState2Emission(sentence.words[wix].tags, sentence.words[wix].word);
+    }
+
+    hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, serviceWord.tags);
+    hmm.addHiddenState2Emission(serviceWord.tags, serviceWord.word);
+}
+
+
+bool Engine::trainTagger(float smoothingFactor)
+{
+    spdlog::debug("Training tagger");
+
+    serviceWord.word = encoder.serviceTagId();
+    serviceWord.tags = encoder.serviceTagId();
+
+    hmm.resize(encoder.tagsSize(), encoder.wordsSize());
+
+    trainHMMOnSentence(unkWordOnly);
+
+    for (const auto& sentence: sentences)
+    {
+        trainHMMOnSentence(sentence);
+    }
+
+    hmm.normalize(smoothingFactor);
+
+    return true;
 }
 
 Strings Engine::tokenize(const std::string& sentence)
@@ -232,11 +348,80 @@ std::optional<Tags> Engine::tag(const Strings& sentence) const
     spdlog::debug("Tagging");
     std::vector<WordId> encoded = encoder.encodeWords(sentence);
 
-    return ml.tag(encoded);
+    return hmm.predict(serviceWord.word, encoded);
 }
 
 std::optional<CompoundPOSTagDescription> Engine::describePOSTag(TagId tag) const
 {
     return encoder.describePOSTag(tag);
+}
+
+void Engine::trainTreeBuilder(double smoothingFactor)
+{
+    spdlog::info("Training tree builder");
+
+    drStat.resize(encoder.depRelsSize(), encoder.tagsSize());
+
+    for (const auto& sentence: sentences)
+    {
+        drStat.processSentence(sentence);
+    }
+
+    drStat.normalize(smoothingFactor);
+}
+
+bool Engine::saveTreeBuilder(const std::string& fileName) const
+{
+    spdlog::debug("Saving dependency tree builder {}", fileName);
+
+    ZLibFile zfile(fileName, true);
+
+    if (!zfile.isOpen())
+    {
+        spdlog::error("Could not open: {}", fileName);
+        return false;
+    }
+
+    zfile.writePtr(MAGIC, sizeof(MAGIC));
+
+    zfile.write(encoder.tagsSize());
+    zfile.write(encoder.depRelsSize());
+
+    drStat.saveBinary(zfile);
+
+    return true;
+}
+
+bool Engine::loadTreeBuilder(const std::string& fileName)
+{
+    spdlog::info("Loading dependency tree builder");
+
+    ZLibFile zfile(fileName, false);
+
+    if (!zfile.isOpen())
+    {
+        spdlog::error("Could not open: {}", fileName);
+        return false;
+    }
+
+    char buffer[sizeof(MAGIC)] = {0};
+
+    if (!zfile.readPtr(buffer, sizeof(MAGIC)) || memcmp(buffer, MAGIC, sizeof(MAGIC)) != 0)
+    {
+        spdlog::error("Wrong magic");
+        return false;
+    }
+
+    TagId tagsSize = 0;
+    TagId depRelsSize = 0;
+
+    if (!zfile.read(tagsSize) || !zfile.read(depRelsSize))
+    {
+        return false;
+    }
+
+    drStat.resize(encoder.depRelsSize(), encoder.tagsSize());
+
+    return drStat.loadBinary(zfile);
 }
 

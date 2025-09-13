@@ -17,9 +17,19 @@ class DepRelStatistics
     T stat;
 
 public:
+    DepRelStatistics()
+        : stat()
+    {
+    }
+
     DepRelStatistics(ShortWordId depRelsNum, ShortWordId tagsNum)
         : stat(0, {depRelsNum, tagsNum, tagsNum})
     {
+    }
+
+    void resize(ShortWordId depRelsNum, ShortWordId tagsNum)
+    {
+        stat.resize(0, {depRelsNum, tagsNum, tagsNum});
     }
 
     void processSentence(const Sentence& sentence);

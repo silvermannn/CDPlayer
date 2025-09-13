@@ -73,6 +73,11 @@ TagId Encoder::tagsSize() const
     return tags.size();
 }
 
+TagId Encoder::depRelsSize() const
+{
+    return depRelTags.size();
+}
+
 WordId Encoder::addWord(const std::string& word)
 {
     return words.lookupOrInsert(word);

@@ -31,7 +31,7 @@ tests: libsupport.so ${testFilesCPP}
 	g++ ${testFilesCPP} ${testCFLAGS} ${linkLibSupport} -O4 -o tests
 	LD_LIBRARY_PATH=. time -v ./tests
 
-hsDefaultFlags = -no-keep-hi-files -no-keep-o-files -Wall -Wextra
+hsDefaultFlags = -no-keep-hi-files -no-keep-o-files -Wall -Wextra -static
 
 tests-hs: libsupport.so ${libSupportHS} ${testFilesHS}
 	ghc ${hsDefaultFlags} ${linkLibSupport} Tests/Main.hs -o tests-hs

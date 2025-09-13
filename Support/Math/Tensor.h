@@ -198,6 +198,13 @@ public:
         free();
     }
 
+    void resize(N _initialValue, const IndexT(&_sizes)[Arity])
+    {
+        sizes = std::vector<IndexT>(std::begin(_sizes), std::end(_sizes));
+        free();
+        allocate(_initialValue);
+    }
+
     bool operator==(const Tensor<N, IndexT, Arity>& other) const
     {
         return sizes == other.sizes && memcmp(data, other.data, size() * sizeof(N)) == 0;

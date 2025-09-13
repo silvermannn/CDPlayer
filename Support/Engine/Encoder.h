@@ -61,6 +61,8 @@ public:
 
     TagId tagsSize() const;
 
+    TagId depRelsSize() const;
+
     WordId serviceTagId();
 
     WordId addWord(const std::string& word);

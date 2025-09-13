@@ -8,8 +8,8 @@ import Editor.Commands.Handlers
 
 import Support.Support
 
-parseCoNLLU :: CommandHandler
-parseCoNLLU state [] (CRStringList sentence) = do
+cmdParseCoNLLU :: CommandHandler
+cmdParseCoNLLU state [] (CRStringList sentence) = do
     tags <- mapM (parsePath (supportEngine state) "CoNLLU") sentence
     print tags
     return $ Right state

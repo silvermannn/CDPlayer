@@ -31,6 +31,12 @@ public:
     {
         return hss2hs == other.hss2hs && hss2es == other.hss2es;
     }
+    
+    void resize(HS hiddenStates, ES emissions)
+    {
+        hss2hs.resize(0, {hiddenStates, hiddenStates});
+        hss2es.resize(0, {hiddenStates, emissions});
+    }
 
     void addHiddenState2HiddenState(HS srcHS, HS dstHS)
     {

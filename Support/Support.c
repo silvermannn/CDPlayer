@@ -29,32 +29,6 @@ void clear(Handle handle)
     spdlog::error("Engine handle in null");
 }
 
-bool parse(Handle handle, char* path, char* parser)
-{
-    Engine* pEngine = (Engine*)handle;
-
-    if (pEngine)
-    {
-        return pEngine->parse(path, parser);
-    }
-
-    spdlog::error("Engine handle in null");
-    return false;
-}
-
-bool save(Handle handle, char* path)
-{
-    Engine* pEngine = (Engine*)handle;
-
-    if (pEngine)
-    {
-        return pEngine->save(path);
-    }
-
-    spdlog::error("Engine handle in null");
-    return false;
-}
-
 bool registerParser(Handle handle, char* parserName, void* parser)
 {
     if (!parser)
@@ -89,6 +63,84 @@ bool unregisterParser(Handle handle, char* parserName)
     return false;
 }
 
+bool parse(Handle handle, char* path, char* parser)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->parse(path, parser);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool trainTagger(Handle handle, float smoothingFactor)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->trainTagger(smoothingFactor);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool saveSentences(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->saveSentences(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool loadSentences(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->loadSentences(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool saveEncoder(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->saveEncoder(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool loadEncoder(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->loadEncoder(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
 bool tag(Handle handle, char** words, size_t len, TagId* result)
 {
     if (!result)
@@ -114,6 +166,32 @@ bool tag(Handle handle, char** words, size_t len, TagId* result)
         std::copy(res->begin(), res->end(), result);
 
         return true;
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool saveTagger(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->saveTagger(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool loadTagger(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->loadTagger(path);
     }
 
     spdlog::error("Engine handle in null");
@@ -165,6 +243,31 @@ bool describeTag(Handle handle, TagId tag, char** result, size_t* len)
     return false;
 }
 
+bool saveTreeBuilder(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->saveTreeBuilder(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool loadTreeBuilder(Handle handle, char* path)
+{
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        return pEngine->loadTreeBuilder(path);
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
 
 void release(void* p)
 {

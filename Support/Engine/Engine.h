@@ -6,12 +6,11 @@
 #include <optional>
 
 #include "../Types.h"
+#include "../ML/HMM.h"
+#include "../ML/DepRelStatistics.h"
 #include "Parser.h"
 #include "Sentence.h"
 #include "Encoder.h"
-#include "../ML/ML.h"
-
-#include "../ZLibFile/ZLibFile.h"
 
 typedef std::vector<std::string> Strings;
 typedef std::vector<TagId> Tags;
@@ -24,10 +23,17 @@ class Engine
 
     Encoder encoder;
 
-    ML ml;
+    HMM<float, TagId, WordId> hmm;
+
+    DepRelStatistics drStat;
+
+    Sentence unkWordOnly;
+    Word unknownWord;
+    Word serviceWord;
 
     bool parseDirectory(const std::string& path, const std::string& parserName);
 
+    void trainHMMOnSentence(const Sentence& sentence);
 public:
     Engine();
 
@@ -41,17 +47,31 @@ public:
 
     void clearSentences();
 
-    void train(double smoothingFactor);
+    bool trainTagger(float smoothingFactor);
+
+    void trainTreeBuilder(double smoothingFactor);
 
     Strings tokenize(const std::string& sentence);
+
+    bool parse(const std::string& path, const std::string& parserName);
+
+    bool saveSentences(const std::string& fileName) const;
+
+    bool loadSentences(const std::string& fileName);
+
+    bool saveEncoder(const std::string& fileName) const;
+
+    bool loadEncoder(const std::string& fileName);
 
     std::optional<Tags> tag(const Strings& sentence) const;
 
     std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
 
-    bool save(const std::string& fileName) const;
+    bool saveTagger(const std::string& fileName) const;
 
-    bool load(const std::string& fileName);
+    bool loadTagger(const std::string& fileName);
 
-    bool parse(const std::string& path, const std::string& parserName);
+    bool saveTreeBuilder(const std::string& fileName) const;
+
+    bool loadTreeBuilder(const std::string& fileName);
 };
