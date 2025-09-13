@@ -1,0 +1,124 @@
+#pragma once
+
+#include <vector>
+#include <unordered_map>
+#include <cassert>
+#include <cmath>
+
+#include "../ZLibFile/ZLibFile.h"
+
+template <class Item, class Index>
+class BidirectionalMap
+{
+    std::unordered_map<Item, Index> item2index;
+    std::vector<const Item*> index2item;
+
+    static Index invalidIndex;
+public:
+    BidirectionalMap() {};
+
+    BidirectionalMap(const std::vector<Item> items)
+    {
+        std::for_each(items.begin(), items.end(), [this](auto item) { lookupOrInsert(item); });
+    }
+
+    template<typename Initializer>
+    BidirectionalMap(const std::vector<Initializer> initializers)
+    {
+        for (const auto& item: initializers)
+        {
+            const auto res = item2index.try_emplace(item.name, item.items);
+            res.first->second.index = index2item.size();
+            index2item.push_back(&res.first->first);
+        }
+    }
+
+    bool operator==(const BidirectionalMap<Item, Index>& other) const
+    {
+        return item2index == other.item2index && index2item.size() == other.index2item.size();
+    }
+
+    void clear(void)
+    {
+        item2index.clear();
+        index2item.clear();
+    }
+
+    size_t size(void) const { return index2item.size(); };
+    size_t bits(void) const { return std::ceil(std::log2(size())); };
+
+    const Index& lookupOrInsert(const Item& item)
+    {
+        const auto res = item2index.try_emplace(item, index2item.size());
+
+        if (res.second)
+        {
+            index2item.push_back(&res.first->first);
+        }
+
+        return res.first->second;
+    }
+
+    const Index& lookup(const Item& item) const
+    {
+        auto res = item2index.find(item);
+        if (res == item2index.end())
+        {
+            return invalidIndex;
+        }
+
+        return res->second;
+    }
+
+    const Item& lookupIndex(const Index index) const
+    {
+        if (index < index2item.size())
+        {
+            return *index2item[index];
+        }
+
+        assert("Index too big!" && false);
+    }
+
+    static bool isValidIndex(const Index index)
+    {
+        return index != invalidIndex;
+    }
+
+    void saveBinary(ZLibFile& zfile) const
+    {
+        uint32_t l = size();
+        zfile.write(l);
+        for (size_t i = 0; i < l; ++i)
+        {
+            zfile.write(lookupIndex(i));
+        }
+    }
+
+    bool loadBinary(ZLibFile& zfile)
+    {
+        uint32_t size = 0;
+        zfile.read(size);
+
+        index2item.resize(size);
+
+        for (size_t i = 0; i < size; ++i)
+        {
+            Item item;
+
+            if (!zfile.read(item))
+            {
+                return false;
+            }
+
+            const auto res = item2index.try_emplace(item, i);
+
+            index2item[i] = &res.first->first;
+        }
+
+        return true;
+    }
+};
+
+template <class Item, class Index>
+Index BidirectionalMap<Item, Index>::invalidIndex(-1);
