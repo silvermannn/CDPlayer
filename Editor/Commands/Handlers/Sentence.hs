@@ -1,5 +1,7 @@
 module Editor.Commands.Handlers.Sentence where
 
+import Data.Maybe (fromMaybe)
+
 import Editor.State
 import Editor.Commands.Types
 
@@ -16,3 +18,19 @@ cmdDescribeTags state [] (CRIntList tags) = do
     tagDescrs <- mapM (describeTag (supportEngine state)) tags
     print tagDescrs
     return $ Right state
+
+cmdDescribeCurrentSentence :: CommandHandler
+cmdDescribeCurrentSentence state [] CRNothing = case (taggedSentence state) of
+    Nothing -> return $ Left "No current sentence tagged yet."
+    Just tags -> do
+        tagDescrs <- mapM (describeTag (supportEngine state)) tags
+        print tagDescrs
+        return $ Right state {taggedSentenceDescription = Just $ map (fromMaybe ["?"]) tagDescrs}
+
+cmdShowCurrentSentence :: CommandHandler
+cmdShowCurrentSentence state [] CRNothing = case (taggedSentence state) of
+    Nothing -> return $ Left "No current sentence tagged yet."
+    Just tags -> do
+        print tags
+        print $ taggedSentenceDescription state
+        return $ Right state

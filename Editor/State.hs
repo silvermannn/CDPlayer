@@ -16,7 +16,9 @@ data ProgramState = ProgramState {
         currentTemplate :: Maybe Name,
         supportEngine :: Handle,
         taggedSentence :: Maybe [Int],
-        dependencyTree :: Maybe [Int]
+        taggedSentenceDescription :: Maybe [[String]],
+        dependencyTree :: Maybe [Int],
+        dependencyTreeDescription :: Maybe [[String]]
     }
 
 initialProgramState :: Settings -> IO ProgramState
@@ -31,5 +33,7 @@ initialProgramState settings = do
             currentTemplate = Nothing,
             supportEngine = se,
             taggedSentence = Nothing,
-            dependencyTree = Nothing
+            taggedSentenceDescription = Nothing,
+            dependencyTree = Nothing,
+            dependencyTreeDescription = Nothing
         }

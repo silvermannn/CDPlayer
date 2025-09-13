@@ -4,6 +4,8 @@ module Editor.Commands.Handlers where
 
 import Data.List
 import Text.Read (readEither)
+import Data.Maybe (mapMaybe)
+import Data.UUID (fromString)
 
 import Editor.State
 import Editor.Commands.Types
@@ -32,6 +34,7 @@ runInput state s cds = case filterCommandDescr cds s of
                 string2CmdArg s (CADString _)   = Right $ CAString s
                 string2CmdArg s (CADFilePath _) = Right $ CAString s
                 string2CmdArg s (CADInt _)      = readEither s >>= \i -> Right $ CAInt i
+                string2CmdArg s (CADInt _)      = readEither s >>= \b -> Right $ CABool b
                 string2CmdArg s (CADFloat _)    = readEither s >>= \f -> Right $ CAFloat f
 
                 strings2CmdArgs ss cads = if length ss == length cads
@@ -42,6 +45,9 @@ runInput state s cds = case filterCommandDescr cds s of
                 strings2CmdRest ss@(_:_) (CRDStringList _)   = Right $ CRStringList ss
                 strings2CmdRest ss@(_:_) (CRDFilePathList _) = Right $ CRStringList ss
                 strings2CmdRest ss@(_:_) (CRDString _)       = Right $ CRString $ unwords ss
+                strings2CmdRest ss       (CRDEIntList _)     = mapM readEither ss >>= \is -> Right $ CRIntList is
                 strings2CmdRest ss@(_:_) (CRDIntList _)      = mapM readEither ss >>= \is -> Right $ CRIntList is
+                strings2CmdRest ss@(_:_) (CRDUUIDList _)     = Right $ CRUUIDList $ mapMaybe fromString ss
                 strings2CmdRest []       CRDNothing          = Right CRNothing
+                strings2CmdRest ss@(_:_) (CRDTree _)         = Right $ CRTree $ unwords ss
                 strings2CmdRest _        CRDNothing          = Left "Too many arguments"
