@@ -15,4 +15,4 @@ showHelp ds state [] (CRStringList cmds) = case filterCommandDescr ds cmds of
         putStrLn (unlines $ map describeCommandWHelp hss)
         return $ Right state
 
-describeCommandWHelp cmd = helpString cmd ++ "\n\t" ++ describeCommand cmd
+describeCommandWHelp cmd = helpString cmd ++ "\n\t" ++ describeCommand cmd ++ "\n"

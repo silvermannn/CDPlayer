@@ -16,7 +16,7 @@ Handle init();
 
 void clear(Handle handle);
 
-bool load(Handle handle, char* path, char* parser);
+bool parse(Handle handle, char* path, char* parser);
 
 bool save(Handle handle, char* path);
 

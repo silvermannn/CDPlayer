@@ -16,7 +16,7 @@
 typedef std::vector<std::string> Strings;
 typedef std::vector<TagId> Tags;
 
-class Engine: public Parser
+class Engine
 {
     std::unordered_map<std::string, Parser&> parsers;
 
@@ -26,13 +26,7 @@ class Engine: public Parser
 
     ML ml;
 
-    bool saveBinary(ZLibFile& zfile) const;
-
-    bool loadBinary(ZLibFile& zfile);
-
-    bool loadDirectory(const std::string& path, const std::string& parserName);
-
-    virtual bool parse(const std::string& fileName, Sentences& sentences, Encoder& encoder);
+    bool parseDirectory(const std::string& path, const std::string& parserName);
 
 public:
     Engine();
@@ -55,7 +49,9 @@ public:
 
     std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
 
-    bool save(const std::string& fileName);
+    bool save(const std::string& fileName) const;
 
-    bool load(const std::string& path, const std::string& parserName);
+    bool load(const std::string& fileName);
+
+    bool parse(const std::string& path, const std::string& parserName);
 };

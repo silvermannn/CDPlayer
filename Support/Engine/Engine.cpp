@@ -19,8 +19,6 @@ Engine::Engine()
 
     spdlog::info("Init");
 
-    registerParser("Native", *this);
-
     reset();
 }
 
@@ -81,45 +79,17 @@ void Engine::clearSentences(void)
     sentences.clear();
 }
 
-bool Engine::parse(const std::string& fileName, Sentences&, Encoder&)
+bool Engine::load(const std::string& fileName)
 {
-    spdlog::info("Parsing {}", fileName);
+    spdlog::info("Loading binary");
 
     ZLibFile zfile(fileName, false);
 
-    if (zfile.isOpen())
+    if (!zfile.isOpen())
     {
-        return loadBinary(zfile);
+        spdlog::error("Could not open: {}", fileName);
+        return false;
     }
-
-    spdlog::error("Could not open: {}", fileName);
-    return false;
-}
-
-bool Engine::saveBinary(ZLibFile& zfile) const
-{
-    spdlog::info("Saving binary");
-
-    zfile.writePtr(MAGIC, sizeof(MAGIC));
-
-    encoder.saveBinary(zfile);
-
-    ml.saveBinary(zfile);
-
-    uint32_t size = sentences.size();
-    zfile.write(size);
-
-    for (const auto& sentence: sentences)
-    {
-        sentence.saveBinary(zfile);
-    }
-
-    return true;
-}
-
-bool Engine::loadBinary(ZLibFile& zfile)
-{
-    spdlog::info("Loading binary");
 
     char buffer[sizeof(MAGIC)] = {0};
 
@@ -165,7 +135,7 @@ bool Engine::loadBinary(ZLibFile& zfile)
     return true;
 }
 
-bool Engine::loadDirectory(const std::string& path, const std::string& parserName)
+bool Engine::parseDirectory(const std::string& path, const std::string& parserName)
 {
     spdlog::debug("Loading directory {}", path);
 
@@ -173,7 +143,7 @@ bool Engine::loadDirectory(const std::string& path, const std::string& parserNam
     {
         if (std::filesystem::is_regular_file(dir_entry))
         {
-            load(dir_entry.path(), parserName);
+            parse(dir_entry.path(), parserName);
             continue;
         }
     }
@@ -181,24 +151,38 @@ bool Engine::loadDirectory(const std::string& path, const std::string& parserNam
     return true;
 }
 
-bool Engine::save(const std::string& fileName)
+bool Engine::save(const std::string& fileName) const
 {
     spdlog::debug("Saving {}", fileName);
 
     ZLibFile zfile(fileName, true);
 
-    if (zfile.isOpen())
+    if (!zfile.isOpen())
     {
-        return saveBinary(zfile);
+        spdlog::error("Could not open: {}", fileName);
+        return false;
     }
 
-    spdlog::error("Could not open: {}", fileName);
-    return false;
+    zfile.writePtr(MAGIC, sizeof(MAGIC));
+
+    encoder.saveBinary(zfile);
+
+    ml.saveBinary(zfile);
+
+    uint32_t size = sentences.size();
+    zfile.write(size);
+
+    for (const auto& sentence: sentences)
+    {
+        sentence.saveBinary(zfile);
+    }
+
+    return true;
 }
 
-bool Engine::load(const std::string& path, const std::string& parserName)
+bool Engine::parse(const std::string& path, const std::string& parserName)
 {
-    spdlog::debug("Loading {}", path);
+    spdlog::debug("Parsing {}", path);
 
     if (!std::filesystem::exists(path))
     {
@@ -208,7 +192,7 @@ bool Engine::load(const std::string& path, const std::string& parserName)
 
     if (std::filesystem::is_directory(path))
     {
-        return loadDirectory(path, parserName);
+        return parseDirectory(path, parserName);
     }
 
     auto parser = parsers.find(parserName);

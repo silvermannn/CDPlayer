@@ -29,13 +29,13 @@ void clear(Handle handle)
     spdlog::error("Engine handle in null");
 }
 
-bool load(Handle handle, char* path, char* parser)
+bool parse(Handle handle, char* path, char* parser)
 {
     Engine* pEngine = (Engine*)handle;
 
     if (pEngine)
     {
-        return pEngine->load(path, parser);
+        return pEngine->parse(path, parser);
     }
 
     spdlog::error("Engine handle in null");

@@ -12,17 +12,17 @@ newtype {-# CTYPE "Support.h" "Handle" #-} Handle = Handle (Ptr ())
 
 foreign import capi "Support.h init" initEngine :: IO Handle
 foreign import capi "Support.h clear" clearEngine :: Handle -> IO ()
-foreign import capi "Support.h load" load' :: Handle -> CString -> CString -> IO CBool
+foreign import capi "Support.h parse" parse' :: Handle -> CString -> CString -> IO CBool
 foreign import capi "Support.h save" save' :: Handle -> CString -> IO CBool
 foreign import capi "Support.h tag" tag' :: Handle -> Ptr CString -> CULong -> Ptr CUShort -> IO CBool
 foreign import capi "Support.h describeTag" describeTag' :: Handle -> CULong -> Ptr CString -> Ptr CULong -> IO CBool
 foreign import capi "Support.h release" release' :: Ptr a -> IO ()
 
-loadPath :: Handle -> FilePath -> String -> IO Bool
-loadPath h path parser = do
+parsePath :: Handle -> FilePath -> String -> IO Bool
+parsePath h path parser = do
     cpath <- newCString path
     cparser <- newCString parser
-    res <- load' h cpath cparser
+    res <- parse' h cpath cparser
     return $ toBool res
 
 savePath :: Handle -> FilePath -> IO Bool
