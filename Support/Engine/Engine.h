@@ -74,4 +74,8 @@ public:
     bool saveTreeBuilder(const std::string& fileName) const;
 
     bool loadTreeBuilder(const std::string& fileName);
+
+    std::optional<DepRelStatistics::Edges> buildDependencyTree(const std::vector<TagId>& tags);
+
+    std::optional<CompoundDepRelTagDescription> describeDependencyRelationTag(TagId tag) const;
 };

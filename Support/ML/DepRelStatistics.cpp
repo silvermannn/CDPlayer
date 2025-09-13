@@ -15,15 +15,15 @@ void DepRelStatistics::normalize(float smoothingFactor)
     stat.normalize(smoothingFactor, 2);
 }
 
-std::optional<DepRelStatistics::G::Edges> DepRelStatistics::extractGraph(const std::vector<ShortWordId>& tags)
+std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const std::vector<TagId>& tags)
 {
     DepRelStatistics::G g(tags.size(), stat.sizeAt(0));
 
-    for (ShortWordId depRel = 0; depRel < stat.sizeAt(0); ++depRel)
+    for (TagId depRel = 0; depRel < stat.sizeAt(0); ++depRel)
     {
-        for (ShortWordId i1 = 0; i1 < tags.size(); ++i1)
+        for (TagId i1 = 0; i1 < tags.size(); ++i1)
         {
-            for (ShortWordId i2 = 0; i2 < tags.size(); ++i2)
+            for (TagId i2 = 0; i2 < tags.size(); ++i2)
             {
                 g.addEdge(i1, i2, depRel, stat.at(depRel, tags[i1], tags[i2]));
             }

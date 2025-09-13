@@ -75,6 +75,8 @@ public:
 
     std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
 
+    std::optional<CompoundDepRelTagDescription> describeDependencyRelationTag(TagId tag) const;
+
     void saveBinary(ZLibFile& zfile) const;
 
     bool loadBinary(ZLibFile& zfile);

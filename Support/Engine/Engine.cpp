@@ -425,3 +425,13 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
     return drStat.loadBinary(zfile);
 }
 
+std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::vector<TagId>& tags)
+{
+    return drStat.extractGraph(tags);
+}
+
+std::optional<CompoundDepRelTagDescription> Engine::describeDependencyRelationTag(TagId tag) const
+{
+    return encoder.describeDependencyRelationTag(tag);
+}
+

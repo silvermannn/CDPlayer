@@ -15,7 +15,8 @@ data ProgramState = ProgramState {
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
         supportEngine :: Handle,
-        taggedSentence :: Maybe [Int]
+        taggedSentence :: Maybe [Int],
+        dependencyTree :: Maybe [Int]
     }
 
 initialProgramState :: Settings -> IO ProgramState
@@ -29,5 +30,6 @@ initialProgramState settings = do
             isNotSaved = True,
             currentTemplate = Nothing,
             supportEngine = se,
-            taggedSentence = Nothing
+            taggedSentence = Nothing,
+            dependencyTree = Nothing
         }

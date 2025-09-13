@@ -143,6 +143,24 @@ std::optional<CompoundPOSTagDescription> Encoder::describePOSTag(TagId tag) cons
     return std::make_optional(description);
 }
 
+std::optional<CompoundDepRelTagDescription> Encoder::describeDependencyRelationTag(TagId tag) const
+{
+    if (tag >= depRelTags.size())
+    {
+        spdlog::error("Wrong dependency relation tag id {}", tag);
+        return {};
+    }
+    
+    const CompoundDepRelTag& drTag = depRelTags.lookupIndex(tag);
+
+    CompoundDepRelTagDescription description;
+
+    description.depRel = depRels.lookupIndex(drTag.depRel);
+    description.modifier = depRelModifiers.lookupIndex(drTag.modifier);
+
+    return std::make_optional(description);
+}
+
 void Encoder::saveBinary(ZLibFile& zfile) const
 {
     words.saveBinary(zfile);

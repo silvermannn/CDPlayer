@@ -44,6 +44,10 @@ bool saveTreeBuilder(Handle handle, char* path);
 
 bool loadTreeBuilder(Handle handle, char* path);
 
+bool buildDependencyTree(Handle handle, TagId* tags, size_t len, TagId* result);
+
+bool describeRel(Handle handle, TagId tag, char** result, size_t* len);
+
 void release(void* p);
 
 #ifdef __cplusplus

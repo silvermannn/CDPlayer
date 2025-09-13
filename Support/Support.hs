@@ -24,6 +24,8 @@ foreign import capi "Support.h saveTagger" saveTagger' :: Handle -> CString -> I
 foreign import capi "Support.h loadTagger" loadTagger' :: Handle -> CString -> IO CBool
 foreign import capi "Support.h saveTreeBuilder" saveTreeBuilder' :: Handle -> CString -> IO CBool
 foreign import capi "Support.h loadTreeBuilder" loadTreeBuilder' :: Handle -> CString -> IO CBool
+foreign import capi "Support.h buildDependencyTree" buildDependencyTree' :: Handle -> Ptr CUShort -> CULong -> Ptr CUShort -> IO CBool
+foreign import capi "Support.h describeRel" describeRel' :: Handle -> CULong -> Ptr CString -> Ptr CULong -> IO CBool
 foreign import capi "Support.h release" release' :: Ptr a -> IO ()
 
 parsePath :: Handle -> FilePath -> String -> IO Bool
@@ -112,4 +114,29 @@ loadTreeBuilder h path = do
     cpath <- newCString path
     res <- loadTreeBuilder' h cpath
     return $ toBool res
+
+buildDependencyTree :: Handle -> [Int] -> IO (Maybe [Int])
+buildDependencyTree h ss = do
+    ts <- mallocArray size
+    es <- mallocArray (3 * size)
+    res <- tag' h ts (toEnum size) es
+    if toBool res then do
+        edges <- peekArray (3 * size) es
+        return $ Just $ map fromEnum edges
+    else return Nothing
+    where
+        size = length ss
+
+describeRel :: Handle -> Int -> IO (Maybe [String])
+describeRel h tag = do
+    cs <- newCString ""
+    p <- new cs
+    plen <- new 0
+    res <- describeRel' h (toEnum tag) p plen
+    if toBool res then do
+        size <- peek plen
+        ss <- peekArray (fromEnum size) p
+        ss' <- mapM peekCString ss
+        return $ Just ss'
+    else return Nothing
 

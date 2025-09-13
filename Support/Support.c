@@ -269,6 +269,78 @@ bool loadTreeBuilder(Handle handle, char* path)
     return false;
 }
 
+bool buildDependencyTree(Handle handle, TagId* tags, size_t len, TagId* result)
+{
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        std::vector<TagId> t(len);
+        std::copy(tags, tags + len, t.begin());
+
+        std::optional<DepRelStatistics::Edges> res = pEngine->buildDependencyTree(t);
+
+        if (!res)
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < len; ++i)
+        {
+            result[3 * i] = (*res)[i].src;
+            result[3 * i + 1] = (*res)[i].dest;
+            result[3 * i + 2] = (*res)[i].label;
+        }
+
+        return true;
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
+bool describeRel(Handle handle, TagId tag, char** result, size_t* len)
+{
+    if (!result || !len)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        const auto description = pEngine->describeDependencyRelationTag(tag);
+
+        if (!description)
+        {
+            spdlog::error("failed to get description for tag {}", tag);
+            return false;
+        }
+
+        *len = 2;
+
+        static char buffer[MAX_BUFFER_SIZE];
+
+        result[0] = buffer;
+        char* pos = stpncpy(result[0], description->depRel.c_str(), MAX_NAME_LENGTH);
+        result[1] = pos + 1;
+        pos = strncpy(result[1], description->modifier.c_str(), MAX_NAME_LENGTH);
+
+        return true;
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
 void release(void* p)
 {
     if (p)

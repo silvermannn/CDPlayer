@@ -11,23 +11,26 @@
 
 class DepRelStatistics
 {
-    typedef Tensor<float, ShortWordId, 3> T;
-    typedef Graph<float, ShortWordId> G;
+    typedef Tensor<float, TagId, 3> T;
+    typedef Graph<float, TagId> G;
 
     T stat;
 
 public:
+    typedef G::Edge Edge;
+    typedef G::Edges Edges;
+
     DepRelStatistics()
         : stat()
     {
     }
 
-    DepRelStatistics(ShortWordId depRelsNum, ShortWordId tagsNum)
+    DepRelStatistics(TagId depRelsNum, TagId tagsNum)
         : stat(0, {depRelsNum, tagsNum, tagsNum})
     {
     }
 
-    void resize(ShortWordId depRelsNum, ShortWordId tagsNum)
+    void resize(TagId depRelsNum, TagId tagsNum)
     {
         stat.resize(0, {depRelsNum, tagsNum, tagsNum});
     }
@@ -36,7 +39,7 @@ public:
 
     void normalize(float smoothingFactor);
 
-    std::optional<G::Edges> extractGraph(const std::vector<ShortWordId>& tags);
+    std::optional<Edges> extractGraph(const std::vector<TagId>& tags);
 
     void saveBinary(ZLibFile& zfile) const;
 
