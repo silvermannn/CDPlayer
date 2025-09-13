@@ -7,8 +7,6 @@ import GHC.Generics
 import Data.Aeson
 import qualified Data.ByteString.Lazy as B
 
-import qualified System.Console.Haskeline as HL
-
 import Control.Monad.Catch (catch, SomeException)
 
 import CDDB.Tree.Syntax
@@ -21,16 +19,6 @@ data Settings = Settings {
         autoAddHistory :: Bool,
         maxRecursionDepth :: RecursionDepth
     } deriving (Eq, Show, Generic, ToJSON, FromJSON)
-
--- Haskelline stuff
-haskelinePrefsFromSettings :: Settings -> HL.Prefs
-haskelinePrefsFromSettings _ = HL.defaultPrefs
-
-haskelineSettionsFromSettings :: Settings ->  HL.Settings IO
-haskelineSettionsFromSettings settings = HL.defaultSettings {
-        HL.historyFile = Just $ historyFile settings,
-        HL.autoAddHistory = autoAddHistory settings
-    }
 
 defalultSettings :: Settings
 defalultSettings = Settings {

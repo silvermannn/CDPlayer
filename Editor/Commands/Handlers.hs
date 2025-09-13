@@ -5,10 +5,11 @@ module Editor.Commands.Handlers where
 import Data.List
 import Text.Read (readEither)
 
+import Editor.State
 import Editor.Commands.Types
 
 filterCommandDescr :: [CmdDescr] -> [String] -> [CmdDescr]
-filterCommandDescr cds ss = filter (and . zipWith (flip isPrefixOf) ss . keywords) cds
+filterCommandDescr cds ss = filter (and . zipWith (isPrefixOf) ss . keywords) cds
 
 runInput :: ProgramState -> [String] -> CmdDescrs -> IO (Either String ProgramState)
 runInput state s cds = case filterCommandDescr cds s of
@@ -28,9 +29,10 @@ runInput state s cds = case filterCommandDescr cds s of
 
                 (args, rest) = splitAt (length $ mainArguments cd) $ drop (length $ keywords cd) ss
 
-                string2CmdArg s (CADString _) = Right $ CAString s
-                string2CmdArg s (CADInt _)    = readEither s >>= \i -> Right $ CAInt i
-                string2CmdArg s (CADFloat _)  = readEither s >>= \f -> Right $ CAFloat f
+                string2CmdArg s (CADString _)   = Right $ CAString s
+                string2CmdArg s (CADFilePath _) = Right $ CAString s
+                string2CmdArg s (CADInt _)      = readEither s >>= \i -> Right $ CAInt i
+                string2CmdArg s (CADFloat _)    = readEither s >>= \f -> Right $ CAFloat f
 
                 strings2CmdArgs ss cads = if length ss == length cads
                     then sequence $ zipWith string2CmdArg ss cads

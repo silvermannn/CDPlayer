@@ -7,27 +7,23 @@ import System.Console.Haskeline
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Catch (catch, SomeException)
 
-import CDDB.CDDB
-
 import Editor.Settings
+import Editor.State
 import Editor.Commands
-import Editor.Commands.Types
+import Editor.Commands.Completion
 
 import Support.Support
 
-initialProgramState :: Editor.Settings.Settings -> IO ProgramState
-initialProgramState settings = do
-    se <- initEngine
-    return $ ProgramState
-        {
-            settings = settings,
-            cddb = emptyCDDB,
-            currentRules = [],
-            isNotSaved = True,
-            currentTemplate = Nothing,
-            supportEngine = se,
-            taggedSentence = Nothing
-        }
+-- Haskelline stuff
+haskelinePrefsFromSettings :: Editor.Settings.Settings -> Prefs
+haskelinePrefsFromSettings _ = defaultPrefs
+
+haskelineSettionsFromSettings :: Editor.Settings.Settings ->  System.Console.Haskeline.Settings IO
+haskelineSettionsFromSettings settings = System.Console.Haskeline.Settings {
+        System.Console.Haskeline.complete = editorComplete,
+        System.Console.Haskeline.historyFile = Just $ Editor.Settings.historyFile settings,
+        System.Console.Haskeline.autoAddHistory = Editor.Settings.autoAddHistory settings
+    }
 
 -- TODO: Use agreedNotToSave
 agreedNotToSave :: InputT IO Bool
