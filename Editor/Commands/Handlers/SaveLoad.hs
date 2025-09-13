@@ -1,10 +1,7 @@
 module Editor.Commands.Handlers.SaveLoad where
 
-import Data.Maybe (fromMaybe)
-
 import Editor.State
 import Editor.Commands.Types
-import Editor.Commands.Handlers
 
 import Support.Support
 

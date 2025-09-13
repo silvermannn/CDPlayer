@@ -6,7 +6,7 @@ import Editor.State
 
 data CmdArgDescr = CADString String | CADFilePath String | CADInt String | CADFloat String deriving (Show, Eq)
 
-data CmdRestDescr = CRDStringList String | CRDFilePathList String | CRDString String | CRDIntList String | CRDNothing deriving (Show, Eq)
+data CmdRestDescr = CRDEStringList String | CRDStringList String | CRDFilePathList String | CRDString String | CRDIntList String | CRDNothing deriving (Show, Eq)
 
 data CmdDescr = CmdDescr {
         keywords :: [String],
@@ -31,6 +31,7 @@ describeCommand (CmdDescr kw ma ra _ _) = unwords kw ++ " " ++ unwords (map desc
         describeCommandDef (CADInt s) = "<int: " ++ s ++ ">"
         describeCommandDef (CADFloat s) = "<float: " ++ s ++ ">"
 
+        describeCommandRest (CRDEStringList s) = "{<" ++ s ++ "> ... <" ++ s ++ ">}"
         describeCommandRest (CRDStringList s) = "<" ++ s ++ "> ... <" ++ s ++ ">"
         describeCommandRest (CRDFilePathList s) = "<" ++ s ++ "> ... <" ++ s ++ ">"
         describeCommandRest (CRDString s) = "<" ++ s ++ ">"

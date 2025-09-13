@@ -35,3 +35,4 @@ test*
 *.svg
 analisys.txt
 gmon.out
+editor*

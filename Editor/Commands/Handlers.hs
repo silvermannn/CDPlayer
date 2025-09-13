@@ -38,8 +38,10 @@ runInput state s cds = case filterCommandDescr cds s of
                     then sequence $ zipWith string2CmdArg ss cads
                     else Left "Not enough arguments"
 
-                strings2CmdRest ss@(_:_) (CRDStringList _) = Right $ CRStringList ss
-                strings2CmdRest ss@(_:_) (CRDString _)     = Right $ CRString $ unwords ss
-                strings2CmdRest ss@(_:_) (CRDIntList _)    = mapM readEither ss >>= \is -> Right $ CRIntList is
-                strings2CmdRest []       CRDNothing        = Right CRNothing
-                strings2CmdRest _        CRDNothing        = Left "Too many arguments"
+                strings2CmdRest ss       (CRDEStringList _)  = Right $ CRStringList ss
+                strings2CmdRest ss@(_:_) (CRDStringList _)   = Right $ CRStringList ss
+                strings2CmdRest ss@(_:_) (CRDFilePathList _) = Right $ CRStringList ss
+                strings2CmdRest ss@(_:_) (CRDString _)       = Right $ CRString $ unwords ss
+                strings2CmdRest ss@(_:_) (CRDIntList _)      = mapM readEither ss >>= \is -> Right $ CRIntList is
+                strings2CmdRest []       CRDNothing          = Right CRNothing
+                strings2CmdRest _        CRDNothing          = Left "Too many arguments"

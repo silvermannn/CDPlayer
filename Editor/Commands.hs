@@ -5,6 +5,8 @@ module Editor.Commands where
 import Editor.Commands.Types
 import Editor.Commands.Handlers
 import Editor.Commands.Handlers.Help
+import Editor.Commands.Handlers.CDDB
+import Editor.Commands.Handlers.Templates
 import Editor.Commands.Handlers.CoNLLU
 import Editor.Commands.Handlers.SaveLoad
 import Editor.Commands.Handlers.Train
@@ -13,7 +15,17 @@ import Editor.Commands.Handlers.DependencyTree
 
 commands :: CmdDescrs
 commands = [
-    CmdDescr ["help"]                  []                            (CRDStringList "topic")  (cmdShowHelp commands) "Help.",
+    CmdDescr ["help"]                  []                            (CRDEStringList "topic") (cmdShowHelp commands) "Help.",
+    CmdDescr ["new","cddb"]            []                            CRDNothing               cmdNewCDDB             "Create new CD database.",
+    CmdDescr ["dump","cddb"]           []                            CRDNothing               cmdDumpCDDB            "Dump CD database.",
+    CmdDescr ["save","cddb"]           [CADFilePath "path.json"]     CRDNothing               cmdSaveCDDB            "Save CD database.",
+    CmdDescr ["load","cddb"]           [CADFilePath "path.json"]     CRDNothing               cmdLoadCDDB            "Load CD database.",
+    CmdDescr ["set","cddb","name"]     [CADString "name"]            CRDNothing               cmdSetCDDBName         "Set name of CD database.",
+    CmdDescr ["set","cddb","version"]  [CADInt "version"]            CRDNothing               cmdSetCDDBVersion      "Set version of CD database.",
+    CmdDescr ["set","cddb","comment"]  [CADString "comment"]         CRDNothing               cmdSetCDDBComment      "Set comment to CD database.",
+    CmdDescr ["add","template"]        [CADString "name"]            (CRDStringList "field")  cmdAddTemplate         "Add template to CD database.",
+    CmdDescr ["show","template"]       [CADString "name"]            CRDNothing               cmdShowTemplate        "Show template from CD database.",
+    CmdDescr ["delete","template"]     [CADString "name"]            CRDNothing               cmdDeleteTemplate      "Delete template from CD database.",
     CmdDescr ["parse","conllu"]        []                            (CRDFilePathList "path") cmdParseCoNLLU         "Parse CoNNLU files or directories.",
     CmdDescr ["save","sentences"]      [CADFilePath "path.gz"]       CRDNothing               cmdSaveSentences       "Save parsed/loaded sentences.",
     CmdDescr ["load","sentences"]      [CADFilePath "path.gz"]       CRDNothing               cmdLoadSentences       "Load sentences.",
