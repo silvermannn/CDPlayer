@@ -1,9 +1,12 @@
 module Editor.Commands.Handlers.Sentence where
 
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, fromJust)
+import Data.List.Extra (chunksOf)
 
 import Editor.State
 import Editor.Commands.Types
+
+import CDDB.Syntax.DependencyTree
 
 import Support.Support
 
@@ -12,6 +15,8 @@ cmdTagSentence state [] (CRStringList sentence) = do
     tags <- tag (supportEngine state) sentence
     print tags
     return $ Right state {taggedSentence = tags}
+    where
+        fineTag ix = undefined
 
 cmdDescribeTags :: CommandHandler
 cmdDescribeTags state [] (CRIntList tags) = do

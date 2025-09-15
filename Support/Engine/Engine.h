@@ -65,6 +65,8 @@ public:
 
     std::optional<Tags> tag(const Strings& sentence) const;
 
+    std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
+
     std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
 
     bool saveTagger(const std::string& fileName) const;

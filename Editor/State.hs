@@ -3,6 +3,8 @@ module Editor.State where
 import CDDB.Types (Name)
 import CDDB.CDDB
 import CDDB.Rules
+import CDDB.Syntax.Tag
+import CDDB.Syntax.DependencyTree
 
 import Support.Support
 
@@ -15,6 +17,12 @@ data ProgramState = ProgramState {
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
         supportEngine :: Handle,
+        
+        currentTaggedSentence :: Maybe [Tag Int],
+        currentTaggedSentenceStr :: Maybe [Tag String],
+        currentDTree :: Maybe (DependencyTree Int),
+        currentDTreeStr :: Maybe (DependencyTree String),
+        --------------------------
         taggedSentence :: Maybe [Int],
         taggedSentenceDescription :: Maybe [[String]],
         dependencyTree :: Maybe [Int],
@@ -32,6 +40,12 @@ initialProgramState settings = do
             isNotSaved = True,
             currentTemplate = Nothing,
             supportEngine = se,
+            
+            currentTaggedSentence = Nothing,
+            currentTaggedSentenceStr = Nothing,
+            currentDTree  = Nothing,
+            currentDTreeStr = Nothing, 
+            --------------------------
             taggedSentence = Nothing,
             taggedSentenceDescription = Nothing,
             dependencyTree = Nothing,

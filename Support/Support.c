@@ -201,6 +201,43 @@ bool loadTagger(Handle handle, char* path)
 const size_t MAX_NAME_LENGTH = 16;
 const size_t MAX_BUFFER_SIZE = (2 * MAX_FEATURES_PER_WORD + 1) * MAX_NAME_LENGTH;
 
+bool getCompoundPOSTag(Handle handle, TagId tag, TagId* result, size_t* len)
+{
+    if (!result || !len)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    Engine* pEngine = (Engine*)handle;
+
+    if (pEngine)
+    {
+        const auto cpt = pEngine->getCompoundPOSTag(tag);
+
+        if (!cpt)
+        {
+            spdlog::error("failed to get compound tag for tag {}", tag);
+            return false;
+        }
+
+        *len = 1;
+        result[0] = cpt->POS;
+
+        for (size_t f = 0; f < size_t(MAX_FEATURES_PER_WORD) && cpt->features[f].featureNameId != 0; ++f)
+        {
+            result[2 * f + 1] = cpt->features[f].featureNameId;
+            result[2 * f + 2] = cpt->features[f].featureValueId;
+            *len += 2;
+        }
+
+        return true;
+    }
+
+    spdlog::error("Engine handle in null");
+    return false;
+}
+
 bool describeTag(Handle handle, TagId tag, char** result, size_t* len)
 {
     if (!result || !len)

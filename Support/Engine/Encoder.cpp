@@ -109,6 +109,17 @@ std::vector<WordId> Encoder::encodeWords(const std::vector<std::string>& ws) con
     return res;
 }
 
+std::optional<CompoundPOSTag> Encoder::getCompoundPOSTag(TagId tag) const
+{
+    if (tag >= tags.size())
+    {
+        spdlog::error("Wrong tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(tags.lookupIndex(tag));
+}
+
 std::optional<CompoundPOSTagDescription> Encoder::describePOSTag(TagId tag) const
 {
     if (tag >= tags.size())

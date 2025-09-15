@@ -356,6 +356,11 @@ std::optional<CompoundPOSTagDescription> Engine::describePOSTag(TagId tag) const
     return encoder.describePOSTag(tag);
 }
 
+std::optional<CompoundPOSTag> Engine::getCompoundPOSTag(TagId tag) const
+{
+    return encoder.getCompoundPOSTag(tag);
+}
+
 void Engine::trainTreeBuilder(double smoothingFactor)
 {
     spdlog::info("Training tree builder");

@@ -25,7 +25,11 @@ bool parse(Handle handle, char* path, char* parser);
 bool trainTagger(Handle handle, float smoothingFactor);
 
 bool tag(Handle handle, char** words, size_t len, TagId* result);
-
+    
+bool tag(Handle handle, char** words, size_t len, TagId* result);
+ 
+bool getCompoundPOSTag(Handle handle, TagId tag, TagId* result, size_t* len);
+    
 bool describeTag(Handle handle, TagId tag, char** result, size_t* len);
 
 bool saveTagger(Handle handle, char* path);

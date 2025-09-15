@@ -73,6 +73,8 @@ public:
 
     std::vector<WordId> encodeWords(const std::vector<std::string>& ws) const;
 
+    std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
+
     std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
 
     std::optional<CompoundDepRelTagDescription> describeDependencyRelationTag(TagId tag) const;
