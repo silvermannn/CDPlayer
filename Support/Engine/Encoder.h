@@ -5,26 +5,17 @@
 #include <optional>
 
 #include "../Types.h"
+#include "../Collections/Map2Set.h"
 #include "../Collections/BidirectionalMap.h"
 #include "CompoundTags.h"
 #include "Sentence.h"
 
-struct TagFeatures
-{
-    size_t index;
-    const BidirectionalMap<std::string, ShortWordId> items;
-
-    TagFeatures(const std::vector<std::string> _items): items(_items) {};
-    TagFeatures(size_t _index): index(_index) {};
-
-    bool operator!=(const TagFeatures& other) const { return index != other.index; };
-
-    operator size_t() const { return index; };
-};
-
 class Encoder
 {
-    const BidirectionalMap<std::string, TagFeatures> posTags;
+    const Map2Set<std::string, std::string> featureNamesConstraints;
+
+    const BidirectionalMap<std::string, ShortWordId> posTags;
+    const BidirectionalMap<std::string, ShortWordId> featureNames;
     const BidirectionalMap<std::string, ShortWordId> featureValues;
     const BidirectionalMap<std::string, ShortWordId> depRels;
     const BidirectionalMap<std::string, ShortWordId> depRelModifiers;
@@ -47,13 +38,11 @@ public:
         return BidirectionalMap<std::string, Index>::isValidIndex(ix);
     }
 
+    ShortWordId featureNameIndex(ShortWordId POSTag, const std::string& s) const;
+
     ShortWordId featureValueIndex(const std::string& s) const;
 
-    ShortWordId dependencyRelation(const std::string& s) const;
-
-    ShortWordId dependencyRelationModifier(const std::string& s) const;
-
-    const TagFeatures& posTag(const std::string& s) const;
+    ShortWordId posTagIndex(const std::string& s) const;
 
     void logStatistics(void);
 
@@ -74,10 +63,18 @@ public:
     std::vector<WordId> encodeWords(const std::vector<std::string>& ws) const;
 
     std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
+    std::optional<std::string> index2POSTag(TagId tag) const;
+    std::optional<std::string> index2FeatureName(TagId tag) const;
+    std::optional<std::string> index2FeatureValue(TagId tag) const;
 
-    std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
+    std::optional<CompoundDepRelTag> getCompoundDependencyRelationTag(TagId tag) const;
 
-    std::optional<CompoundDepRelTagDescription> describeDependencyRelationTag(TagId tag) const;
+    ShortWordId dependencyRelation2index(const std::string& s) const;
+    std::optional<std::string> index2dependencyRelation(TagId tag) const;
+
+    ShortWordId dependencyRelationModifier2index(const std::string& s) const;
+    std::optional<std::string> index2dependencyRelationModifier(TagId tag) const;
+
 
     void saveBinary(ZLibFile& zfile) const;
 

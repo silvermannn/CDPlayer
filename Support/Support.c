@@ -34,7 +34,17 @@ bool loadEncoder(char* path)
     return Engine::singleton().loadEncoder(path);
 }
 
-bool tag(char** words, size_t len, TagId* result)
+bool saveTreeBuilder(char* path)
+{
+    return Engine::singleton().saveTreeBuilder(path);
+}
+
+bool loadTreeBuilder(char* path)
+{
+    return Engine::singleton().loadTreeBuilder(path);
+}
+
+bool tag(char** words, size_t len, size_t* result)
 {
     if (!result)
     {
@@ -70,7 +80,7 @@ bool loadTagger(char* path)
 const size_t MAX_NAME_LENGTH = 16;
 const size_t MAX_BUFFER_SIZE = (2 * MAX_FEATURES_PER_WORD + 1) * MAX_NAME_LENGTH;
 
-bool getCompoundPOSTag(TagId tag, TagId* result, size_t* len)
+bool getCompoundPOSTag(size_t tag, size_t* result, size_t* len)
 {
     if (!result || !len)
     {
@@ -99,51 +109,79 @@ bool getCompoundPOSTag(TagId tag, TagId* result, size_t* len)
     return true;
 }
 
-bool describeTag(TagId tag, char** result, size_t* len)
+bool index2POSTag(size_t tag, char** result)
 {
-    if (!result || !len)
+    if (!result)
     {
         spdlog::error("Result is null");
         return false;
     }
 
-    const auto description = Engine::singleton().getEncoder().describePOSTag(tag);
+    const auto s = Engine::singleton().getEncoder().index2POSTag(tag);
 
-    if (!description)
+    if (!s)
     {
-        spdlog::error("failed to get description for tag {}", tag);
+        spdlog::error("failed to get POS name for tag {}", tag);
         return false;
     }
-
-    *len = 1 + 2 * description->features.size();
 
     static char buffer[MAX_BUFFER_SIZE];
 
     result[0] = buffer;
-    char* pos = stpncpy(result[0], description->POS.c_str(), MAX_NAME_LENGTH);
-
-    for (size_t f = 0; f < std::min(description->features.size(), size_t(MAX_FEATURES_PER_WORD)); ++f)
-    {
-        result[2 * f + 1] = pos + 1;
-        pos = strncpy(result[2 * f + 1], description->features[f].first.c_str(), MAX_NAME_LENGTH);
-        result[2 * f + 2] = pos + 1;
-        pos = strncpy(result[2 * f + 2], description->features[f].second.c_str(), MAX_NAME_LENGTH);
-    }
+    stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
 
     return true;
 }
 
-bool saveTreeBuilder(char* path)
+bool index2FeatureName(size_t tag, char** result)
 {
-    return Engine::singleton().saveTreeBuilder(path);
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    const auto s = Engine::singleton().getEncoder().index2FeatureName(tag);
+
+    if (!s)
+    {
+        spdlog::error("failed to get feature name for tag {}", tag);
+        return false;
+    }
+
+    static char buffer[MAX_BUFFER_SIZE];
+
+    result[0] = buffer;
+    stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
+
+    return true;
 }
 
-bool loadTreeBuilder(char* path)
+bool index2FeatureValue(size_t tag, char** result)
 {
-    return Engine::singleton().loadTreeBuilder(path);
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    const auto s = Engine::singleton().getEncoder().index2FeatureValue(tag);
+
+    if (!s)
+    {
+        spdlog::error("failed to get feature value name for tag {}", tag);
+        return false;
+    }
+
+    static char buffer[MAX_BUFFER_SIZE];
+
+    result[0] = buffer;
+    stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
+
+    return true;
 }
 
-bool buildDependencyTree(TagId* tags, size_t len, TagId* result)
+bool buildDependencyTree(size_t* tags, size_t len, size_t* result)
 {
     if (!result)
     {
@@ -171,7 +209,7 @@ bool buildDependencyTree(TagId* tags, size_t len, TagId* result)
     return true;
 }
 
-bool describeRel(TagId tag, char** result, size_t* len)
+bool getCompoundDeprelTag(size_t tag, size_t* result, size_t* len)
 {
     if (!result || !len)
     {
@@ -179,22 +217,65 @@ bool describeRel(TagId tag, char** result, size_t* len)
         return false;
     }
 
-    const auto description = Engine::singleton().getEncoder().describeDependencyRelationTag(tag);
+    const auto cpt = Engine::singleton().getEncoder().getCompoundDependencyRelationTag(tag);
 
-    if (!description)
+    if (!cpt)
+    {
+        spdlog::error("Failed to get compound dependency relation tag for tag {}", tag);
+        return false;
+    }
+
+    *len = 2;
+    result[0] = cpt->depRel;
+    result[0] = cpt->modifier;
+
+    return true;
+}
+
+bool index2dependencyRelation(size_t tag, char** result)
+{
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    const auto s = Engine::singleton().getEncoder().index2dependencyRelation(tag);
+
+    if (!s)
     {
         spdlog::error("failed to get description for tag {}", tag);
         return false;
     }
 
-    *len = 2;
+    static char buffer[MAX_BUFFER_SIZE];
+
+    result[0] = buffer;
+    stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
+
+    return true;
+}
+
+bool index2dependencyRelationModifier(size_t tag, char** result)
+{
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    const auto s = Engine::singleton().getEncoder().index2dependencyRelationModifier(tag);
+
+    if (!s)
+    {
+        spdlog::error("failed to get description for tag {}", tag);
+        return false;
+    }
 
     static char buffer[MAX_BUFFER_SIZE];
 
     result[0] = buffer;
-    char* pos = stpncpy(result[0], description->depRel.c_str(), MAX_NAME_LENGTH);
-    result[1] = pos + 1;
-    pos = strncpy(result[1], description->modifier.c_str(), MAX_NAME_LENGTH);
+    stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
 
     return true;
 }

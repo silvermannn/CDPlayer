@@ -13,7 +13,6 @@ class BidirectionalMap
     std::unordered_map<Item, Index> item2index;
     std::vector<const Item*> index2item;
 
-    static Index invalidIndex;
 public:
     BidirectionalMap() {};
 
@@ -25,12 +24,7 @@ public:
     template<typename Initializer>
     BidirectionalMap(const std::vector<Initializer> initializers)
     {
-        for (const auto& item: initializers)
-        {
-            const auto res = item2index.try_emplace(item.name, item.items);
-            res.first->second.index = index2item.size();
-            index2item.push_back(&res.first->first);
-        }
+       std::for_each(initializers.begin(), initializers.end(), [this](auto item) { lookupOrInsert(item.name); });
     }
 
     bool operator==(const BidirectionalMap<Item, Index>& other) const
@@ -118,6 +112,8 @@ public:
 
         return true;
     }
+
+    static Index invalidIndex;
 };
 
 template <class Item, class Index>

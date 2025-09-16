@@ -5,16 +5,16 @@
 #include "spdlog/spdlog.h"
 
 Encoder::Encoder()
-    : posTags(TAG_DESCRIPTIONS)
+    : featureNamesConstraints(TAG_DESCRIPTIONS)
+    , posTags(TAG_DESCRIPTIONS)
     , featureValues(FEATURE_VALUES)
     , depRels(DEP_RELS)
     , depRelModifiers(DEP_RELS_MODIFIERS)
 {
     CompoundPOSTag t;
-    t.POS = posTags.lookup("x").index;
+    t.POS = posTags.lookup("x");
     unknownWord.tags = tags.lookupOrInsert(t);
     unknownWord.word = words.lookupOrInsert("");
-
 }
 
 void Encoder::reset()
@@ -29,23 +29,22 @@ void Encoder::reset()
     spdlog::info("Encoder unknown word {}, tag {}", unknownWord.tags, unknownWord.word);
 }
 
+ShortWordId Encoder::featureNameIndex(ShortWordId POSTag, const std::string& s) const
+{
+    if (featureNamesConstraints.check(posTags.lookupIndex(POSTag), s))
+    {
+        return featureNames.lookup(s);
+    }
+
+    return featureNames.invalidIndex;
+}
+
 ShortWordId Encoder::featureValueIndex(const std::string& s) const
 {
     return featureValues.lookup(s);
 }
 
-ShortWordId Encoder::dependencyRelation(const std::string& s) const
-{
-    return depRels.lookup(s);
-}
-
-ShortWordId Encoder::dependencyRelationModifier(const std::string& s) const
-{
-    return depRelModifiers.lookup(s);
-}
-
-
-const TagFeatures& Encoder::posTag(const std::string& s) const
+ShortWordId Encoder::posTagIndex(const std::string& s) const
 {
     return posTags.lookup(s);
 }
@@ -120,56 +119,81 @@ std::optional<CompoundPOSTag> Encoder::getCompoundPOSTag(TagId tag) const
     return std::make_optional(tags.lookupIndex(tag));
 }
 
-std::optional<CompoundPOSTagDescription> Encoder::describePOSTag(TagId tag) const
+std::optional<std::string> Encoder::index2POSTag(TagId tag) const
 {
-    if (tag >= tags.size())
+    if (tag >= posTags.size())
     {
-        spdlog::error("Wrong tag id {}", tag);
+        spdlog::error("Wrong POS tag id {}", tag);
         return {};
     }
 
-    const CompoundPOSTag& posTag = tags.lookupIndex(tag);
-
-    CompoundPOSTagDescription description;
-
-    description.POS = posTags.lookupIndex(posTag.POS);
-
-    const TagFeatures& features = posTags.lookup(description.POS);
-
-    description.features.reserve(MAX_FEATURES_PER_WORD);
-
-    for(size_t i = 0; i < MAX_FEATURES_PER_WORD; ++i)
-    {
-        if (posTag.features[i].featureNameId == 0 || posTag.features[i].featureValueId == 0)
-        {
-            break;
-        }
-        auto p = std::make_pair<>(
-            features.items.lookupIndex(posTag.features[i].featureNameId),
-            featureValues.lookupIndex(posTag.features[i].featureValueId)
-        );
-        description.features.push_back(p);
-    }
-
-    return std::make_optional(description);
+    return std::make_optional(posTags.lookupIndex(tag));
 }
 
-std::optional<CompoundDepRelTagDescription> Encoder::describeDependencyRelationTag(TagId tag) const
+std::optional<std::string> Encoder::index2FeatureName(TagId tag) const
+{
+    if (tag >= featureNames.size())
+    {
+        spdlog::error("Wrong feature name tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(featureNames.lookupIndex(tag));
+}
+
+std::optional<std::string> Encoder::index2FeatureValue(TagId tag) const
+{
+    if (tag >= featureValues.size())
+    {
+        spdlog::error("Wrong feature value tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(featureValues.lookupIndex(tag));
+}
+
+
+ShortWordId Encoder::dependencyRelation2index(const std::string& s) const
+{
+    return depRels.lookup(s);
+}
+
+std::optional<std::string> Encoder::index2dependencyRelation(TagId tag) const
 {
     if (tag >= depRelTags.size())
     {
         spdlog::error("Wrong dependency relation tag id {}", tag);
         return {};
     }
-    
-    const CompoundDepRelTag& drTag = depRelTags.lookupIndex(tag);
 
-    CompoundDepRelTagDescription description;
+    return std::make_optional(depRels.lookupIndex(tag));
+}
 
-    description.depRel = depRels.lookupIndex(drTag.depRel);
-    description.modifier = depRelModifiers.lookupIndex(drTag.modifier);
+ShortWordId Encoder::dependencyRelationModifier2index(const std::string& s) const
+{
+    return depRelModifiers.lookup(s);
+}
 
-    return std::make_optional(description);
+std::optional<std::string> Encoder::index2dependencyRelationModifier(TagId tag) const
+{
+    if (tag >= depRelTags.size())
+    {
+        spdlog::error("Wrong dependency relation modifier tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(depRelModifiers.lookupIndex(tag));
+}
+
+std::optional<CompoundDepRelTag> Encoder::getCompoundDependencyRelationTag(TagId tag) const
+{
+    if (tag >= depRelTags.size())
+    {
+        spdlog::error("Wrong dependency relation compound tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(depRelTags.lookupIndex(tag));
 }
 
 void Encoder::saveBinary(ZLibFile& zfile) const

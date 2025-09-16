@@ -43,12 +43,6 @@ struct std::hash<CompoundPOSTag>
   }
 };
 
-struct CompoundPOSTagDescription
-{
-    std::string POS;
-    std::vector<std::pair<std::string, std::string>> features;
-};
-
 struct CompoundDepRelTag
 {
     ShortWordId depRel = 0;
@@ -68,10 +62,3 @@ struct std::hash<CompoundDepRelTag>
     return std::hash<uint64_t>{}((uint64_t)k.depRel ^ (uint64_t)k.modifier << 32);
   }
 };
-
-struct CompoundDepRelTagDescription
-{
-    std::string depRel;
-    std::string modifier;
-};
-

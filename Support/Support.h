@@ -14,14 +14,6 @@ bool parse(char* path, char* parser);
 
 bool trainTagger(float smoothingFactor);
 
-bool tag(char** words, size_t len, TagId* result);
-
-bool tag(char** words, size_t len, TagId* result);
-
-bool getCompoundPOSTag(TagId tag, TagId* result, size_t* len);
-
-bool describeTag(TagId tag, char** result, size_t* len);
-
 bool saveTagger(char* path);
 
 bool loadTagger(char* path);
@@ -38,9 +30,25 @@ bool saveTreeBuilder(char* path);
 
 bool loadTreeBuilder(char* path);
 
-bool buildDependencyTree(TagId* tags, size_t len, TagId* result);
 
-bool describeRel(TagId tag, char** result, size_t* len);
+bool tag(char** words, size_t len, size_t* result);
+
+bool getCompoundPOSTag(size_t tag, size_t* result, size_t* len);
+
+bool index2POSTag(size_t tag, char** result);
+
+bool index2FeatureName(size_t tag, char** result);
+
+bool index2FeatureValue(size_t tag, char** result);
+
+
+bool buildDependencyTree(size_t* tags, size_t len, size_t* result);
+
+bool getCompoundDeprelTag(size_t tag, size_t* result, size_t* len);
+
+bool index2dependencyRelation(size_t tag, char** result);
+
+bool index2dependencyRelationModifier(size_t tag, char** result);
 
 #ifdef __cplusplus
 }

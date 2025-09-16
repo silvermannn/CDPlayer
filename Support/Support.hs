@@ -14,14 +14,21 @@ foreign import capi "Support.h loadSentences" loadSentences' :: CString -> IO CB
 foreign import capi "Support.h saveEncoder" saveEncoder' :: CString -> IO CBool
 foreign import capi "Support.h loadEncoder" loadEncoder' :: CString -> IO CBool
 foreign import capi "Support.h trainTagger" trainTagger' :: CFloat -> IO CBool
-foreign import capi "Support.h tag" tag' :: Ptr CString -> CULong -> Ptr CUShort -> IO CBool
-foreign import capi "Support.h describeTag" describeTag' :: CULong -> Ptr CString -> Ptr CULong -> IO CBool
 foreign import capi "Support.h saveTagger" saveTagger' :: CString -> IO CBool
 foreign import capi "Support.h loadTagger" loadTagger' :: CString -> IO CBool
 foreign import capi "Support.h saveTreeBuilder" saveTreeBuilder' :: CString -> IO CBool
 foreign import capi "Support.h loadTreeBuilder" loadTreeBuilder' :: CString -> IO CBool
-foreign import capi "Support.h buildDependencyTree" buildDependencyTree' :: Ptr CUShort -> CULong -> Ptr CUShort -> IO CBool
-foreign import capi "Support.h describeRel" describeRel' :: CULong -> Ptr CString -> Ptr CULong -> IO CBool
+
+foreign import capi "Support.h tag" tag' :: Ptr CString -> CULong -> Ptr CULong -> IO CBool
+foreign import capi "Support.h getCompoundPOSTag" getCompoundPOSTag' :: CULong -> Ptr CULong -> Ptr CULong -> IO CBool
+foreign import capi "Support.h index2POSTag" index2POSTag' :: CULong -> Ptr CString -> IO CBool
+foreign import capi "Support.h index2FeatureName" index2FeatureName' :: CULong -> Ptr CString -> IO CBool
+foreign import capi "Support.h index2FeatureValue" index2FeatureValue' :: CULong -> Ptr CString -> IO CBool
+
+foreign import capi "Support.h buildDependencyTree" buildDependencyTree' :: Ptr CULong -> CULong -> Ptr CULong -> IO CBool
+foreign import capi "Support.h getCompoundDeprelTag" getCompoundDeprelTag' :: CULong -> Ptr CULong -> Ptr CULong -> IO CBool
+foreign import capi "Support.h index2dependencyRelation" index2dependencyRelation' :: CULong -> Ptr CString -> IO CBool
+foreign import capi "Support.h index2dependencyRelationModifier" index2dependencyRelationModifier' :: CULong -> Ptr CString -> IO CBool
 
 parsePath :: FilePath -> String -> IO Bool
 parsePath path parser = do
@@ -71,6 +78,18 @@ loadTagger path = do
     res <- loadTagger' cpath
     return $ toBool res
 
+saveTreeBuilder :: FilePath -> IO Bool
+saveTreeBuilder path = do
+    cpath <- newCString path
+    res <- saveTreeBuilder' cpath
+    return $ toBool res
+
+loadTreeBuilder :: FilePath -> IO Bool
+loadTreeBuilder path = do
+    cpath <- newCString path
+    res <- loadTreeBuilder' cpath
+    return $ toBool res
+
 tag :: [String] -> IO (Maybe [Int])
 tag ss = do
     css <- mallocArray size
@@ -85,30 +104,17 @@ tag ss = do
     where
         size = length ss
 
-describeTag :: Int -> IO (Maybe [String])
-describeTag tag = do
-    cs <- newCString ""
-    p <- new cs
-    plen <- new 0
-    res <- describeTag' (toEnum tag) p plen
-    if toBool res then do
-        size <- peek plen
-        ss <- peekArray (fromEnum size) p
-        ss' <- mapM peekCString ss
-        return $ Just ss'
-    else return Nothing
+getCompoundPOSTag :: Int -> IO (Maybe [Int])
+getCompoundPOSTag = getCompoundTag getCompoundPOSTag'
 
-saveTreeBuilder :: FilePath -> IO Bool
-saveTreeBuilder path = do
-    cpath <- newCString path
-    res <- saveTreeBuilder' cpath
-    return $ toBool res
+index2POSTag :: Int -> IO (Maybe String)
+index2POSTag = index2string index2POSTag'
 
-loadTreeBuilder :: FilePath -> IO Bool
-loadTreeBuilder path = do
-    cpath <- newCString path
-    res <- loadTreeBuilder' cpath
-    return $ toBool res
+index2FeatureName :: Int -> IO (Maybe String)
+index2FeatureName = index2string index2FeatureName'
+
+index2FeatureValue :: Int -> IO (Maybe String)
+index2FeatureValue = index2string index2FeatureValue'
 
 buildDependencyTree :: [Int] -> IO (Maybe [Int])
 buildDependencyTree ss = do
@@ -122,15 +128,45 @@ buildDependencyTree ss = do
     where
         size = length ss
 
-describeRel :: Int -> IO (Maybe [String])
-describeRel tag = do
-    cs <- newCString ""
-    p <- new cs
+getCompoundDeprelTag :: Int -> IO (Maybe [Int])
+getCompoundDeprelTag = getCompoundTag getCompoundDeprelTag'
+
+index2dependencyRelation :: Int -> IO (Maybe String)
+index2dependencyRelation = index2string index2dependencyRelation'
+
+index2dependencyRelationModifier :: Int -> IO (Maybe String)
+index2dependencyRelationModifier = index2string index2dependencyRelationModifier'
+
+-- -------------------------------------------------------------
+
+getCompoundTag :: (CULong -> Ptr CULong -> Ptr CULong -> IO CBool) -> Int -> IO (Maybe [Int])
+getCompoundTag f tag = do
+    p <- new 0
     plen <- new 0
-    res <- describeRel' (toEnum tag) p plen
+    res <- f (toEnum tag) p plen
     if toBool res then do
         size <- peek plen
-        ss <- peekArray (fromEnum size) p
-        ss' <- mapM peekCString ss
-        return $ Just ss'
+        ts <- peekArray (fromEnum size) p
+        return $ Just $ map fromEnum ts
+    else return Nothing
+
+index2string ::  (CULong -> Ptr CString -> IO CBool) -> Int -> IO (Maybe String)
+index2string f ix = do
+    ps <- newCString ""
+    p <- new ps
+    res <- f (toEnum ix) p
+    if toBool res then do
+        ps <- peek p
+        ss <- peekCString ps
+        return $ Just ss
+    else return Nothing
+
+string2index ::  (CString -> Ptr CULong -> IO CBool) -> String -> IO (Maybe Int)
+string2index f s = do
+    ps <- newCString s
+    p <- new 0
+    res <- f ps p
+    if toBool res then do
+        ix <- peek p
+        return $ Just $ fromEnum ix
     else return Nothing

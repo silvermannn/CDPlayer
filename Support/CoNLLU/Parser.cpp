@@ -154,9 +154,8 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                     needToFillFeatures = false;
                     CompoundPOSTag tag;
 
-                    const TagFeatures& posTag = encoder.posTag(fixTag(wordData[3]));
+                    tag.POS = encoder.posTagIndex(fixTag(wordData[3]));
 
-                    tag.POS = posTag.index;
                     if (!encoder.isValidIndex(tag.POS))
                     {
                         spdlog::warn("Unknown POS tag: '{}' -> 'x'", wordData[3]);
@@ -195,7 +194,7 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                             continue;
                         }
 
-                        ShortWordId fname = posTag.items.lookup(name);
+                        ShortWordId fname = encoder.featureNameIndex(tag.POS, name);
                         ShortWordId fvalue = encoder.featureValueIndex(value);
                         if (!encoder.isValidIndex(fname) || !encoder.isValidIndex(fvalue))
                         {
@@ -242,13 +241,13 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                         depRelMod = "";
                     }
 
-                    dr.depRel = encoder.dependencyRelation(depRelMain);
+                    dr.depRel = encoder.dependencyRelation2index(depRelMain);
                     if (!encoder.isValidIndex(dr.depRel))
                     {
                         spdlog::warn("Unknown dependency relation '{}' for POS tag '{}'", depRelMain, wordData[3]);
                     }
 
-                    dr.modifier = encoder.dependencyRelationModifier(depRelMod);
+                    dr.modifier = encoder.dependencyRelationModifier2index(depRelMod);
                     if (!encoder.isValidIndex(dr.modifier))
                     {
                         spdlog::warn("Unknown dependency relation modifier '{}:{}' for POS tag '{}'", depRelMain, depRelMod, wordData[3]);
