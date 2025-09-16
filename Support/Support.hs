@@ -8,81 +8,76 @@ import Foreign.Storable
 import Foreign.Marshal.Utils
 import Foreign.Marshal.Array
 
-newtype {-# CTYPE "Support.h" "Handle" #-} Handle = Handle (Ptr ())
+foreign import capi "Support.h parse" parse' :: CString -> CString -> IO CBool
+foreign import capi "Support.h saveSentences" saveSentences' :: CString -> IO CBool
+foreign import capi "Support.h loadSentences" loadSentences' :: CString -> IO CBool
+foreign import capi "Support.h saveEncoder" saveEncoder' :: CString -> IO CBool
+foreign import capi "Support.h loadEncoder" loadEncoder' :: CString -> IO CBool
+foreign import capi "Support.h trainTagger" trainTagger' :: CFloat -> IO CBool
+foreign import capi "Support.h tag" tag' :: Ptr CString -> CULong -> Ptr CUShort -> IO CBool
+foreign import capi "Support.h describeTag" describeTag' :: CULong -> Ptr CString -> Ptr CULong -> IO CBool
+foreign import capi "Support.h saveTagger" saveTagger' :: CString -> IO CBool
+foreign import capi "Support.h loadTagger" loadTagger' :: CString -> IO CBool
+foreign import capi "Support.h saveTreeBuilder" saveTreeBuilder' :: CString -> IO CBool
+foreign import capi "Support.h loadTreeBuilder" loadTreeBuilder' :: CString -> IO CBool
+foreign import capi "Support.h buildDependencyTree" buildDependencyTree' :: Ptr CUShort -> CULong -> Ptr CUShort -> IO CBool
+foreign import capi "Support.h describeRel" describeRel' :: CULong -> Ptr CString -> Ptr CULong -> IO CBool
 
-foreign import capi "Support.h init" initEngine :: IO Handle
-foreign import capi "Support.h clear" clearEngine :: Handle -> IO ()
-foreign import capi "Support.h parse" parse' :: Handle -> CString -> CString -> IO CBool
-foreign import capi "Support.h saveSentences" saveSentences' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h loadSentences" loadSentences' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h saveEncoder" saveEncoder' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h loadEncoder" loadEncoder' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h trainTagger" trainTagger' :: Handle -> CFloat -> IO CBool
-foreign import capi "Support.h tag" tag' :: Handle -> Ptr CString -> CULong -> Ptr CUShort -> IO CBool
-foreign import capi "Support.h describeTag" describeTag' :: Handle -> CULong -> Ptr CString -> Ptr CULong -> IO CBool
-foreign import capi "Support.h saveTagger" saveTagger' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h loadTagger" loadTagger' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h saveTreeBuilder" saveTreeBuilder' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h loadTreeBuilder" loadTreeBuilder' :: Handle -> CString -> IO CBool
-foreign import capi "Support.h buildDependencyTree" buildDependencyTree' :: Handle -> Ptr CUShort -> CULong -> Ptr CUShort -> IO CBool
-foreign import capi "Support.h describeRel" describeRel' :: Handle -> CULong -> Ptr CString -> Ptr CULong -> IO CBool
-foreign import capi "Support.h release" release' :: Ptr a -> IO ()
-
-parsePath :: Handle -> FilePath -> String -> IO Bool
-parsePath h path parser = do
+parsePath :: FilePath -> String -> IO Bool
+parsePath path parser = do
     cpath <- newCString path
     cparser <- newCString parser
-    res <- parse' h cpath cparser
+    res <- parse' cpath cparser
     return $ toBool res
 
-saveSentences :: Handle -> FilePath -> IO Bool
-saveSentences h path = do
+saveSentences :: FilePath -> IO Bool
+saveSentences path = do
     cpath <- newCString path
-    res <- saveSentences' h cpath
+    res <- saveSentences' cpath
     return $ toBool res
 
-loadSentences :: Handle -> FilePath -> IO Bool
-loadSentences h path = do
+loadSentences :: FilePath -> IO Bool
+loadSentences path = do
     cpath <- newCString path
-    res <- loadSentences' h cpath
+    res <- loadSentences' cpath
     return $ toBool res
 
-saveEncoder :: Handle -> FilePath -> IO Bool
-saveEncoder h path = do
+saveEncoder :: FilePath -> IO Bool
+saveEncoder path = do
     cpath <- newCString path
-    res <- saveEncoder' h cpath
+    res <- saveEncoder' cpath
     return $ toBool res
 
-loadEncoder :: Handle -> FilePath -> IO Bool
-loadEncoder h path = do
+loadEncoder :: FilePath -> IO Bool
+loadEncoder path = do
     cpath <- newCString path
-    res <- loadEncoder' h cpath
+    res <- loadEncoder' cpath
     return $ toBool res
 
-trainTagger :: Handle -> Float -> IO Bool
-trainTagger h sf = do
-    res <- trainTagger' h (realToFrac sf)
+trainTagger :: Float -> IO Bool
+trainTagger sf = do
+    res <- trainTagger' (realToFrac sf)
     return $ toBool res
 
-saveTagger :: Handle -> FilePath -> IO Bool
-saveTagger h path = do
+saveTagger :: FilePath -> IO Bool
+saveTagger path = do
     cpath <- newCString path
-    res <- saveTagger' h cpath
+    res <- saveTagger' cpath
     return $ toBool res
 
-loadTagger :: Handle -> FilePath -> IO Bool
-loadTagger h path = do
+loadTagger :: FilePath -> IO Bool
+loadTagger path = do
     cpath <- newCString path
-    res <- loadTagger' h cpath
+    res <- loadTagger' cpath
     return $ toBool res
 
-tag :: Handle -> [String] -> IO (Maybe [Int])
-tag h ss = do
+tag :: [String] -> IO (Maybe [Int])
+tag ss = do
     css <- mallocArray size
     cs <- mapM newCString ss
     pokeArray css cs
     ts <- mallocArray size
-    res <- tag' h css (toEnum size) ts
+    res <- tag' css (toEnum size) ts
     if toBool res then do
         tags <- peekArray size ts
         return $ Just $ map fromEnum tags
@@ -90,12 +85,12 @@ tag h ss = do
     where
         size = length ss
 
-describeTag :: Handle -> Int -> IO (Maybe [String])
-describeTag h tag = do
+describeTag :: Int -> IO (Maybe [String])
+describeTag tag = do
     cs <- newCString ""
     p <- new cs
     plen <- new 0
-    res <- describeTag' h (toEnum tag) p plen
+    res <- describeTag' (toEnum tag) p plen
     if toBool res then do
         size <- peek plen
         ss <- peekArray (fromEnum size) p
@@ -103,23 +98,23 @@ describeTag h tag = do
         return $ Just ss'
     else return Nothing
 
-saveTreeBuilder :: Handle -> FilePath -> IO Bool
-saveTreeBuilder h path = do
+saveTreeBuilder :: FilePath -> IO Bool
+saveTreeBuilder path = do
     cpath <- newCString path
-    res <- saveTreeBuilder' h cpath
+    res <- saveTreeBuilder' cpath
     return $ toBool res
 
-loadTreeBuilder :: Handle -> FilePath -> IO Bool
-loadTreeBuilder h path = do
+loadTreeBuilder :: FilePath -> IO Bool
+loadTreeBuilder path = do
     cpath <- newCString path
-    res <- loadTreeBuilder' h cpath
+    res <- loadTreeBuilder' cpath
     return $ toBool res
 
-buildDependencyTree :: Handle -> [Int] -> IO (Maybe [Int])
-buildDependencyTree h ss = do
+buildDependencyTree :: [Int] -> IO (Maybe [Int])
+buildDependencyTree ss = do
     ts <- mallocArray size
     es <- mallocArray (3 * size)
-    res <- tag' h ts (toEnum size) es
+    res <- tag' ts (toEnum size) es
     if toBool res then do
         edges <- peekArray (3 * size) es
         return $ Just $ map fromEnum edges
@@ -127,16 +122,15 @@ buildDependencyTree h ss = do
     where
         size = length ss
 
-describeRel :: Handle -> Int -> IO (Maybe [String])
-describeRel h tag = do
+describeRel :: Int -> IO (Maybe [String])
+describeRel tag = do
     cs <- newCString ""
     p <- new cs
     plen <- new 0
-    res <- describeRel' h (toEnum tag) p plen
+    res <- describeRel' (toEnum tag) p plen
     if toBool res then do
         size <- peek plen
         ss <- peekArray (fromEnum size) p
         ss' <- mapM peekCString ss
         return $ Just ss'
     else return Nothing
-

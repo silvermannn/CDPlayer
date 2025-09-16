@@ -4,11 +4,19 @@
 
 #include "Utility.h"
 #include "../ZLibFile/ZLibFile.h"
+#include "../CoNLLU/Parser.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
 const char MAGIC[] = "SUPPORTDB";
+
+Engine& Engine::singleton()
+{
+    static Engine engine;
+
+    return engine;
+}
 
 Engine::Engine()
 {
@@ -20,6 +28,9 @@ Engine::Engine()
 
     spdlog::info("Init");
 
+    static CoNLLUParser conlluParser;
+
+    registerParser("CoNLLU", conlluParser);
     reset();
 }
 
@@ -351,16 +362,6 @@ std::optional<Tags> Engine::tag(const Strings& sentence) const
     return hmm.predict(serviceWord.word, encoded);
 }
 
-std::optional<CompoundPOSTagDescription> Engine::describePOSTag(TagId tag) const
-{
-    return encoder.describePOSTag(tag);
-}
-
-std::optional<CompoundPOSTag> Engine::getCompoundPOSTag(TagId tag) const
-{
-    return encoder.getCompoundPOSTag(tag);
-}
-
 void Engine::trainTreeBuilder(double smoothingFactor)
 {
     spdlog::info("Training tree builder");
@@ -435,8 +436,7 @@ std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::ve
     return drStat.extractGraph(tags);
 }
 
-std::optional<CompoundDepRelTagDescription> Engine::describeDependencyRelationTag(TagId tag) const
+Encoder& Engine::getEncoder()
 {
-    return encoder.describeDependencyRelationTag(tag);
+    return encoder;
 }
-

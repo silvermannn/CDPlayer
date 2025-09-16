@@ -35,6 +35,8 @@ class Engine
 
     void trainHMMOnSentence(const Sentence& sentence);
 public:
+    static Engine& singleton();
+
     Engine();
 
     void reset(void);
@@ -65,10 +67,6 @@ public:
 
     std::optional<Tags> tag(const Strings& sentence) const;
 
-    std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
-
-    std::optional<CompoundPOSTagDescription> describePOSTag(TagId tag) const;
-
     bool saveTagger(const std::string& fileName) const;
 
     bool loadTagger(const std::string& fileName);
@@ -79,5 +77,5 @@ public:
 
     std::optional<DepRelStatistics::Edges> buildDependencyTree(const std::vector<TagId>& tags);
 
-    std::optional<CompoundDepRelTagDescription> describeDependencyRelationTag(TagId tag) const;
+    Encoder& getEncoder();
 };

@@ -12,7 +12,7 @@ import Support.Support
 
 cmdTagSentence :: CommandHandler
 cmdTagSentence state [] (CRStringList sentence) = do
-    tags <- tag (supportEngine state) sentence
+    tags <- tag sentence
     print tags
     return $ Right state {taggedSentence = tags}
     where
@@ -20,7 +20,7 @@ cmdTagSentence state [] (CRStringList sentence) = do
 
 cmdDescribeTags :: CommandHandler
 cmdDescribeTags state [] (CRIntList tags) = do
-    tagDescrs <- mapM (describeTag (supportEngine state)) tags
+    tagDescrs <- mapM (describeTag) tags
     print tagDescrs
     return $ Right state
 
@@ -28,7 +28,7 @@ cmdDescribeCurrentSentence :: CommandHandler
 cmdDescribeCurrentSentence state [] CRNothing = case (taggedSentence state) of
     Nothing -> return $ Left "No current sentence tagged yet."
     Just tags -> do
-        tagDescrs <- mapM (describeTag (supportEngine state)) tags
+        tagDescrs <- mapM (describeTag) tags
         print tagDescrs
         return $ Right state {taggedSentenceDescription = Just $ map (fromMaybe ["?"]) tagDescrs}
 

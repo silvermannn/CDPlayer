@@ -12,8 +12,6 @@ import Editor.State
 import Editor.Commands
 import Editor.Commands.Completion
 
-import Support.Support
-
 -- Haskelline stuff
 haskelinePrefsFromSettings :: Editor.Settings.Settings -> Prefs
 haskelinePrefsFromSettings _ = defaultPrefs
@@ -34,9 +32,7 @@ agreedNotToSave = do
 main :: IO ()
 main = do
         startSettings <- readSettings
-        state <- initialProgramState startSettings
-        runInputTWithPrefs (haskelinePrefsFromSettings startSettings) (haskelineSettionsFromSettings startSettings) $ loop state
-        clearEngine $ supportEngine state
+        runInputTWithPrefs (haskelinePrefsFromSettings startSettings) (haskelineSettionsFromSettings startSettings) $ loop (initialProgramState startSettings)
     where
         loop state = do
             minput <- getInputLine "CDDB> "

@@ -10,49 +10,37 @@
 extern "C" {
 #endif
 
-typedef void* Handle;
+bool parse(char* path, char* parser);
 
-Handle init();
+bool trainTagger(float smoothingFactor);
 
-void clear(Handle handle);
+bool tag(char** words, size_t len, TagId* result);
 
-bool registerParser(Handle handle, char* parserName, void* parser);
+bool tag(char** words, size_t len, TagId* result);
 
-bool unregisterParser(Handle handle, char* parserName);
+bool getCompoundPOSTag(TagId tag, TagId* result, size_t* len);
 
-bool parse(Handle handle, char* path, char* parser);
+bool describeTag(TagId tag, char** result, size_t* len);
 
-bool trainTagger(Handle handle, float smoothingFactor);
+bool saveTagger(char* path);
 
-bool tag(Handle handle, char** words, size_t len, TagId* result);
-    
-bool tag(Handle handle, char** words, size_t len, TagId* result);
- 
-bool getCompoundPOSTag(Handle handle, TagId tag, TagId* result, size_t* len);
-    
-bool describeTag(Handle handle, TagId tag, char** result, size_t* len);
+bool loadTagger(char* path);
 
-bool saveTagger(Handle handle, char* path);
+bool saveSentences(char* path);
 
-bool loadTagger(Handle handle, char* path);
+bool loadSentences(char* path);
 
-bool saveSentences(Handle handle, char* path);
+bool saveEncoder(char* path);
 
-bool loadSentences(Handle handle, char* path);
+bool loadEncoder(char* path);
 
-bool saveEncoder(Handle handle, char* path);
+bool saveTreeBuilder(char* path);
 
-bool loadEncoder(Handle handle, char* path);
+bool loadTreeBuilder(char* path);
 
-bool saveTreeBuilder(Handle handle, char* path);
+bool buildDependencyTree(TagId* tags, size_t len, TagId* result);
 
-bool loadTreeBuilder(Handle handle, char* path);
-
-bool buildDependencyTree(Handle handle, TagId* tags, size_t len, TagId* result);
-
-bool describeRel(Handle handle, TagId tag, char** result, size_t* len);
-
-void release(void* p);
+bool describeRel(TagId tag, char** result, size_t* len);
 
 #ifdef __cplusplus
 }

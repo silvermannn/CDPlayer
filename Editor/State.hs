@@ -6,8 +6,6 @@ import CDDB.Rules
 import CDDB.Syntax.Tag
 import CDDB.Syntax.DependencyTree
 
-import Support.Support
-
 import Editor.Settings
 
 data ProgramState = ProgramState {
@@ -16,8 +14,7 @@ data ProgramState = ProgramState {
         currentRules :: [(RuleId, Rule)],
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
-        supportEngine :: Handle,
-        
+
         currentTaggedSentence :: Maybe [Tag Int],
         currentTaggedSentenceStr :: Maybe [Tag String],
         currentDTree :: Maybe (DependencyTree Int),
@@ -29,22 +26,19 @@ data ProgramState = ProgramState {
         dependencyTreeDescription :: Maybe [[String]]
     }
 
-initialProgramState :: Settings -> IO ProgramState
-initialProgramState settings = do
-    se <- initEngine
-    return $ ProgramState
+initialProgramState :: Settings -> ProgramState
+initialProgramState settings = ProgramState
         {
             settings = settings,
             cddb = emptyCDDB,
             currentRules = [],
             isNotSaved = True,
             currentTemplate = Nothing,
-            supportEngine = se,
-            
+
             currentTaggedSentence = Nothing,
             currentTaggedSentenceStr = Nothing,
             currentDTree  = Nothing,
-            currentDTreeStr = Nothing, 
+            currentDTreeStr = Nothing,
             --------------------------
             taggedSentence = Nothing,
             taggedSentenceDescription = Nothing,

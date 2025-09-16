@@ -13,13 +13,13 @@ import Support.Support
 
 cmdBuildTree :: CommandHandler
 cmdBuildTree state [] (CRIntList tags) = do
-    edges <- buildDependencyTree (supportEngine state) tags
+    edges <- buildDependencyTree tags
     print edges
     return $ Right state {dependencyTree = edges}
 
 cmdDescribeRel :: CommandHandler
 cmdDescribeRel state [] (CRIntList depRels) = do
-    tagDescrs <- mapM (describeRel (supportEngine state)) depRels
+    tagDescrs <- mapM describeRel depRels
     print tagDescrs
     return $ Right state
 
@@ -27,7 +27,7 @@ cmdDescribeCurrentTree :: CommandHandler
 cmdDescribeCurrentTree state [] (CRIntList depRels) = case (dependencyTree state) of
     Nothing -> return $ Left ""
     Just depRels -> do
-        tagDescrs <- mapM (describeRel (supportEngine state)) depRels
+        tagDescrs <- mapM describeRel depRels
         print tagDescrs
         return $ Right state {dependencyTreeDescription = Just $ map (fromMaybe ["?"]) tagDescrs}
 
