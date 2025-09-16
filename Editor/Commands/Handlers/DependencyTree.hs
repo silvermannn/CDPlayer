@@ -8,35 +8,34 @@ import CDDB.Syntax.DependencyTree
 
 import Editor.State
 import Editor.Commands.Types
-
-import Support.Support
+import Editor.Support
 
 cmdBuildTree :: CommandHandler
 cmdBuildTree state [] (CRIntList tags) = do
-    edges <- buildDependencyTree tags
-    print edges
-    return $ Right state {dependencyTree = edges}
+    -- edges <- buidTree tags
+    -- print edges
+    return $ Right state -- {dependencyTree = edges}
 
 cmdDescribeRel :: CommandHandler
 cmdDescribeRel state [] (CRIntList depRels) = do
-    tagDescrs <- mapM describeRel depRels
-    print tagDescrs
+    -- tagDescrs <- mapM describeRel depRels
+    -- print tagDescrs
     return $ Right state
 
 cmdDescribeCurrentTree :: CommandHandler
-cmdDescribeCurrentTree state [] (CRIntList depRels) = case (dependencyTree state) of
+cmdDescribeCurrentTree state [] (CRIntList depRels) = case (currentDTree state) of
     Nothing -> return $ Left ""
     Just depRels -> do
-        tagDescrs <- mapM describeRel depRels
+        tagDescrs <- describeTree depRels
         print tagDescrs
-        return $ Right state {dependencyTreeDescription = Just $ map (fromMaybe ["?"]) tagDescrs}
+        return $ Right state {currentDTreeStr = tagDescrs}
 
 cmdShowCurrentTree :: CommandHandler
-cmdShowCurrentTree state [] CRNothing = case (dependencyTree state) of
+cmdShowCurrentTree state [] CRNothing = case (currentDTree state) of
     Nothing -> return $ Left "No current tree exists yet."
     Just tags -> do
         print tags
-        print $ dependencyTreeDescription state
+        print $ currentDTreeStr state
         return $ Right state
 
 

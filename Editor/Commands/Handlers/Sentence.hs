@@ -5,37 +5,36 @@ import Data.List.Extra (chunksOf)
 
 import Editor.State
 import Editor.Commands.Types
+import Editor.Support
 
 import CDDB.Syntax.DependencyTree
 
-import Support.Support
-
 cmdTagSentence :: CommandHandler
 cmdTagSentence state [] (CRStringList sentence) = do
-    tags <- tag sentence
+    tags <- tagSentence sentence
     print tags
-    return $ Right state {taggedSentence = tags}
+    return $ Right state {currentTaggedSentence = tags}
     where
         fineTag ix = undefined
 
 cmdDescribeTags :: CommandHandler
 cmdDescribeTags state [] (CRIntList tags) = do
-    tagDescrs <- mapM (describeTag) tags
-    print tagDescrs
+    --tagDescrs <- mapM (describeTag) tags
+    --print tagDescrs
     return $ Right state
 
 cmdDescribeCurrentSentence :: CommandHandler
-cmdDescribeCurrentSentence state [] CRNothing = case (taggedSentence state) of
+cmdDescribeCurrentSentence state [] CRNothing = case (currentTaggedSentence state) of
     Nothing -> return $ Left "No current sentence tagged yet."
     Just tags -> do
-        tagDescrs <- mapM (describeTag) tags
+        tagDescrs <- describeTags tags
         print tagDescrs
-        return $ Right state {taggedSentenceDescription = Just $ map (fromMaybe ["?"]) tagDescrs}
+        return $ Right state {currentTaggedSentenceStr = tagDescrs}
 
 cmdShowCurrentSentence :: CommandHandler
-cmdShowCurrentSentence state [] CRNothing = case (taggedSentence state) of
+cmdShowCurrentSentence state [] CRNothing = case (currentTaggedSentence state) of
     Nothing -> return $ Left "No current sentence tagged yet."
     Just tags -> do
         print tags
-        print $ taggedSentenceDescription state
+        print $ currentTaggedSentenceStr state
         return $ Right state

@@ -15,15 +15,10 @@ data ProgramState = ProgramState {
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
 
-        currentTaggedSentence :: Maybe [Tag Int],
-        currentTaggedSentenceStr :: Maybe [Tag String],
+        currentTaggedSentence :: Maybe (Tags Int),
+        currentTaggedSentenceStr :: Maybe (Tags String),
         currentDTree :: Maybe (DependencyTree Int),
-        currentDTreeStr :: Maybe (DependencyTree String),
-        --------------------------
-        taggedSentence :: Maybe [Int],
-        taggedSentenceDescription :: Maybe [[String]],
-        dependencyTree :: Maybe [Int],
-        dependencyTreeDescription :: Maybe [[String]]
+        currentDTreeStr :: Maybe (DependencyTree String)
     }
 
 initialProgramState :: Settings -> ProgramState
@@ -38,10 +33,5 @@ initialProgramState settings = ProgramState
             currentTaggedSentence = Nothing,
             currentTaggedSentenceStr = Nothing,
             currentDTree  = Nothing,
-            currentDTreeStr = Nothing,
-            --------------------------
-            taggedSentence = Nothing,
-            taggedSentenceDescription = Nothing,
-            dependencyTree = Nothing,
-            dependencyTreeDescription = Nothing
+            currentDTreeStr = Nothing
         }
