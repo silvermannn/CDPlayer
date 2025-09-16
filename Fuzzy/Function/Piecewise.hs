@@ -1,4 +1,4 @@
-module Fuzzy.Variable where
+module Fuzzy.Function.Piecewise where
 
 import Data.List (union, zipWith4)
 import Data.List.Extra (drop1)
@@ -6,7 +6,7 @@ import Data.Maybe (fromJust)
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-import Fuzzy.Function
+import Fuzzy.Function.Function
 
 import Debug.Trace
 
@@ -43,6 +43,7 @@ instance (Ord a, Function f a b) => Function (Piecewise f) a b where
     intersects a1 a2 (Piecewise m1) (Piecewise m2) = mergePairs intersectKV (M.assocs m1) (M.assocs m2)
         where
             intersectKV (Pair a1 a2, f1) (p2, f2) = intersects a1 a2 f1 f2
+    transform f (Piecewise m) = Piecewise $ M.map (transform f) m
     combine f (Piecewise m1) (Piecewise m2) = Piecewise $ M.fromList $ mergePairs combineKV (M.assocs m1) (M.assocs m2)
         where
             combineKV (Pair a1 a2, f1) (p2, f2) = [(p, combine f f1 f2) | p <- zipWith Pair as (drop1 as)]
