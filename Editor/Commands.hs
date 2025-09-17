@@ -55,19 +55,18 @@ commands = [
     CmdDescr ["save","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdSaveEncoder             "Save word/tag encoder.",
     CmdDescr ["load","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdLoadEncoder             "Load word/tag encoder.",
     CmdDescr ["train","tagger"]                [CADFloat "smoothing factor"] CRDNothing               cmdTrainTagger             "Train tagger on sentences loaded.",
-    CmdDescr ["tag","sentence"]                []                            (CRDStringList "word")   cmdTagSentence             "Tag sentence.",
-    CmdDescr ["describe","tag"]                []                            (CRDIntList "tag")       cmdDescribeTags            "Describe tags.",
-    CmdDescr ["describe","current","sentence"] []                            CRDNothing               cmdDescribeCurrentSentence "Describe tags of current sentence.",
-    CmdDescr ["show","current","sentence"]     []                            CRDNothing               cmdShowCurrentSentence     "Show tags and descriptions of current sentence.",
     CmdDescr ["save","tagger"]                 [CADFilePath "path.gz"]       CRDNothing               cmdSaveTagger              "Save tagger.",
     CmdDescr ["load","tagger"]                 [CADFilePath "path.gz"]       CRDNothing               cmdLoadTagger              "Load tagger.",
+    CmdDescr ["train","tree","builder"]        [CADFloat "smoothing factor"] CRDNothing               cmdTrainTreeBuilder        "Train tree builder on sentences loaded.",
     CmdDescr ["save","tree","builder"]         [CADFilePath "path.gz"]       CRDNothing               cmdSaveTreeBuilder         "Save dependency tree builder.",
     CmdDescr ["load","tree","builder"]         [CADFilePath "path.gz"]       CRDNothing               cmdLoadTreeBuilder         "Load dependency tree builder.",
-    CmdDescr ["builde","tree"]                 []                            (CRDIntList "tags")      cmdBuildTree               "Build dependency tree.",
-    CmdDescr ["describe","relation"]           []                            (CRDIntList "rels")      cmdDescribeRel             "Describe dependency relation.",
-    CmdDescr ["describe","current","tree"]     []                            CRDNothing               cmdDescribeCurrentTree     "Describe current dependency tree.",
-    CmdDescr ["set","current","tree"]          []                            (CRDTree "tree")         cmdSetCurrentTree          "Set current syntactic tree.",
+
+    CmdDescr ["tag","sentence"]                []                            (CRDStringList "word")   cmdTagSentence             "Tag sentence.",
+    CmdDescr ["show","current","sentence"]     []                            CRDNothing               cmdShowCurrentSentence     "Show tags and descriptions of current sentence.",
+
+    CmdDescr ["builde","tree"]                 []                            CRDNothing               cmdBuildTree               "Build dependency tree.",
     CmdDescr ["show","current","tree"]         []                            CRDNothing               cmdShowCurrentTree         "Show current dependency tree",
+
     CmdDescr ["quit"]                          []                            CRDNothing               cmdQuit                    "Quit program."
     ]
 

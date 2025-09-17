@@ -4,6 +4,9 @@
 
 #include "spdlog/spdlog.h"
 
+const size_t MAX_NAME_LENGTH = 16;
+const size_t MAX_BUFFER_SIZE = (2 * MAX_FEATURES_PER_WORD + 1) * MAX_NAME_LENGTH;
+
 bool parse(char* path, char* parser)
 {
     return Engine::singleton().parse(path, parser);
@@ -12,6 +15,11 @@ bool parse(char* path, char* parser)
 bool trainTagger(float smoothingFactor)
 {
     return Engine::singleton().trainTagger(smoothingFactor);
+}
+
+bool trainTreeBuilder(float smoothingFactor)
+{
+    return Engine::singleton().trainTreeBuilder(smoothingFactor);
 }
 
 bool saveSentences(char* path)
@@ -44,7 +52,17 @@ bool loadTreeBuilder(char* path)
     return Engine::singleton().loadTreeBuilder(path);
 }
 
-bool tag(char** words, size_t len, size_t* result)
+bool saveTagger(char* path)
+{
+    return Engine::singleton().saveTagger(path);
+}
+
+bool loadTagger(char* path)
+{
+    return Engine::singleton().loadTagger(path);
+}
+
+bool index2word(size_t w, char** result)
 {
     if (!result)
     {
@@ -52,7 +70,44 @@ bool tag(char** words, size_t len, size_t* result)
         return false;
     }
 
-    std::vector<std::string> v(len);
+    const auto s = Engine::singleton().getEncoder().index2word(w);
+
+    if (!s)
+    {
+        spdlog::error("Failed to get word for index {}", w);
+        return false;
+    }
+
+    static char buffer[MAX_BUFFER_SIZE];
+
+    result[0] = buffer;
+    stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
+
+    return true;
+}
+
+bool word2index(char* word, size_t* result)
+{
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    result[0] = Engine::singleton().getEncoder().word2index(word);
+
+    return true;
+}
+
+bool tag(size_t* words, size_t len, size_t* result)
+{
+    if (!result)
+    {
+        spdlog::error("Result is null");
+        return false;
+    }
+
+    Words v(len);
     std::copy(words, words + len, v.begin());
 
     std::optional<Tags> res = Engine::singleton().tag(v);
@@ -66,19 +121,6 @@ bool tag(char** words, size_t len, size_t* result)
 
     return true;
 }
-
-bool saveTagger(char* path)
-{
-    return Engine::singleton().saveTagger(path);
-}
-
-bool loadTagger(char* path)
-{
-    return Engine::singleton().loadTagger(path);
-}
-
-const size_t MAX_NAME_LENGTH = 16;
-const size_t MAX_BUFFER_SIZE = (2 * MAX_FEATURES_PER_WORD + 1) * MAX_NAME_LENGTH;
 
 bool getCompoundPOSTag(size_t tag, size_t* result, size_t* len)
 {

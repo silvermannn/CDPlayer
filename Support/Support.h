@@ -14,6 +14,8 @@ bool parse(char* path, char* parser);
 
 bool trainTagger(float smoothingFactor);
 
+bool trainTreeBuilder(float smoothingFactor);
+
 bool saveTagger(char* path);
 
 bool loadTagger(char* path);
@@ -31,7 +33,12 @@ bool saveTreeBuilder(char* path);
 bool loadTreeBuilder(char* path);
 
 
-bool tag(char** words, size_t len, size_t* result);
+bool index2word(size_t w, char** result);
+
+bool word2index(char* word, size_t* result);
+
+    
+bool tag(size_t* words, size_t len, size_t* result);
 
 bool getCompoundPOSTag(size_t tag, size_t* result, size_t* len);
 

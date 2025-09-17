@@ -8,3 +8,7 @@ cmdTrainTagger :: CommandHandler
 cmdTrainTagger state [CAFloat sf] CRNothing = do
     trainTagger sf
     return $ Right state
+
+cmdTrainTreeBuilder :: CommandHandler
+cmdTrainTreeBuilder state [CAFloat sf] CRNothing = do
+    return $ Right state

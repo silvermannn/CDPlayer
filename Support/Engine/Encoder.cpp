@@ -92,20 +92,26 @@ TagId Encoder::addDepRel(const CompoundDepRelTag& dr)
     return depRelTags.lookupOrInsert(dr);
 }
 
-std::vector<WordId> Encoder::encodeWords(const std::vector<std::string>& ws) const
+WordId Encoder::word2index(const std::string& ws) const
 {
-    std::vector<WordId> res(ws.size());
-
-    for (size_t i = 0; i < ws.size(); ++i)
+    WordId res = words.lookup(ws);
+    if(!isValidIndex(res))
     {
-        res[i] = words.lookup(ws[i]);
-        if(!isValidIndex(res[i]))
-        {
-            res[i] = unknownWord.word;
-        }
+        res = unknownWord.word;
     }
 
     return res;
+}
+
+std::optional<std::string> Encoder::index2word(WordId w) const
+{
+    if (w >= words.size())
+    {
+        spdlog::error("Wrong word id {}", w);
+        return {};
+    }
+
+    return std::make_optional(words.lookupIndex(w));
 }
 
 std::optional<CompoundPOSTag> Encoder::getCompoundPOSTag(TagId tag) const

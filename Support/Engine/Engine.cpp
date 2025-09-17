@@ -354,15 +354,14 @@ Strings Engine::tokenize(const std::string& sentence)
     return split(s, " \t");
 }
 
-std::optional<Tags> Engine::tag(const Strings& sentence) const
+std::optional<Tags> Engine::tag(const Words& sentence) const
 {
     spdlog::debug("Tagging");
-    std::vector<WordId> encoded = encoder.encodeWords(sentence);
 
-    return hmm.predict(serviceWord.word, encoded);
+    return hmm.predict(serviceWord.word, sentence);
 }
 
-void Engine::trainTreeBuilder(double smoothingFactor)
+bool Engine::trainTreeBuilder(double smoothingFactor)
 {
     spdlog::info("Training tree builder");
 
@@ -374,6 +373,8 @@ void Engine::trainTreeBuilder(double smoothingFactor)
     }
 
     drStat.normalize(smoothingFactor);
+    
+    return true;
 }
 
 bool Engine::saveTreeBuilder(const std::string& fileName) const

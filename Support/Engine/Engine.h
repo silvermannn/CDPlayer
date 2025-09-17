@@ -14,6 +14,7 @@
 
 typedef std::vector<std::string> Strings;
 typedef std::vector<TagId> Tags;
+typedef std::vector<WordId> Words;
 
 class Engine
 {
@@ -51,7 +52,7 @@ public:
 
     bool trainTagger(float smoothingFactor);
 
-    void trainTreeBuilder(double smoothingFactor);
+    bool trainTreeBuilder(double smoothingFactor);
 
     Strings tokenize(const std::string& sentence);
 
@@ -65,7 +66,7 @@ public:
 
     bool loadEncoder(const std::string& fileName);
 
-    std::optional<Tags> tag(const Strings& sentence) const;
+    std::optional<Tags> tag(const Words& sentence) const;
 
     bool saveTagger(const std::string& fileName) const;
 

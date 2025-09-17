@@ -13,13 +13,20 @@ foreign import capi "Support.h saveSentences" saveSentences' :: CString -> IO CB
 foreign import capi "Support.h loadSentences" loadSentences' :: CString -> IO CBool
 foreign import capi "Support.h saveEncoder" saveEncoder' :: CString -> IO CBool
 foreign import capi "Support.h loadEncoder" loadEncoder' :: CString -> IO CBool
+
 foreign import capi "Support.h trainTagger" trainTagger' :: CFloat -> IO CBool
 foreign import capi "Support.h saveTagger" saveTagger' :: CString -> IO CBool
 foreign import capi "Support.h loadTagger" loadTagger' :: CString -> IO CBool
+
+foreign import capi "Support.h trainTreeBuilder" trainTreeBuilder' :: CFloat -> IO CBool
 foreign import capi "Support.h saveTreeBuilder" saveTreeBuilder' :: CString -> IO CBool
 foreign import capi "Support.h loadTreeBuilder" loadTreeBuilder' :: CString -> IO CBool
 
-foreign import capi "Support.h tag" tag' :: Ptr CString -> CULong -> Ptr CULong -> IO CBool
+foreign import capi "Support.h index2word" index2word' :: CULong -> Ptr CString -> IO CBool
+foreign import capi "Support.h word2index" word2index' :: CString -> Ptr CULong -> IO CBool
+
+foreign import capi "Support.h tag" tag' :: Ptr CULong -> CULong -> Ptr CULong -> IO CBool
+
 foreign import capi "Support.h getCompoundPOSTag" getCompoundPOSTag' :: CULong -> Ptr CULong -> Ptr CULong -> IO CBool
 foreign import capi "Support.h index2POSTag" index2POSTag' :: CULong -> Ptr CString -> IO CBool
 foreign import capi "Support.h index2FeatureName" index2FeatureName' :: CULong -> Ptr CString -> IO CBool
@@ -66,6 +73,11 @@ trainTagger sf = do
     res <- trainTagger' (realToFrac sf)
     return $ toBool res
 
+trainTreeBuilder :: Float -> IO Bool
+trainTreeBuilder sf = do
+    res <- trainTreeBuilder' (realToFrac sf)
+    return $ toBool res
+
 saveTagger :: FilePath -> IO Bool
 saveTagger path = do
     cpath <- newCString path
@@ -90,11 +102,16 @@ loadTreeBuilder path = do
     res <- loadTreeBuilder' cpath
     return $ toBool res
 
-tag :: [String] -> IO (Maybe [Int])
-tag ss = do
+index2word :: Int -> IO (Maybe String)
+index2word = index2string index2word'
+
+word2index :: String -> IO (Maybe Int)
+word2index = string2index word2index'
+
+tag :: [Int] -> IO (Maybe [Int])
+tag ws = do
     css <- mallocArray size
-    cs <- mapM newCString ss
-    pokeArray css cs
+    pokeArray css $ map toEnum ws
     ts <- mallocArray size
     res <- tag' css (toEnum size) ts
     if toBool res then do
@@ -102,7 +119,7 @@ tag ss = do
         return $ Just $ map fromEnum tags
     else return Nothing
     where
-        size = length ss
+        size = length ws
 
 getCompoundPOSTag :: Int -> IO (Maybe [Int])
 getCompoundPOSTag = getCompoundTag getCompoundPOSTag'

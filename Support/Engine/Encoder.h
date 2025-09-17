@@ -60,7 +60,8 @@ public:
 
     TagId addDepRel(const CompoundDepRelTag& dr);
 
-    std::vector<WordId> encodeWords(const std::vector<std::string>& ws) const;
+    WordId word2index(const std::string& ws) const;
+    std::optional<std::string> index2word(WordId w) const;
 
     std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
     std::optional<std::string> index2POSTag(TagId tag) const;
