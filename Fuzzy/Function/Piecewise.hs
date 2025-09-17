@@ -35,7 +35,7 @@ instance Ord a => Ord (Key a) where
     compare (Value a) (Pair b1 b2) | a > b2 = GT
     compare (Value a) (Pair b1 b2) = EQ
 
-data Piecewise f a b = Piecewise (M.Map (Key a) (f a b))
+newtype Piecewise f a b = Piecewise (M.Map (Key a) (f a b))
 
 instance (Ord a, Function f a b) => Function (Piecewise f) a b where
     domain (Piecewise m) = (first $ fst $ M.findMin m, first $ fst $ M.findMax m)
@@ -43,15 +43,12 @@ instance (Ord a, Function f a b) => Function (Piecewise f) a b where
     intersects a1 a2 (Piecewise m1) (Piecewise m2) = mergePairs intersectKV (M.assocs m1) (M.assocs m2)
         where
             intersectKV (Pair a1 a2, f1) (p2, f2) = intersects a1 a2 f1 f2
-    transform f (Piecewise m) = Piecewise $ M.map (transform f) m
+    ltransform f (Piecewise m) = Piecewise $ M.map (ltransform f) m
     combine f (Piecewise m1) (Piecewise m2) = Piecewise $ M.fromList $ mergePairs combineKV (M.assocs m1) (M.assocs m2)
         where
             combineKV (Pair a1 a2, f1) (p2, f2) = [(p, combine f f1 f2) | p <- zipWith Pair as (drop1 as)]
                 where
-                    as = a1 : (map fst $ intersects a1 a2 f1 f2) ++ [a2]
-
-inf :: Float
-inf = 1/0
+                    as = a1 : map fst (intersects a1 a2 f1 f2) ++ [a2]
 
 mergePairs _    []       []                          = []
 mergePairs comb (l1:ls1) (l2:ls2) | fst l1 == fst l2 = comb l1 l2 ++ mergePairs comb ls1 ls2
@@ -61,5 +58,5 @@ mergePairs comb (l1:ls1) (l2:ls2)                    = comb p1 p2 ++ if second
     where
         (p1, p2, pNew, second) = combinePairs l1 l2
 
-        combinePairs ((Pair a1 a2), f1) ((Pair b1 b2), f2) | a1 == b1 && a2 < b2 = ((Pair a1 a2, f1), (Pair b1 a2, f2), (Pair a2 b2, f2), True)
-        combinePairs ((Pair a1 a2), f1) ((Pair b1 b2), f2) | a1 == b1 && a2 > b2 = ((Pair a1 b2, f1), (Pair b1 b2, f2), (Pair b2 a2, f1), False)
+        combinePairs (Pair a1 a2, f1) (Pair b1 b2, f2) | a1 == b1 && a2 < b2 = ((Pair a1 a2, f1), (Pair b1 a2, f2), (Pair a2 b2, f2), True)
+        combinePairs (Pair a1 a2, f1) (Pair b1 b2, f2) | a1 == b1 && a2 > b2 = ((Pair a1 b2, f1), (Pair b1 b2, f2), (Pair b2 a2, f1), False)
