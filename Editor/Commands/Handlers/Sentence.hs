@@ -12,7 +12,7 @@ import Editor.Utilites
 
 cmdNewSentence :: CommandHandler
 cmdNewSentence state [] (CRString sentence) = do
-    return $ Right state {currentSentences = newSentence sentence: (currentSentences state)}
+    return $ Right state {currentSentences = newSentence sentence: currentSentences state}
 
 cmdShowSentences :: CommandHandler
 cmdShowSentences state [] CRNothing = do

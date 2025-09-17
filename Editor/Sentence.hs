@@ -32,19 +32,19 @@ showSentence :: CurrentSentence -> IO ()
 showSentence cs = do
     putStrLn $ "Source sentence: \"" ++ original cs ++ "\""
     putStrLn $ "Tokenized sentence: [" ++ intercalate " | " (tokenized cs) ++ "]"
-    putStrLn $ "Word IDs: [" ++ intercalate "," (map show $ fromMaybe [] $ wordIDs cs) ++ "]"
+    putStrLn $ "Word IDs: [" ++ intercalate "," (maybe [] (map show) (wordIDs cs)) ++ "]"
     ws <- mapM index2word $ fromMaybe [] $ wordIDs cs
-    putStrLn $ "Tokenized sentence from IDs: \"" ++ intercalate " " (map (fromMaybe unknownWord) ws) ++ "\""
-    putStrLn $ "Compound tags: [" ++ intercalate "," (map show $ fromMaybe [] $ ctagged cs) ++ "]"
-    putStrLn $ "Tag IDs: [" ++ intercalate "," (map show $ fromMaybe [] $ tagged cs) ++ "]"
+    putStrLn $ "Tokenized sentence from IDs: \"" ++ unwords (map (fromMaybe unknownWord) ws) ++ "\""
+    putStrLn $ "Compound tags: [" ++ intercalate "," (maybe [] (map show) (ctagged cs)) ++ "]"
+    putStrLn $ "Tag IDs: [" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
     tags <- describeTags $ fromMaybe [] (tagged cs)
     putStrLn $ "Tags: [" ++ intercalate "," (map show tags) ++ "]"
     case deptree cs of
-        Nothing -> putStrLn $ "No dependency tree built yet."
+        Nothing -> putStrLn "No dependency tree built yet."
         Just dt -> do
-            putStrLn $ "Dependency tree IDs:"
+            putStrLn "Dependency tree IDs:"
             putStrLn $ drawDTTree 0 dt
-            putStrLn $ "Dependency tree:"
+            putStrLn "Dependency tree:"
             dtd <- describeDependencyTree dt
             putStrLn $ drawDTTree "root" dtd
 
