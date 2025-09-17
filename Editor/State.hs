@@ -7,6 +7,8 @@ import CDDB.Syntax.Tag
 import CDDB.Syntax.DependencyTree
 
 import Editor.Settings
+import Editor.Sentence
+
 
 data ProgramState = ProgramState {
         settings :: Settings,
@@ -14,10 +16,7 @@ data ProgramState = ProgramState {
         currentRules :: [(RuleId, Rule)],
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
-
-        currentCTaggedSentence :: Maybe [Int],
-        currentTaggedSentence :: Maybe (Tags Int),
-        currentDTree :: Maybe (DependencyTree Int)
+        currentSentences :: [CurrentSentence]
     }
 
 initialProgramState :: Settings -> ProgramState
@@ -28,8 +27,5 @@ initialProgramState settings = ProgramState
             currentRules = [],
             isNotSaved = True,
             currentTemplate = Nothing,
-
-            currentCTaggedSentence = Nothing,
-            currentTaggedSentence = Nothing,
-            currentDTree  = Nothing
+            currentSentences = []
         }

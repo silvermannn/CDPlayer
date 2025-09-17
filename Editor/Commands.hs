@@ -13,7 +13,6 @@ import Editor.Commands.Handlers.CoNLLU
 import Editor.Commands.Handlers.SaveLoad
 import Editor.Commands.Handlers.Train
 import Editor.Commands.Handlers.Sentence
-import Editor.Commands.Handlers.DependencyTree
 
 commands :: CmdDescrs
 commands = [
@@ -47,8 +46,10 @@ commands = [
     CmdDescr ["add","template"]                [CADString "name"]            (CRDStringList "field")  cmdAddTemplate             "Add template to CD database.",
     CmdDescr ["show","template"]               [CADString "name"]            CRDNothing               cmdShowTemplate            "Show template from CD database.",
     CmdDescr ["delete","template"]             [CADString "name"]            CRDNothing               cmdDeleteTemplate          "Delete template from CD database.",
-    CmdDescr ["run","tree"]                    []                            (CRDString "tree")       cmdRunTree                     "Run tree on CD database.",
+    CmdDescr ["run","tree"]                    []                            (CRDString "tree")       cmdRunTree                 "Run tree on CD database.",
     CmdDescr ["run","current","tree"]          []                            CRDNothing               cmdRunCurrentTree          "Run current tree on CD database.",
+
+-- Working with support lib
     CmdDescr ["parse","conllu"]                []                            (CRDFilePathList "path") cmdParseCoNLLU             "Parse CoNNLU files or directories.",
     CmdDescr ["save","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdSaveSentences           "Save parsed/loaded sentences.",
     CmdDescr ["load","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdLoadSentences           "Load sentences.",
@@ -61,11 +62,12 @@ commands = [
     CmdDescr ["save","tree","builder"]         [CADFilePath "path.gz"]       CRDNothing               cmdSaveTreeBuilder         "Save dependency tree builder.",
     CmdDescr ["load","tree","builder"]         [CADFilePath "path.gz"]       CRDNothing               cmdLoadTreeBuilder         "Load dependency tree builder.",
 
-    CmdDescr ["tag","sentence"]                []                            (CRDStringList "word")   cmdTagSentence             "Tag sentence.",
-    CmdDescr ["show","current","sentence"]     []                            CRDNothing               cmdShowCurrentSentence     "Show tags and descriptions of current sentence.",
-
-    CmdDescr ["builde","tree"]                 []                            CRDNothing               cmdBuildTree               "Build dependency tree.",
-    CmdDescr ["show","current","tree"]         []                            CRDNothing               cmdShowCurrentTree         "Show current dependency tree",
+-- Working with sentences/tagging/dependency tree
+    CmdDescr ["new","sentence"]                []                            (CRDString "sentence")   cmdNewSentence             "Start working with new sentence.",
+    CmdDescr ["show","sentences"]              []                            CRDNothing               cmdShowSentences           "Show all sentences.",
+    CmdDescr ["delete","sentences"]            []                            (CRDEIntList "num")      cmdDeleteSentences         "Delete specified or all sentences.",
+    CmdDescr ["tag","sentence"]                []                            (CRDEIntList "num")      cmdTagSentence             "Tag specified or all sentences.",
+    CmdDescr ["builde","tree"]                 []                            (CRDEIntList "num")      cmdBuildSentenceTree       "Build dependency tree for specified or all sentences.",
 
     CmdDescr ["quit"]                          []                            CRDNothing               cmdQuit                    "Quit program."
     ]

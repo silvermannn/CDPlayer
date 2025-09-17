@@ -95,8 +95,6 @@ cmdUpdRuleItem updater state [CAInt n] (CRString s) = do
         (affected, passed) = filterByNs (currentRules state) [n]
 
 
-filterByNs rs ns = if null ns then (rs, []) else spanByNs rs ns
-
 updateFacts :: (AddFacts -> AddFacts) -> Rule -> Rule
 updateFacts f rule = rule {facts = f (facts rule)}
 

@@ -3,29 +3,37 @@ module Editor.Commands.Handlers.Sentence where
 import Data.Maybe (catMaybes)
 import Data.List.Extra (chunksOf)
 
+import CDDB.Utils
+
 import Editor.State
 import Editor.Commands.Types
-import Editor.Support
+import Editor.Sentence
+import Editor.Utilites
 
-import CDDB.Syntax.DependencyTree
+cmdNewSentence :: CommandHandler
+cmdNewSentence state [] (CRString sentence) = do
+    return $ Right state {currentSentences = newSentence sentence: (currentSentences state)}
+
+cmdShowSentences :: CommandHandler
+cmdShowSentences state [] CRNothing = do
+    mapM_ showSentence (currentSentences state)
+    return $ Right state
+
+cmdDeleteSentences :: CommandHandler
+cmdDeleteSentences state [] (CRIntList ns) = if null ns
+    then return $ Right state {currentSentences = []}
+    else return $ Right state {currentSentences = deleteItemsByNumbers (currentSentences state) ns }
 
 cmdTagSentence :: CommandHandler
-cmdTagSentence state [] (CRStringList sentence) = do
-    ctags <- tagSentence sentence
-    print ctags
-    case ctags of
-        Just ctags' -> do
-            tags <- mapM describeCompoundTag ctags'
-            print tags
-            return $ Right state {currentCTaggedSentence = ctags, currentTaggedSentence = Just $ catMaybes tags}
-        _ -> return $ Left "error"
+cmdTagSentence state [] (CRIntList ns) = do
+    tagged <- mapM tagSentence affected
+    return $ Right state {currentSentences = passed ++ tagged}
+    where
+        (affected, passed) = filterByNs (currentSentences state) ns
 
-cmdShowCurrentSentence :: CommandHandler
-cmdShowCurrentSentence state [] CRNothing = case currentTaggedSentence state of
-    Nothing -> return $ Left "No current sentence tagged yet."
-    Just tags -> do
-        print (currentCTaggedSentence state)
-        print tags
-        dtags <- describeTags tags
-        print dtags
-        return $ Right state
+cmdBuildSentenceTree :: CommandHandler
+cmdBuildSentenceTree state [] (CRIntList ns) = do
+    built <- mapM buidTree affected
+    return $ Right state {currentSentences = passed ++ built}
+    where
+        (affected, passed) = filterByNs (currentSentences state) ns

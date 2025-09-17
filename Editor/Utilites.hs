@@ -11,3 +11,5 @@ deleteN n items = before ++ drop1 after
 spanByNs items ns = (map snd ein, map snd eout)
     where
         (ein, eout) = span ((`elem` ns) . fst) $ zipFrom 0 items
+
+filterByNs rs ns = if null ns then (rs, []) else spanByNs rs ns
