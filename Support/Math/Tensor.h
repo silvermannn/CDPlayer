@@ -5,10 +5,11 @@
 #include <functional>
 #include <numeric>
 #include <cmath>
-
 #include <iostream>
 
 #include "../ZLibFile/ZLibFile.h"
+
+#include "spdlog/spdlog.h"
 
 // N-dimensional matirx
 template<typename N, typename IndexT, size_t Arity>
@@ -68,14 +69,20 @@ class Tensor
 
     void allocate(N initialValue)
     {
+        spdlog::debug("Allocate {} bytes for Tensor", size());
         data = new N[size()];
         std::fill(data, data + size(), initialValue);
     }
 
     void free()
     {
+        spdlog::debug("Free Tensor");
+
         delete data;
+        data = nullptr;
+
         delete sums;
+        sums = nullptr;
     }
 
     N getAt(IndexT ix, IndexT i) const
@@ -200,8 +207,9 @@ public:
 
     void resize(N _initialValue, const IndexT(&_sizes)[Arity])
     {
-        sizes = std::vector<IndexT>(std::begin(_sizes), std::end(_sizes));
+        spdlog::debug("Resize Tensor");
         free();
+        sizes = std::vector<IndexT>(std::begin(_sizes), std::end(_sizes));
         allocate(_initialValue);
     }
 

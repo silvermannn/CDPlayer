@@ -23,12 +23,12 @@ linkLibSupport = -lsupport -L.
 testCFLAGS = -Wextra -Wall -Wpedantic -std=c++23 -lz -lgtest
 
 tests-debug: libsupport-d.so ${testFilesCPP}
-	g++ ${testFilesCPP} ${testCFLAGS} -L. -lsupport-d -g -pg -o tests-debug
+	g++ ${testFilesCPP} ${testCFLAGS} -lspdlog -lfmt -L. -lsupport-d -g -pg -o tests-debug
 	LD_LIBRARY_PATH=. time -v ./tests-debug
 	gprof tests gmon.out > analisys.txt
 
 tests: libsupport.so ${testFilesCPP}
-	g++ ${testFilesCPP} ${testCFLAGS} ${linkLibSupport} -O4 -o tests
+	g++ ${testFilesCPP} ${testCFLAGS} -lspdlog -lfmt ${linkLibSupport} -O4 -o tests
 	LD_LIBRARY_PATH=. time -v ./tests
 
 hsDefaultFlags = -no-keep-hi-files -no-keep-o-files -Wall -Wextra -static

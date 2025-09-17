@@ -52,6 +52,84 @@ TEST(TensorTest, SetGet)
     }
 }
 
+TEST(TensorTest, Resize2D)
+{
+    constexpr size_t arity = 2;
+
+    Tensor<int, size_t, arity> t(0, {0, 0});
+
+    EXPECT_EQ(t.size(), 0);
+    EXPECT_EQ(t.sizeAt(0), 0);
+    EXPECT_EQ(t.sizeAt(1), 0);
+    
+    for(size_t i = 0; i < 100; ++i)
+    {
+        const size_t x = 1 + std::rand() % 5000;
+        const size_t y = 1 + std::rand() % 5000;
+
+        t.resize(0, {x, y});
+
+        EXPECT_EQ(t.size(), x * y);
+        EXPECT_EQ(t.sizeAt(0), x);
+        EXPECT_EQ(t.sizeAt(1), y);
+    }
+}
+
+TEST(TensorTest, Resize3D)
+{
+    constexpr size_t arity = 3;
+
+    Tensor<int, size_t, arity> t(0, {0, 0, 0});
+
+    EXPECT_EQ(t.size(), 0);
+    EXPECT_EQ(t.sizeAt(0), 0);
+    EXPECT_EQ(t.sizeAt(1), 0);
+    EXPECT_EQ(t.sizeAt(2), 0);
+    
+    for(size_t i = 0; i < 100; ++i)
+    {
+        const size_t x = 1 + std::rand() % 500;
+        const size_t y = 1 + std::rand() % 500;
+        const size_t z = 1 + std::rand() % 500;
+
+        t.resize(0, {x, y, z});
+
+        EXPECT_EQ(t.size(), x * y * z);
+        EXPECT_EQ(t.sizeAt(0), x);
+        EXPECT_EQ(t.sizeAt(1), y);
+        EXPECT_EQ(t.sizeAt(2), z);
+    }
+}
+
+TEST(TensorTest, Resize4D)
+{
+    constexpr size_t arity = 4;
+
+    Tensor<int, size_t, arity> t(0, {0, 0, 0, 0});
+
+    EXPECT_EQ(t.size(), 0);
+    EXPECT_EQ(t.sizeAt(0), 0);
+    EXPECT_EQ(t.sizeAt(1), 0);
+    EXPECT_EQ(t.sizeAt(2), 0);
+    EXPECT_EQ(t.sizeAt(3), 0);
+    
+    for(size_t i = 0; i < 100; ++i)
+    {
+        const size_t x = 1 + std::rand() % 50;
+        const size_t y = 1 + std::rand() % 50;
+        const size_t z = 1 + std::rand() % 50;
+        const size_t w = 1 + std::rand() % 50;
+
+        t.resize(0, {x, y, z, w});
+
+        EXPECT_EQ(t.size(), x * y * z * w);
+        EXPECT_EQ(t.sizeAt(0), x);
+        EXPECT_EQ(t.sizeAt(1), y);
+        EXPECT_EQ(t.sizeAt(2), z);
+        EXPECT_EQ(t.sizeAt(3), w);
+    }
+}
+
 TEST(TensorTest, SaveLoad)
 {
     constexpr const char* fileName = "./tensor.bin.gz";

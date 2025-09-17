@@ -6,6 +6,8 @@
 #include "../Math/Tensor.h"
 #include "../ZLibFile/ZLibFile.h"
 
+#include "spdlog/spdlog.h"
+
 template<typename N, typename HS, typename ES>
 class HMM
 {
@@ -34,6 +36,7 @@ public:
     
     void resize(HS hiddenStates, ES emissions)
     {
+        spdlog::debug("Resize HMM {} {}", hiddenStates, emissions);
         hss2hs.resize(0, {hiddenStates, hiddenStates});
         hss2es.resize(0, {hiddenStates, emissions});
     }

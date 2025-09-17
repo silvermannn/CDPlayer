@@ -20,13 +20,12 @@ Engine& Engine::singleton()
 
 Engine::Engine()
 {
-    auto basic_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("support.log");
-    auto logger = std::make_shared<spdlog::logger>("support", basic_sink);
+    auto logger = spdlog::basic_logger_mt("support", "support.log", true);
     spdlog::set_default_logger(logger);
     spdlog::set_level(spdlog::level::debug);
     spdlog::flush_on(spdlog::level::debug);
 
-    spdlog::info("Init");
+    spdlog::info("Created Engine");
 
     static CoNLLUParser conlluParser;
 
@@ -312,6 +311,12 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
 
 void Engine::trainHMMOnSentence(const Sentence& sentence)
 {
+    if (sentence.words.empty())
+    {
+        spdlog::debug("Trying to train tagger on empty sentence");
+        return;
+    }
+
     hmm.addHiddenState2HiddenState(serviceWord.tags, sentence.words[0].tags);
     hmm.addHiddenState2Emission(sentence.words[0].tags, sentence.words[0].word);
 
@@ -373,7 +378,7 @@ bool Engine::trainTreeBuilder(double smoothingFactor)
     }
 
     drStat.normalize(smoothingFactor);
-    
+
     return true;
 }
 
