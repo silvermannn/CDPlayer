@@ -30,19 +30,15 @@ class Encoder
 public:
     Encoder();
 
+    bool operator==(const Encoder& other) const;
+
     void reset();
 
     template<typename Index>
-    bool isValidIndex(Index ix) const
+    static bool isValidIndex(Index ix)
     {
         return BidirectionalMap<std::string, Index>::isValidIndex(ix);
     }
-
-    ShortWordId featureNameIndex(ShortWordId POSTag, const std::string& s) const;
-
-    ShortWordId featureValueIndex(const std::string& s) const;
-
-    ShortWordId posTagIndex(const std::string& s) const;
 
     void logStatistics(void);
 
@@ -64,9 +60,16 @@ public:
     std::optional<std::string> index2word(WordId w) const;
 
     std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
+
     std::optional<std::string> index2POSTag(TagId tag) const;
+    ShortWordId POSTag2Index(const std::string& s) const;
+
     std::optional<std::string> index2FeatureName(TagId tag) const;
+    ShortWordId featureName2Index(ShortWordId POSTag, const std::string& s) const;
+
     std::optional<std::string> index2FeatureValue(TagId tag) const;
+    ShortWordId featureValue2Index(const std::string& s) const;
+
 
     std::optional<CompoundDepRelTag> getCompoundDependencyRelationTag(TagId tag) const;
 
@@ -75,7 +78,6 @@ public:
 
     ShortWordId dependencyRelationModifier2index(const std::string& s) const;
     std::optional<std::string> index2dependencyRelationModifier(TagId tag) const;
-
 
     void saveBinary(ZLibFile& zfile) const;
 

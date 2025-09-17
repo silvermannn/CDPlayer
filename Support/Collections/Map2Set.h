@@ -20,8 +20,19 @@ public:
         });
     }
 
+    bool operator==(const Map2Set<K, V>& other) const
+    {
+        return map == other.map;
+    }
+
     bool check(const K& k, const V& v) const
     {
-        return map.at(k).contains(v);
+        auto it = map.find(k);
+        if (it == map.end())
+        {
+            return false;
+        }
+        
+        return it->second.contains(v);
     }
 };

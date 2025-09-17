@@ -22,9 +22,19 @@ public:
     }
 
     template<typename Initializer>
-    BidirectionalMap(const std::vector<Initializer> initializers)
+    BidirectionalMap(const std::vector<Initializer> initializers, bool names)
     {
-       std::for_each(initializers.begin(), initializers.end(), [this](auto item) { lookupOrInsert(item.name); });
+        std::for_each(initializers.begin(), initializers.end(), [this, names](auto item)
+        {
+            if (names)
+            {
+                lookupOrInsert(item.name);
+            }
+            else
+            {
+                std::for_each(item.items.begin(), item.items.end(), [this](auto subitem) { lookupOrInsert(subitem); });
+            }
+        });
     }
 
     bool operator==(const BidirectionalMap<Item, Index>& other) const
