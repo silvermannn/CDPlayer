@@ -35,6 +35,7 @@ data CmdRest = CRStringList [String] | CRString String | CRIntList [Int]  | CRUU
 
 type CommandHandler = ProgramState -> [CmdArg] -> CmdRest -> IO (Either String ProgramState)
 
+describeCommand :: CmdDescr -> String
 describeCommand (CmdDescr kw ma ra _ _) = unwords kw ++ " " ++ unwords (map describeCommandDef ma) ++ " " ++ describeCommandRest ra
     where
         describeCommandDef (CADString s) = "<" ++ s ++ ">"

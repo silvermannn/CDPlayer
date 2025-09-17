@@ -157,10 +157,10 @@ index2dependencyRelationModifier = index2string index2dependencyRelationModifier
 -- -------------------------------------------------------------
 
 getCompoundTag :: (CULong -> Ptr CULong -> Ptr CULong -> IO CBool) -> Int -> IO (Maybe [Int])
-getCompoundTag f tag = do
+getCompoundTag f t = do
     p <- new 0
     plen <- new 0
-    res <- f (toEnum tag) p plen
+    res <- f (toEnum t) p plen
     if toBool res then do
         size <- peek plen
         ts <- peekArray (fromEnum size) p
@@ -173,8 +173,8 @@ index2string f ix = do
     p <- new ps
     res <- f (toEnum ix) p
     if toBool res then do
-        ps <- peek p
-        ss <- peekCString ps
+        ps' <- peek p
+        ss <- peekCString ps'
         return $ Just ss
     else return Nothing
 

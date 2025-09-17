@@ -6,10 +6,7 @@ module CDDB.Tree.WordProperty where
 import GHC.Generics
 import GHC.Read
 import Data.Aeson (ToJSON, toJSON, FromJSON, parseJSON)
-import Data.List (intercalate)
-import Data.List.Extra ((!?))
 
-import Text.ParserCombinators.ReadPrec as R
 import qualified Text.Read.Lex as L
 
 import CDDB.Types
@@ -27,7 +24,7 @@ instance FromJSON WordProperty where
 
 instance Show WordProperty where
     show :: WordProperty -> String
-    show (WordProperty name val) = name ++ ": " ++ name
+    show (WordProperty name val) = name ++ ": " ++ val
 
 instance Read WordProperty where
     readPrec = do

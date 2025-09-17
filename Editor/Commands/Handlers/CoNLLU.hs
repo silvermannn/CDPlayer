@@ -9,3 +9,4 @@ cmdParseCoNLLU state [] (CRStringList sentence) = do
     tags <- mapM (flip parsePath "CoNLLU") sentence
     print tags
     return $ Right state
+cmdParseCoNLLU _ _ _ = undefined

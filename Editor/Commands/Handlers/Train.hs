@@ -6,9 +6,12 @@ import Support.Support
 
 cmdTrainTagger :: CommandHandler
 cmdTrainTagger state [CAFloat sf] CRNothing = do
-    trainTagger sf
+    _ <- trainTagger sf
     return $ Right state
+cmdTrainTagger _ _ _ = undefined
 
 cmdTrainTreeBuilder :: CommandHandler
 cmdTrainTreeBuilder state [CAFloat sf] CRNothing = do
-    return $ Right state
+   _ <- trainTreeBuilder sf
+   return $ Right state
+cmdTrainTreeBuilder _ _ _ = undefined

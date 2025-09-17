@@ -2,6 +2,7 @@ module Editor.Sentence where
 
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List.Extra (chunksOf, intercalate)
+import Data.Char (toLower)
 import Data.Tree
 
 import CDDB.Syntax.Tag
@@ -15,16 +16,19 @@ data CurrentSentence = CurrentSentence {
         wordIDs :: Maybe [Int],
         ctagged :: Maybe [Int],
         tagged :: Maybe (Tags Int),
+        edges :: Maybe [Int],
         deptree :: Maybe (DependencyTree Int)
     }
     deriving Show
 
+newSentence :: String -> CurrentSentence
 newSentence ss = CurrentSentence {
         original = ss,
-        tokenized = words ss,
+        tokenized = words $ map toLower ss,
         wordIDs = Nothing,
         ctagged = Nothing,
         tagged = Nothing,
+        edges = Nothing,
         deptree = Nothing
     }
 
@@ -39,17 +43,21 @@ showSentence cs = do
     putStrLn $ "Tag IDs: [" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
     tags <- describeTags $ fromMaybe [] (tagged cs)
     putStrLn $ "Tags: [" ++ intercalate "," (map show tags) ++ "]"
+    putStrLn $ show $ edges cs
     case deptree cs of
         Nothing -> putStrLn "No dependency tree built yet."
         Just dt -> do
             putStrLn "Dependency tree IDs:"
+            putStrLn $ show $ deptree cs
             putStrLn $ drawDTTree 0 dt
             putStrLn "Dependency tree:"
             dtd <- describeDependencyTree dt
             putStrLn $ drawDTTree "root" dtd
 
+unknownWord :: String
 unknownWord = "<unknown>"
 
+unknownTag :: Tag String
 unknownTag = Tag "<x>" []
 
 describeDependencyTree :: DependencyTree Int -> IO (DependencyTree String)
@@ -69,8 +77,8 @@ describeDepRelTag t = do
 
 describeTags :: Tags Int -> IO (Tags String)
 describeTags tags = do
-    tags <- mapM describeTag tags
-    return $ map (fromMaybe unknownTag) tags
+    tags' <- mapM describeTag tags
+    return $ map (fromMaybe unknownTag) tags'
 
 describeTag :: Tag Int -> IO (Maybe (Tag String))
 describeTag (Tag pos fs) = do
@@ -105,17 +113,19 @@ tagSentence cs = do
         parseTags (pos:features) = Tag pos $ map (\[n, v] -> (n, v)) $ chunksOf 2 features
 
 describeCompoundTag :: Int -> IO (Maybe (Tag Int))
-describeCompoundTag tag = do
-    t <- getCompoundPOSTag tag
+describeCompoundTag ctag = do
+    t <- getCompoundPOSTag ctag
     case t of
         Just t' -> return $ Just $ parseTags t'
+        Nothing -> return Nothing
     where
         parseTags (pos:features) = Tag pos $ map (\[n, v] -> (n, v)) $ chunksOf 2 features
+        parseTags _ = undefined
 
 buidTree :: CurrentSentence -> IO CurrentSentence
 buidTree cs = do
     edges <- buildDependencyTree (fromMaybe [] $ ctagged cs)
-    return $ cs {deptree = Just $ tree (fromMaybe [] edges) (fromMaybe [] $ tagged cs) (fromMaybe [] $ wordIDs cs)}
+    return $ cs {edges = edges, deptree = Just $ tree (fromMaybe [] edges) (fromMaybe [] (tagged cs)) (fromMaybe [] $ wordIDs cs)}
     where
         groupEdges xs =  zipWith (curry (\([s, d, l], (t, w)) -> (s, d, l, t, w))) (chunksOf 3 xs)
         tree xs ts ws = fromLabeledEdges (groupEdges xs $ zip ts ws) (0, Tag 0 [], 0)
@@ -123,4 +133,4 @@ buidTree cs = do
         fromLabeledEdges edges (root, t, w) = DTNode w t ns
             where
                 fromRoot = filter (\(a, _, _, _, _) -> a == root) edges
-                ns = zip (map (\(_, _, b, _, _) -> b) fromRoot) $ map (fromLabeledEdges edges. (\(_, a, _, t, w) -> (a, t, w))) fromRoot
+                ns = zip (map (\(_, _, b, _, _) -> b) fromRoot) $ map (fromLabeledEdges edges. (\(_, a, _, t', w') -> (a, t', w'))) fromRoot

@@ -1,6 +1,6 @@
 module Editor.Commands.Handlers.CDDB where
 
-import Data.Time (UTCTime(..), getCurrentTime)
+import Data.Time (getCurrentTime)
 import Data.Aeson (encode, decode, toJSON)
 import qualified Data.ByteString.Lazy as B
 
@@ -17,6 +17,7 @@ cmdSaveCDDB state [CAString path] CRNothing = do
     let updatedCDDB = (cddb state) {date = today} in do
         B.writeFile path $ encode (toJSON updatedCDDB)
         return $ Right state {cddb = updatedCDDB}
+cmdSaveCDDB _ _ _ = undefined
 
 cmdLoadCDDB :: CommandHandler
 cmdLoadCDDB state [CAString path] CRNothing = do
@@ -25,25 +26,30 @@ cmdLoadCDDB state [CAString path] CRNothing = do
     case (decode :: B.ByteString -> Maybe CDDB) fileContent of
         Nothing -> return $ Left "Error reading file."
         Just cddb' -> return $ Right state {cddb = cddb'}
+cmdLoadCDDB _ _ _ = undefined
 
 cmdNewCDDB :: CommandHandler
 cmdNewCDDB state [] CRNothing = do
     return $ Right state {cddb = emptyCDDB}
+cmdNewCDDB _ _ _ = undefined
 
 cmdDumpCDDB :: CommandHandler
 cmdDumpCDDB state [] CRNothing = do
     print (cddb state)
     return $ Right state
+cmdDumpCDDB _ _ _ = undefined
 
 cmdSetCDDBName :: CommandHandler
 cmdSetCDDBName state [CAString n] CRNothing = do
     return $ Right state {cddb = (cddb state) {name = n}}
+cmdSetCDDBName _ _ _ = undefined
 
 cmdSetCDDBVersion :: CommandHandler
 cmdSetCDDBVersion state [CAInt v] CRNothing = do
     return $ Right state {cddb = (cddb state) {version = toInteger v}}
+cmdSetCDDBVersion _ _ _ = undefined
 
 cmdSetCDDBComment :: CommandHandler
 cmdSetCDDBComment state [CAString c] CRNothing = do
     return $ Right state {cddb = (cddb state) {cddbcomment = c}}
-
+cmdSetCDDBComment _ _ _ = undefined

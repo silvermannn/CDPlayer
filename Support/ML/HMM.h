@@ -53,12 +53,15 @@ public:
 
     void normalize(double smoothingFactor)
     {
+        spdlog::debug("Normalizing HMM {}", smoothingFactor);
         hss2hs.normalizeLog(smoothingFactor, 0);
         hss2es.normalizeLog(smoothingFactor, 0);
     }
 
     std::vector<HS> predict(HS serviceTag, const std::vector<ES>& emissions) const
     {
+        spdlog::debug("Predicy by HMM");
+
         if (emissions.empty())
         {
             return std::vector<HS>();

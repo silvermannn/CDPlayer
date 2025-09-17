@@ -5,7 +5,7 @@ module CDDB.Expression.VariableDefs where
 
 import GHC.Generics
 import GHC.Read
-import Data.Aeson (ToJSON, FromJSON, toJSON, parseJSON)
+import Data.Aeson (ToJSON, FromJSON)
 
 import Text.ParserCombinators.ReadPrec as R
 import qualified Text.Read.Lex as L

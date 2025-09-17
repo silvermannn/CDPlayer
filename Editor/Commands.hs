@@ -2,6 +2,7 @@
 
 module Editor.Commands where
 
+import Editor.State
 import Editor.Commands.Types
 import Editor.Commands.Handlers
 import Editor.Commands.Handlers.Help
@@ -72,6 +73,7 @@ commands = [
     CmdDescr ["quit"]                          []                            CRDNothing               cmdQuit                    "Quit program."
     ]
 
+runMainCommand :: String -> ProgramState -> IO (Either String ProgramState)
 runMainCommand input state = runInput state (words input) commands
 
 cmdQuit :: CommandHandler

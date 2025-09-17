@@ -3,8 +3,6 @@ module Editor.State where
 import CDDB.Types (Name)
 import CDDB.CDDB
 import CDDB.Rules
-import CDDB.Syntax.Tag
-import CDDB.Syntax.DependencyTree
 
 import Editor.Settings
 import Editor.Sentence

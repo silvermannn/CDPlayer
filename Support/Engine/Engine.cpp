@@ -37,6 +37,9 @@ void Engine::reset(void)
 {
     spdlog::info("Resetting");
     clearSentences();
+    
+    unkWordOnly.words.push_back(unknownWord);
+
     encoder.reset();
 }
 
@@ -281,15 +284,15 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
 {
     spdlog::debug("Parsing {}", path);
 
+    if (std::filesystem::is_directory(path))
+    {
+        return parseDirectory(path, parserName);
+    }
+
     if (!std::filesystem::exists(path))
     {
         spdlog::error("Failed to open {}", path);
         return false;
-    }
-
-    if (std::filesystem::is_directory(path))
-    {
-        return parseDirectory(path, parserName);
     }
 
     auto parser = parsers.find(parserName);

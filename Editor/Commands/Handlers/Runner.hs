@@ -32,9 +32,12 @@ cmdRunTree state [] (CRString s) =  case readEither s of
                 putStrLn "Logs:"
                 printLogs (workingLog result)
                 return ()
+cmdRunTree _ _ _ = undefined
 
 cmdRunCurrentTree :: CommandHandler
-cmdRunCurrentTree state [] CRNothing = undefined
+cmdRunCurrentTree _ [] CRNothing = undefined
+cmdRunCurrentTree _ _ _ = undefined
 
 cmdSetCurrentTree :: CommandHandler
-cmdSetCurrentTree state [] (CRTree t) = undefined
+cmdSetCurrentTree _ [] (CRTree _) = undefined
+cmdSetCurrentTree _ _ _ = undefined
