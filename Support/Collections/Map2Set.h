@@ -2,6 +2,9 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <iostream>
+
+#include "spdlog/spdlog.h"
 
 template <class K, class V>
 class Map2Set
@@ -30,9 +33,23 @@ public:
         auto it = map.find(k);
         if (it == map.end())
         {
+            spdlog::info("Key not found: {}", k);
             return false;
         }
-        
+
         return it->second.contains(v);
+    }
+
+    void print(void) const
+    {
+        for (auto [k, v]: map)
+        {
+            std::cout << k << ":" << std::endl;
+            for (auto i: v)
+            {
+                std::cout << i << ", ";
+            }
+            std::cout << std::endl;
+        }
     }
 };

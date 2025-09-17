@@ -24,19 +24,18 @@ Encoder::Encoder()
 
 bool Encoder::operator==(const Encoder& other) const
 {
-    return featureNamesConstraints == other.featureNamesConstraints && 
-           posTags == other.posTags && 
-           featureNames == other.featureNames && 
-           featureValues == other.featureValues && 
-           depRels == other.depRels && 
-           depRelModifiers == other.depRelModifiers && 
-           words == other.words && 
-           tags == other.tags && 
-           depRelTags == other.depRelTags && 
-           serviceTag == other.serviceTag && 
-           unknownWord == other.unknownWord; 
+    return featureNamesConstraints == other.featureNamesConstraints &&
+           posTags == other.posTags &&
+           featureNames == other.featureNames &&
+           featureValues == other.featureValues &&
+           depRels == other.depRels &&
+           depRelModifiers == other.depRelModifiers &&
+           words == other.words &&
+           tags == other.tags &&
+           depRelTags == other.depRelTags &&
+           serviceTag == other.serviceTag &&
+           unknownWord == other.unknownWord;
 }
-
 
 void Encoder::reset()
 {
@@ -128,10 +127,10 @@ ShortWordId Encoder::featureName2Index(ShortWordId POSTag, const std::string& s)
     auto pos = posTags.lookupIndex(POSTag);
     if (featureNamesConstraints.check(pos, s))
     {
-        spdlog::debug("Wrong feature name {} for POS tag {}", s, pos);
         return featureNames.lookup(s);
     }
 
+    spdlog::debug("Wrong feature name {} for POS tag {}", s, pos);
     return featureNames.invalidIndex;
 }
 
@@ -232,7 +231,7 @@ void Encoder::saveBinary(ZLibFile& zfile) const
 
 bool Encoder::loadBinary(ZLibFile& zfile)
 {
-    return words.loadBinary(zfile) && 
+    return words.loadBinary(zfile) &&
            tags.loadBinary(zfile) &&
            depRelTags.loadBinary(zfile);
 }

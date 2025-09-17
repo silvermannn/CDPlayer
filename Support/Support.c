@@ -17,9 +17,9 @@ bool unregisterParser(char* parserName)
     return Engine::singleton().unregisterParser(parserName);
 }
 
-bool parse(char* path, char* parser)
+bool parse(char* path, char* parserName)
 {
-    return Engine::singleton().parse(path, parser);
+    return Engine::singleton().parse(path, parserName);
 }
 
 bool trainTagger(float smoothingFactor)

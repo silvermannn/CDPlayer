@@ -6,6 +6,6 @@ import Support.Support
 
 cmdParseCoNLLU :: CommandHandler
 cmdParseCoNLLU state [] (CRStringList sentence) = do
-    tags <- mapM (parsePath "CoNLLU") sentence
+    tags <- mapM (flip parsePath "CoNLLU") sentence
     print tags
     return $ Right state

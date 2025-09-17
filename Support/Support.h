@@ -14,7 +14,7 @@ bool registerParser(char* parserName, void* parser);
 
 bool unregisterParser(char* parserName);
 
-bool parse(char* path, char* parser);
+bool parse(char* path, char* parserName);
 
 bool trainTagger(float smoothingFactor);
 
