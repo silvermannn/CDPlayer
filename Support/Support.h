@@ -5,13 +5,12 @@
 #include <stddef.h>
 
 #include "Types.h"
-#include "Engine/Parser.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool registerParser(char* parserName, Parser* parser);
+bool registerParser(char* parserName, void* parser);
 
 bool unregisterParser(char* parserName);
 

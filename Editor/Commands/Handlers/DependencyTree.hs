@@ -11,7 +11,7 @@ import Editor.Commands.Types
 import Editor.Support
 
 cmdBuildTree :: CommandHandler
-cmdBuildTree state [] CRNothing =  case (currentCTaggedSentence state) of
+cmdBuildTree state [] CRNothing =  case currentCTaggedSentence state of
     Nothing -> return $ Left "No current sentence tagged yet."
     Just tags -> do
         tree <- buidTree tags
@@ -19,7 +19,7 @@ cmdBuildTree state [] CRNothing =  case (currentCTaggedSentence state) of
         return $ Right state {currentDTree = tree}
 
 cmdShowCurrentTree :: CommandHandler
-cmdShowCurrentTree state [] CRNothing = case (currentDTree state) of
+cmdShowCurrentTree state [] CRNothing = case currentDTree state of
     Nothing -> return $ Left "No current tree exists yet."
     Just tree -> do
         print tree

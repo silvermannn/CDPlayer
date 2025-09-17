@@ -7,9 +7,9 @@
 const size_t MAX_NAME_LENGTH = 16;
 const size_t MAX_BUFFER_SIZE = (2 * MAX_FEATURES_PER_WORD + 1) * MAX_NAME_LENGTH;
 
-bool registerParser(char* parserName, Parser* parser)
+bool registerParser(char* parserName, void* parser)
 {
-    return Engine::singleton().registerParser(parserName, *parser);
+    return Engine::singleton().registerParser(parserName, *(Parser*)parser);
 }
 
 bool unregisterParser(char* parserName)

@@ -7,11 +7,13 @@ import Text.Read (readEither)
 import Data.Maybe (mapMaybe)
 import Data.UUID (fromString)
 
+import Control.Monad (zipWithM)
+
 import Editor.State
 import Editor.Commands.Types
 
 filterCommandDescr :: [CmdDescr] -> [String] -> [CmdDescr]
-filterCommandDescr cds ss = filter (and . zipWith (isPrefixOf) ss . keywords) cds
+filterCommandDescr cds ss = filter (and . zipWith isPrefixOf ss . keywords) cds
 
 runInput :: ProgramState -> [String] -> CmdDescrs -> IO (Either String ProgramState)
 runInput state s cds = case filterCommandDescr cds s of
@@ -22,7 +24,7 @@ runInput state s cds = case filterCommandDescr cds s of
         callArgs :: ProgramState -> [String] -> CmdDescr -> IO (Either String ProgramState)
         callArgs state ss cd = case applyArgs of
             Left err -> return $ Left err
-            Right (as', rs') -> (handler cd) state as' rs'
+            Right (as', rs') -> handler cd state as' rs'
             where
                 applyArgs = do
                     as <- strings2CmdArgs args (mainArguments cd)
@@ -38,7 +40,7 @@ runInput state s cds = case filterCommandDescr cds s of
                 string2CmdArg s (CADFloat _)    = readEither s >>= \f -> Right $ CAFloat f
 
                 strings2CmdArgs ss cads = if length ss == length cads
-                    then sequence $ zipWith string2CmdArg ss cads
+                    then zipWithM string2CmdArg ss cads
                     else Left "Not enough arguments"
 
                 strings2CmdRest ss       (CRDEStringList _)  = Right $ CRStringList ss

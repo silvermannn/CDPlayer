@@ -2,7 +2,7 @@ module Editor.Utilites where
 
 import Data.List.Extra (zipFrom, drop1, sort)
 
-deleteItemsByNumbers items ns = foldr deleteN items $ reverse $ sort ns
+deleteItemsByNumbers items ns = foldl (flip deleteN) items (sort ns)
 
 deleteN n items = before ++ drop1 after
     where

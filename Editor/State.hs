@@ -15,7 +15,7 @@ data ProgramState = ProgramState {
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
 
-        currentCTaggedSentence :: Maybe ([Int]),
+        currentCTaggedSentence :: Maybe [Int],
         currentTaggedSentence :: Maybe (Tags Int),
         currentDTree :: Maybe (DependencyTree Int)
     }

@@ -10,13 +10,13 @@ import Support.Support
 
 type Result a = IO (Maybe a)
 
-tagSentence :: [String] -> Result ([Int])
+tagSentence :: [String] -> Result [Int]
 tagSentence ss = do
     ws <- mapM word2index ss
     tags <- tag $ catMaybes ws
     case tags of
         Nothing -> return Nothing
-        Just tags' -> return $ Just $ tags'
+        Just tags' -> return $ Just tags'
 
 describeCompoundTag :: Int -> Result (Tag Int)
 describeCompoundTag tag = do
@@ -55,8 +55,8 @@ buidTree tags = do
         Just es -> return $ Just $ tree es $ catMaybes ctags
         _ -> return Nothing
     where
-        groupEdges xs ts =  map (\([s, d, l], t) -> (s, d, l, t)) $ zip (chunksOf 3 xs) ts
-        tree xs ts = fromLabeledEdges (groupEdges xs ts) (0, (Tag 0 []))
+        groupEdges xs =  zipWith (curry (\([s, d, l], t) -> (s, d, l, t))) (chunksOf 3 xs)
+        tree xs ts = fromLabeledEdges (groupEdges xs ts) (0, Tag 0 [])
         fromLabeledEdges :: Eq a => [(a, a, a, Tag a)] -> (a, Tag a) -> DependencyTree a
         fromLabeledEdges edges (root, t) = DTNode root t ns
             where

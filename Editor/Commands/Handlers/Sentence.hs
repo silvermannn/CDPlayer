@@ -21,7 +21,7 @@ cmdTagSentence state [] (CRStringList sentence) = do
         _ -> return $ Left "error"
 
 cmdShowCurrentSentence :: CommandHandler
-cmdShowCurrentSentence state [] CRNothing = case (currentTaggedSentence state) of
+cmdShowCurrentSentence state [] CRNothing = case currentTaggedSentence state of
     Nothing -> return $ Left "No current sentence tagged yet."
     Just tags -> do
         print (currentCTaggedSentence state)
