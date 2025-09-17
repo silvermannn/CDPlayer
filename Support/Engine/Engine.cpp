@@ -350,6 +350,7 @@ bool Engine::trainTagger(float smoothingFactor)
         trainHMMOnSentence(sentence);
     }
 
+    spdlog::debug("Normallizing tagger");
     hmm.normalize(smoothingFactor);
 
     return true;

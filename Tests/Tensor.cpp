@@ -56,7 +56,7 @@ TEST(TensorTest, Resize2D)
 {
     constexpr size_t arity = 2;
 
-    Tensor<int, size_t, arity> t(0, {0, 0});
+    Tensor<int, uint16_t, arity> t(0, {0, 0});
 
     EXPECT_EQ(t.size(), 0);
     EXPECT_EQ(t.sizeAt(0), 0);
@@ -64,14 +64,22 @@ TEST(TensorTest, Resize2D)
     
     for(size_t i = 0; i < 100; ++i)
     {
-        const size_t x = 1 + std::rand() % 5000;
-        const size_t y = 1 + std::rand() % 5000;
+        const uint16_t x = 1 + std::rand() % 5000;
+        const uint16_t y = 1 + std::rand() % 5000;
 
         t.resize(0, {x, y});
 
         EXPECT_EQ(t.size(), x * y);
         EXPECT_EQ(t.sizeAt(0), x);
         EXPECT_EQ(t.sizeAt(1), y);
+
+        for (uint16_t j = 0; j < x; ++j)
+        {
+            for (uint16_t k = 0; k < y; ++k)
+            {
+                t.at(j,k) = (k+1)*(j+1)*(i+1);
+            }
+        }
     }
 }
 
@@ -79,7 +87,7 @@ TEST(TensorTest, Resize3D)
 {
     constexpr size_t arity = 3;
 
-    Tensor<int, size_t, arity> t(0, {0, 0, 0});
+    Tensor<int, uint16_t, arity> t(0, {0, 0, 0});
 
     EXPECT_EQ(t.size(), 0);
     EXPECT_EQ(t.sizeAt(0), 0);
@@ -88,9 +96,9 @@ TEST(TensorTest, Resize3D)
     
     for(size_t i = 0; i < 100; ++i)
     {
-        const size_t x = 1 + std::rand() % 500;
-        const size_t y = 1 + std::rand() % 500;
-        const size_t z = 1 + std::rand() % 500;
+        const uint16_t x = 1 + std::rand() % 500;
+        const uint16_t y = 1 + std::rand() % 500;
+        const uint16_t z = 1 + std::rand() % 500;
 
         t.resize(0, {x, y, z});
 
@@ -98,6 +106,17 @@ TEST(TensorTest, Resize3D)
         EXPECT_EQ(t.sizeAt(0), x);
         EXPECT_EQ(t.sizeAt(1), y);
         EXPECT_EQ(t.sizeAt(2), z);
+
+        for (uint16_t j = 0; j < x; ++j)
+        {
+            for (uint16_t k = 0; k < y; ++k)
+            {
+                for (uint16_t n = 0; n < z; ++n)
+                {
+                    t.at(j,k,n) = (k+1)*(j+1)*(i+1)*n;
+                }
+            }
+        }
     }
 }
 
@@ -105,7 +124,7 @@ TEST(TensorTest, Resize4D)
 {
     constexpr size_t arity = 4;
 
-    Tensor<int, size_t, arity> t(0, {0, 0, 0, 0});
+    Tensor<int, uint8_t, arity> t(0, {0, 0, 0, 0});
 
     EXPECT_EQ(t.size(), 0);
     EXPECT_EQ(t.sizeAt(0), 0);
@@ -115,10 +134,10 @@ TEST(TensorTest, Resize4D)
     
     for(size_t i = 0; i < 100; ++i)
     {
-        const size_t x = 1 + std::rand() % 50;
-        const size_t y = 1 + std::rand() % 50;
-        const size_t z = 1 + std::rand() % 50;
-        const size_t w = 1 + std::rand() % 50;
+        const uint8_t x = 1 + std::rand() % 50;
+        const uint8_t y = 1 + std::rand() % 50;
+        const uint8_t z = 1 + std::rand() % 50;
+        const uint8_t w = 1 + std::rand() % 50;
 
         t.resize(0, {x, y, z, w});
 
@@ -127,6 +146,20 @@ TEST(TensorTest, Resize4D)
         EXPECT_EQ(t.sizeAt(1), y);
         EXPECT_EQ(t.sizeAt(2), z);
         EXPECT_EQ(t.sizeAt(3), w);
+
+        for (uint8_t j = 0; j < x; ++j)
+        {
+            for (uint8_t k = 0; k < y; ++k)
+            {
+                for (uint8_t n = 0; n < z; ++n)
+                {
+                    for (uint8_t m = 0; m < w; ++m)
+                    {
+                        t.at(j,k,n,m) = (k+1)*(j+1)*(i+1)*n-m;
+                    }
+                }
+            }
+        }
     }
 }
 

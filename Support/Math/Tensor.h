@@ -69,7 +69,7 @@ class Tensor
 
     void allocate(N initialValue)
     {
-        spdlog::debug("Allocate {} bytes for Tensor", size());
+        spdlog::debug("Allocate {} elements for Tensor", size());
         data = new N[size()];
         std::fill(data, data + size(), initialValue);
     }
@@ -207,7 +207,7 @@ public:
 
     void resize(N _initialValue, const IndexT(&_sizes)[Arity])
     {
-        spdlog::debug("Resize Tensor");
+        spdlog::debug("Resize Tensor {}", Arity);
         free();
         sizes = std::vector<IndexT>(std::begin(_sizes), std::end(_sizes));
         allocate(_initialValue);
@@ -223,9 +223,9 @@ public:
         return sizes[dim];
     }
 
-    IndexT size() const
+    uint64_t size() const
     {
-        return std::accumulate(sizes.begin(), sizes.end(), IndexT(1), std::multiplies<IndexT>());
+        return std::accumulate(sizes.begin(), sizes.end(), uint64_t(1), std::multiplies<uint64_t>());
     }
 
     template<typename... Ints>
