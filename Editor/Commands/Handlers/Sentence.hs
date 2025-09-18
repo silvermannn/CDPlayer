@@ -1,5 +1,7 @@
 module Editor.Commands.Handlers.Sentence where
 
+import Data.List.Extra (zipFrom)
+
 import Editor.State
 import Editor.Commands.Types
 import Editor.Sentence
@@ -12,7 +14,7 @@ cmdNewSentence _ _ _ = undefined
 
 cmdShowSentences :: CommandHandler
 cmdShowSentences state [] CRNothing = do
-    mapM_ showSentence (currentSentences state)
+    mapM_ showSentence $ zipFrom 0 (currentSentences state)
     return $ Right state
 cmdShowSentences _ _ _ = undefined
 

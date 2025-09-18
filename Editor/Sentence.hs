@@ -32,17 +32,18 @@ newSentence ss = CurrentSentence {
         deptree = Nothing
     }
 
-showSentence :: CurrentSentence -> IO ()
-showSentence cs = do
-    putStrLn $ "Source sentence: \"" ++ original cs ++ "\""
-    putStrLn $ "Tokenized sentence: [" ++ intercalate " | " (tokenized cs) ++ "]"
-    putStrLn $ "Word IDs: [" ++ intercalate "," (maybe [] (map show) (wordIDs cs)) ++ "]"
+showSentence :: (Int, CurrentSentence) -> IO ()
+showSentence (n, cs) = do
+    putStrLn $ "#" ++ show n
+    putStrLn $ "Source sentence:\t\"" ++ original cs ++ "\""
+    putStrLn $ "Tokenized sentence:\t[" ++ intercalate " | " (tokenized cs) ++ "]"
+    putStrLn $ "Word IDs:\t\t[" ++ intercalate "," (maybe [] (map show) (wordIDs cs)) ++ "]"
     ws <- mapM index2word $ fromMaybe [] $ wordIDs cs
-    putStrLn $ "Tokenized sentence from IDs: \"" ++ unwords (map (fromMaybe unknownWord) ws) ++ "\""
-    putStrLn $ "Compound tags: [" ++ intercalate "," (maybe [] (map show) (ctagged cs)) ++ "]"
-    putStrLn $ "Tag IDs: [" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
+    putStrLn $ "Sentence from IDs:\t\"" ++ unwords (map (fromMaybe unknownWord) ws) ++ "\""
+    putStrLn $ "Compound tags:\t\t[" ++ intercalate "," (maybe [] (map show) (ctagged cs)) ++ "]"
+    putStrLn $ "Tag IDs:\t\t[" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
     tags <- describeTags $ fromMaybe [] (tagged cs)
-    putStrLn $ "Tags: [" ++ intercalate "," (map show tags) ++ "]"
+    putStrLn $ "Tags:\n" ++ intercalate "\n" (zipWith showWordAndTag (map (fromMaybe unknownWord) ws) (tags)) ++ "\n"
     putStrLn $ show $ edges cs
     case deptree cs of
         Nothing -> putStrLn "No dependency tree built yet."
@@ -53,6 +54,8 @@ showSentence cs = do
             putStrLn "Dependency tree:"
             dtd <- describeDependencyTree dt
             putStrLn $ drawDTTree "root" dtd
+    where
+        showWordAndTag w t = "\t" ++ w ++ " :\t" ++ show t
 
 unknownWord :: String
 unknownWord = "<unknown>"
