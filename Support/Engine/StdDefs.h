@@ -125,6 +125,7 @@ const std::vector<std::string> DEP_RELS = {
 };
 
 const std::vector<std::string> DEP_RELS_MODIFIERS = {
-    "", "outer", "pass", "agent", "arg", "lmod", "tmod", "outer", "pass", "emph", "lmod", "impers", "pass", "relcl", "poss",
+    "", "outer", "pass", "agent", "arg", "lmod", "tmod", "outer", "pass", "emph", "lmod", "impers", "pass", "relcl", "poss", 
     "pass", "tmod", "numgov", "nummod", "gov", "foreign", "name", "lvc", "prt", "redup", "svc", "pv", "relcl", "poss", "preconj",
+    "entity", "discourse",
 };

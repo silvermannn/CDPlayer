@@ -17,6 +17,7 @@ public:
     {
         std::for_each(initializers.begin(), initializers.end(), [this](auto item)
         {
+            map[item.name];
             std::for_each(item.items.begin(), item.items.end(), [&](auto subitem) {
                 map[item.name].insert(subitem);
             });

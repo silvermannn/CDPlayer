@@ -27,6 +27,8 @@ class Encoder
     Word _serviceWord;
     Word _unknownWord;
     TagId _depRelRoot;
+    
+    CompoundPOSTag simplify(const CompoundPOSTag& tag) const;
 
 public:
     Encoder();
@@ -73,6 +75,7 @@ public:
     std::optional<std::string> index2FeatureValue(TagId tag) const;
     ShortWordId featureValue2Index(const std::string& s) const;
 
+    TagId getSimplifiedTag(TagId tag) const;
 
     std::optional<CompoundDepRelTag> getCompoundDependencyRelationTag(TagId tag) const;
 

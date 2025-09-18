@@ -175,17 +175,17 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                         std::string name, value;
                         if (!parsePair(featurePair, "=", name, value))
                         {
-                            spdlog::warn("Wrong feature pair without '=': '{}' for POS tag '{}' in '{}'", featurePair, wordData[3], featuresLine);
+                            //spdlog::warn("Wrong feature pair without '=': '{}' for POS tag '{}' in '{}'", featurePair, wordData[3], featuresLine);
                             continue;
                         }
 
                         std::string newPOS;
                         if (name.empty() || value.empty() || !fixFeatureName(name, wordData[3], newPOS)|| !fixFeatureValue(value))
                         {
-                            spdlog::info("Ignored feature pair '{}' for POS tag '{}'", featurePair, wordData[3]);
+                            //spdlog::info("Ignored feature pair '{}' for POS tag '{}'", featurePair, wordData[3]);
                             if (!newPOS.empty())
                             {
-                                spdlog::warn("New POS tag assigned: {} -> {} for features '{}'", wordData[3], newPOS, featuresLine);
+                                //spdlog::warn("New POS tag assigned: {} -> {} for features '{}'", wordData[3], newPOS, featuresLine);
                                 wordData[3] = newPOS;
                                 ++reassignCounter;
                                 needToFillFeatures = true;
@@ -198,7 +198,7 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                         ShortWordId fvalue = encoder.featureValue2Index(value);
                         if (!encoder.isValidIndex(fname) || !encoder.isValidIndex(fvalue))
                         {
-                            spdlog::warn("Unknown feature pair '{}={}/{}' for POS tag '{}'", name, value, featurePair, wordData[3]);
+                            //spdlog::warn("Unknown feature pair '{}={}/{}' for POS tag '{}'", name, value, featurePair, wordData[3]);
                         }
                         else
                         {
@@ -228,12 +228,12 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                 }
                 catch(std::invalid_argument&)
                 {
-                    word.depHead = 0;
+                    word.depHead = -1;
                 }
 
-                CompoundDepRelTag dr;
-                if (wordData.size() > 7 && wordData[7] != "_")
+                if (encoder.isValidIndex(word.depHead) && wordData.size() > 7 && wordData[7] != "_")
                 {
+                    CompoundDepRelTag dr;
                     std::string depRelMain, depRelMod;
                     if (!parsePair(wordData[7], ":", depRelMain, depRelMod))
                     {
@@ -244,16 +244,20 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                     dr.depRel = encoder.dependencyRelation2index(depRelMain);
                     if (!encoder.isValidIndex(dr.depRel))
                     {
-                        spdlog::warn("Unknown dependency relation '{}' for POS tag '{}'", depRelMain, wordData[3]);
+                        spdlog::warn("Unknown dependency relation '{}' for POS tag '{}' in '{}'", depRelMain, wordData[3], wordData[7]);
                     }
 
                     dr.modifier = encoder.dependencyRelationModifier2index(depRelMod);
                     if (!encoder.isValidIndex(dr.modifier))
                     {
-                        spdlog::warn("Unknown dependency relation modifier '{}:{}' for POS tag '{}'", depRelMain, depRelMod, wordData[3]);
+                        spdlog::warn("Unknown dependency relation modifier '{} : {}' for POS tag '{}' in '{}'", depRelMain, depRelMod, wordData[3], wordData[7]);
                     }
 
                     word.depRel = encoder.addDepRel(dr);
+                }
+                else
+                {
+                    word.depHead = -1;
                 }
 
                 sentence.words.push_back(word);

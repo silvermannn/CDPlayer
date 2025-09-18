@@ -15,13 +15,12 @@ struct Word
 
     bool operator==(const Word& other) const
     {
-        return word == other.word && 
-               initialWord == other.initialWord && 
-               tags == other.tags && 
-               depHead == other.depHead && 
-               depRel == other.depRel; 
+        return word == other.word &&
+               initialWord == other.initialWord &&
+               tags == other.tags &&
+               depHead == other.depHead &&
+               depRel == other.depRel;
     }
-
 };
 
 struct Sentence

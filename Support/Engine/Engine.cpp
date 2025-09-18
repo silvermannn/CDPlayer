@@ -371,7 +371,7 @@ bool Engine::trainTreeBuilder(double smoothingFactor)
 
     for (const auto& sentence: sentences)
     {
-        drStat.processSentence(encoder.depRelRoot(), sentence);
+        drStat.processSentence(encoder, sentence);
     }
 
     drStat.normalize(smoothingFactor);
@@ -437,7 +437,7 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
 std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::vector<TagId>& tags)
 {
     spdlog::info("Build dependency tree");
-    return drStat.extractGraph(encoder.depRelRoot(), tags);
+    return drStat.extractGraph(encoder, tags);
 }
 
 Encoder& Engine::getEncoder()

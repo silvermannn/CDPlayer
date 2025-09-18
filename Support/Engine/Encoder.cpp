@@ -30,6 +30,13 @@ bool Encoder::operator==(const Encoder& other) const
            _unknownWord == other._unknownWord;
 }
 
+CompoundPOSTag Encoder::simplify(const CompoundPOSTag& tag) const
+{
+    CompoundPOSTag res;
+    res.POS = tag.POS;
+    return res;
+}
+
 void Encoder::reset()
 {
     words.clear();
@@ -96,6 +103,7 @@ WordId Encoder::addWord(const std::string& word)
 
 TagId Encoder::addTag(const CompoundPOSTag& tag)
 {
+    tags.lookupOrInsert(simplify(tag));
     return tags.lookupOrInsert(tag);
 }
 
@@ -145,7 +153,6 @@ ShortWordId Encoder::featureName2Index(ShortWordId POSTag, const std::string& s)
         return featureNames.lookup(s);
     }
 
-    spdlog::debug("Wrong feature name {} for POS tag {}", s, pos);
     return featureNames.invalidIndex;
 }
 
@@ -158,7 +165,6 @@ ShortWordId Encoder::POSTag2Index(const std::string& s) const
 {
     return posTags.lookup(s);
 }
-
 
 std::optional<std::string> Encoder::index2POSTag(TagId tag) const
 {
@@ -193,6 +199,16 @@ std::optional<std::string> Encoder::index2FeatureValue(TagId tag) const
     return std::make_optional(featureValues.lookupIndex(tag));
 }
 
+TagId Encoder::getSimplifiedTag(TagId tag) const
+{
+    auto res = getCompoundPOSTag(tag);
+    if (res)
+    {
+        return tags.lookup(simplify(*res));   
+    }
+                           
+    return tags.invalidIndex;
+}
 
 ShortWordId Encoder::dependencyRelation2index(const std::string& s) const
 {
