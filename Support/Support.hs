@@ -110,9 +110,9 @@ word2index = string2index word2index'
 
 tag :: [Int] -> IO (Maybe [Int])
 tag ws = do
-    css <- mallocArray size
+    css <- callocArray size
     pokeArray css $ map toEnum ws
-    ts <- mallocArray size
+    ts <- callocArray size
     res <- tag' css (toEnum size) ts
     if toBool res then do
         tags <- peekArray size ts
@@ -122,7 +122,7 @@ tag ws = do
         size = length ws
 
 getCompoundPOSTag :: Int -> IO (Maybe [Int])
-getCompoundPOSTag = getCompoundTag getCompoundPOSTag'
+getCompoundPOSTag = getCompoundTag getCompoundPOSTag' 32
 
 index2POSTag :: Int -> IO (Maybe String)
 index2POSTag = index2string index2POSTag'
@@ -146,7 +146,7 @@ buildDependencyTree ss = do
         size = length ss
 
 getCompoundDeprelTag :: Int -> IO (Maybe [Int])
-getCompoundDeprelTag = getCompoundTag getCompoundDeprelTag'
+getCompoundDeprelTag = getCompoundTag getCompoundDeprelTag' 32
 
 index2dependencyRelation :: Int -> IO (Maybe String)
 index2dependencyRelation = index2string index2dependencyRelation'
@@ -156,14 +156,14 @@ index2dependencyRelationModifier = index2string index2dependencyRelationModifier
 
 -- -------------------------------------------------------------
 
-getCompoundTag :: (CULong -> Ptr CULong -> Ptr CULong -> IO CBool) -> Int -> IO (Maybe [Int])
-getCompoundTag f t = do
-    p <- new 0
-    plen <- new 0
-    res <- f (toEnum t) p plen
+getCompoundTag :: (CULong -> Ptr CULong -> Ptr CULong -> IO CBool) -> Int -> Int -> IO (Maybe [Int])
+getCompoundTag f size t = do
+    plen <- new (toEnum size)
+    parr <- mallocArray size
+    res <- f (toEnum t) parr plen
     if toBool res then do
-        size <- peek plen
-        ts <- peekArray (fromEnum size) p
+        size' <- peek plen
+        ts <- peekArray (fromEnum size') parr
         return $ Just $ map fromEnum ts
     else return Nothing
 
