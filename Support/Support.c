@@ -1,5 +1,7 @@
 #include "Support.h"
 
+#include <iostream>
+
 #include "Engine/Engine.h"
 
 #include "spdlog/spdlog.h"
@@ -279,7 +281,7 @@ bool getCompoundDeprelTag(size_t tag, size_t* result, size_t* len)
 
     *len = 2;
     result[0] = cpt->depRel;
-    result[0] = cpt->modifier;
+    result[1] = cpt->modifier;
 
     return true;
 }
@@ -296,7 +298,7 @@ bool index2dependencyRelation(size_t tag, char** result)
 
     if (!s)
     {
-        spdlog::error("failed to get description for tag {}", tag);
+        spdlog::error("Failed to get description for tag {}", tag);
         return false;
     }
 
@@ -320,7 +322,7 @@ bool index2dependencyRelationModifier(size_t tag, char** result)
 
     if (!s)
     {
-        spdlog::error("failed to get description for tag {}", tag);
+        spdlog::error("Failed to get description for tag {}", tag);
         return false;
     }
 

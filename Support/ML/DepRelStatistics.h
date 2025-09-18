@@ -35,11 +35,11 @@ public:
         stat.resize(0, {depRelsNum, tagsNum, tagsNum});
     }
 
-    void processSentence(const Sentence& sentence);
+    void processSentence(TagId root, const Sentence& sentence);
 
     void normalize(float smoothingFactor);
 
-    std::optional<Edges> extractGraph(const std::vector<TagId>& tags);
+    std::optional<Edges> extractGraph(TagId root, const std::vector<TagId>& tags);
 
     void saveBinary(ZLibFile& zfile) const;
 

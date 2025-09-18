@@ -37,13 +37,14 @@ void Engine::reset(void)
 {
     spdlog::info("Resetting");
     clearSentences();
-    
+
     encoder.reset();
 
     unkWordOnly.words.push_back(encoder.unknownWord());
 
     spdlog::debug("Encoder service word {}, tag {}", encoder.serviceWord().tags, encoder.serviceWord().word);
     spdlog::debug("Encoder unknown word {}, tag {}", encoder.unknownWord().tags, encoder.unknownWord().word);
+    spdlog::debug("Encoder dependency relation root {}", encoder.depRelRoot());
 }
 
 std::vector<std::string> Engine::availableParsers() const
@@ -349,7 +350,7 @@ bool Engine::trainTagger(float smoothingFactor)
         trainHMMOnSentence(sentence);
     }
 
-    spdlog::debug("Normallizing tagger");
+    spdlog::debug("Normalizing tagger");
     hmm.normalize(smoothingFactor);
 
     return true;
@@ -370,7 +371,7 @@ bool Engine::trainTreeBuilder(double smoothingFactor)
 
     for (const auto& sentence: sentences)
     {
-        drStat.processSentence(sentence);
+        drStat.processSentence(encoder.depRelRoot(), sentence);
     }
 
     drStat.normalize(smoothingFactor);
@@ -435,7 +436,8 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
 
 std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::vector<TagId>& tags)
 {
-    return drStat.extractGraph(tags);
+    spdlog::info("Build dependency tree");
+    return drStat.extractGraph(encoder.depRelRoot(), tags);
 }
 
 Encoder& Engine::getEncoder()

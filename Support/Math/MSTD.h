@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <optional>
 
+#include "spdlog/spdlog.h"
+
 #include "DSU.h"
 
 template<typename G>
@@ -95,6 +97,7 @@ public:
     // Chu-Liu Edmonds Maximum Spanning Tree algorithm
     std::optional<Edges> getSpanningTree(Vertex root)
     {
+        spdlog::debug("Get maximual spanning tree, {} vertices, {} labels", graph.numVertices(), graph.numLabels());
         Edges found;
 
         for (Vertex src = 0; src < graph.numVertices(); ++src)
@@ -122,6 +125,7 @@ public:
             const auto& res = maxIncomingWeight(dest);
             if (!res)
             {
+                spdlog::debug("No maximum incoming weight for destinatoin vertex {}", dest);
                 return {};
             }
 
@@ -137,6 +141,7 @@ public:
                 const auto& res = maxIncomingWeight(src);
                 if (!res)
                 {
+                    spdlog::debug("No maximum incoming weight for destinatoin vertex {}", src);
                     return {};
                 }
                 const Edge e = *res;
@@ -189,6 +194,7 @@ public:
                 const auto& res = maxIncomingWeight(edge.src);
                 if (!res)
                 {
+                    spdlog::debug("No maximum incoming weight for destinatoin vertex {}", edge.src);
                     return {};
                 }
 
@@ -213,9 +219,11 @@ public:
             found.push_back(maxEdge);
         }
 
+        spdlog::debug("Found {} edges:", found.size());
         removeEdges();
         for (auto& edge: found)
         {
+            spdlog::debug("{} {} {} {}", edge.src, edge.dest, edge.label, edge.weight);
             graph.addEdge(edge);
         }
 

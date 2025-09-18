@@ -18,34 +18,34 @@ class Tensor
     struct Normalizer
     {
         N sum;
-        N smoothongfactor;
+        N smoothingFactor;
 
         Normalizer(N s, IndexT size, N sf)
             : sum(s + sf * size)
-            , smoothongfactor(sf)
+            , smoothingFactor(sf)
         {
         }
 
         N operator()(N arg) const
         {
-            return (arg + smoothongfactor) / sum;
+            return (arg + smoothingFactor) / sum;
         }
     };
 
     struct NormalizerLog
     {
         N sum;
-        N smoothongfactor;
+        N smoothingFactor;
 
         NormalizerLog(N s, IndexT size, N sf)
             : sum(log(s + sf * size))
-            , smoothongfactor(sf)
+            , smoothingFactor(sf)
         {
         }
 
         N operator()(N arg) const
         {
-            return log(arg + smoothongfactor) - sum;
+            return log(arg + smoothingFactor) - sum;
         }
     };
 

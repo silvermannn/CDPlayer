@@ -68,7 +68,7 @@ commands = [
     CmdDescr ["show","sentences"]              []                            CRDNothing               cmdShowSentences           "Show all sentences.",
     CmdDescr ["delete","sentences"]            []                            (CRDEIntList "num")      cmdDeleteSentences         "Delete specified or all sentences.",
     CmdDescr ["tag","sentence"]                []                            (CRDEIntList "num")      cmdTagSentence             "Tag specified or all sentences.",
-    CmdDescr ["builde","tree"]                 []                            (CRDEIntList "num")      cmdBuildSentenceTree       "Build dependency tree for specified or all sentences.",
+    CmdDescr ["build","tree"]                  []                            (CRDEIntList "num")      cmdBuildSentenceTree       "Build dependency tree for specified or all sentences.",
 
     CmdDescr ["quit"]                          []                            CRDNothing               cmdQuit                    "Quit program."
     ]

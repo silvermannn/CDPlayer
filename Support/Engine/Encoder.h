@@ -26,6 +26,7 @@ class Encoder
 
     Word _serviceWord;
     Word _unknownWord;
+    TagId _depRelRoot;
 
 public:
     Encoder();
@@ -50,6 +51,7 @@ public:
 
     Word serviceWord() const;
     Word unknownWord() const;
+    TagId depRelRoot() const;
 
     WordId addWord(const std::string& word);
 

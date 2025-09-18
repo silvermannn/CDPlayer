@@ -2,6 +2,7 @@ module Editor.Sentence where
 
 import Data.Maybe (catMaybes, fromMaybe)
 import Data.List.Extra (chunksOf, intercalate)
+import Data.List ((!?))
 import Data.Char (toLower)
 import Data.Tree
 
@@ -44,7 +45,6 @@ showSentence (n, cs) = do
     putStrLn $ "Tag IDs:\t\t[" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
     tags <- describeTags $ fromMaybe [] (tagged cs)
     putStrLn $ "Tags:\n" ++ intercalate "\n" (zipWith showWordAndTag (map (fromMaybe unknownWord) ws) (tags)) ++ "\n"
-    putStrLn $ show $ edges cs
     case deptree cs of
         Nothing -> putStrLn "No dependency tree built yet."
         Just dt -> do
@@ -130,10 +130,10 @@ buidTree cs = do
     edges <- buildDependencyTree (fromMaybe [] $ ctagged cs)
     return $ cs {edges = edges, deptree = Just $ tree (fromMaybe [] edges) (fromMaybe [] (tagged cs)) (fromMaybe [] $ wordIDs cs)}
     where
-        groupEdges xs =  zipWith (curry (\([s, d, l], (t, w)) -> (s, d, l, t, w))) (chunksOf 3 xs)
-        tree xs ts ws = fromLabeledEdges (groupEdges xs $ zip ts ws) (0, Tag 0 [], 0)
-        fromLabeledEdges :: [(Int, Int, Int, Tag Int, Int)] -> (Int, Tag Int, Int) -> DependencyTree Int
-        fromLabeledEdges edges (root, t, w) = DTNode w t ns
+        groupEdges xs =  map (\[s, d, l] -> (s, d, l)) (chunksOf 3 xs)
+        tree xs ts ws = fromLabeledEdges (groupEdges xs) ts ws 0
+        fromLabeledEdges edges tags wrds root = DTNode (extractEl root 0 wrds) (extractEl root (Tag 0[]) tags) ns
             where
-                fromRoot = filter (\(a, _, _, _, _) -> a == root) edges
-                ns = zip (map (\(_, _, b, _, _) -> b) fromRoot) $ map (fromLabeledEdges edges. (\(_, a, _, t', w') -> (a, t', w'))) fromRoot
+                fromRoot = filter (\(a, _, _) -> a == root) edges
+                ns = zip (map (\(_, _, b) -> b) fromRoot) $ map (fromLabeledEdges edges tags wrds. (\(_, a, _) -> a)) fromRoot
+        extractEl n def xs = fromMaybe def (xs !? (n - 1))

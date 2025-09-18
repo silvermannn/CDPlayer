@@ -135,9 +135,10 @@ index2FeatureValue = index2string index2FeatureValue'
 
 buildDependencyTree :: [Int] -> IO (Maybe [Int])
 buildDependencyTree ss = do
-    ts <- mallocArray size
-    es <- mallocArray (3 * size)
-    res <- tag' ts (toEnum size) es
+    ts <- callocArray size
+    pokeArray ts $ map toEnum ss
+    es <- callocArray (3 * size)
+    res <- buildDependencyTree' ts (toEnum size) es
     if toBool res then do
         edges <- peekArray (3 * size) es
         return $ Just $ map fromEnum edges

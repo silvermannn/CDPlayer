@@ -44,6 +44,11 @@ void Encoder::reset()
     ut.POS = posTags.lookup("x");
     _unknownWord.tags = tags.lookupOrInsert(ut);
     _unknownWord.word = words.lookupOrInsert("<unknown>");
+
+    CompoundDepRelTag root;
+    root.depRel = dependencyRelation2index("root");
+    root.modifier = dependencyRelationModifier2index("");
+    _depRelRoot = addDepRel(root);
 }
 
 void Encoder::logStatistics(void)
@@ -62,6 +67,11 @@ Word Encoder::serviceWord() const
 Word Encoder::unknownWord() const
 {
     return _unknownWord;
+}
+
+TagId Encoder::depRelRoot() const
+{
+    return _depRelRoot;
 }
 
 WordId Encoder::wordsSize() const
@@ -191,7 +201,7 @@ ShortWordId Encoder::dependencyRelation2index(const std::string& s) const
 
 std::optional<std::string> Encoder::index2dependencyRelation(TagId tag) const
 {
-    if (tag >= depRelTags.size())
+    if (tag >= depRels.size())
     {
         spdlog::error("Wrong dependency relation tag id {}", tag);
         return {};
