@@ -42,20 +42,20 @@ showSentence (n, cs) = do
     ws <- mapM index2word $ fromMaybe [] $ wordIDs cs
     putStrLn $ "Sentence from IDs:\t\"" ++ unwords (map (fromMaybe unknownWord) ws) ++ "\""
     putStrLn $ "Compound tags:\t\t[" ++ intercalate "," (maybe [] (map show) (ctagged cs)) ++ "]"
-    putStrLn $ "Tag IDs:\t\t[" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
+    --putStrLn $ "Tag IDs:\t\t[" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
     tags <- describeTags $ fromMaybe [] (tagged cs)
-    putStrLn $ "Tags:\n" ++ intercalate "\n" (zipWith showWordAndTag (map (fromMaybe unknownWord) ws) (tags)) ++ "\n"
+    putStrLn $ "Tags:\n" ++ intercalate "\n" (zipWith showWordAndTag (map (fromMaybe unknownWord) ws) (tags)) ++ "\n  |_______\n"
     case deptree cs of
         Nothing -> putStrLn "No dependency tree built yet."
         Just dt -> do
-            putStrLn "Dependency tree IDs:"
-            putStrLn $ show $ deptree cs
-            putStrLn $ drawDTTree 0 dt
+            --putStrLn "Dependency tree IDs:"
+            --putStrLn $ show $ deptree cs
+            --putStrLn $ drawDTTree show 0 dt
             putStrLn "Dependency tree:"
             dtd <- describeDependencyTree dt
-            putStrLn $ drawDTTree "root" dtd
+            putStrLn $ drawDTTree id "<ROOT>" dtd
     where
-        showWordAndTag w t = "\t" ++ w ++ " :\t" ++ show t
+        showWordAndTag w t = "  |  " ++ w ++ replicate (20 - length w) ' ' ++ show t
 
 unknownWord :: String
 unknownWord = "<unknown>"
@@ -99,11 +99,11 @@ describeFeature (n, v) = do
         (Just fn', Just fv') -> return $ Just (fn', fv')
         _ -> return Nothing
 
-toTree :: Show a => a -> DependencyTree a -> Tree String
-toTree l (DTNode a t dts) = Node (show  l ++ ": " ++ show  a ++ " " ++ show t) $ map (uncurry toTree) dts
+toTree :: Show a => (a -> String) -> a -> DependencyTree a -> Tree String
+toTree f l (DTNode a t dts) = Node (show l ++ ": " ++ f  a ++ " " ++ show t) $ map (uncurry (toTree f)) dts
 
-drawDTTree ::  Show a =>  a -> DependencyTree a -> String
-drawDTTree a dt  = drawTree $ toTree a dt
+drawDTTree ::  Show a => (a -> String) -> a -> DependencyTree a -> String
+drawDTTree f a dt  = drawTree $ toTree f a dt
 
 tagSentence :: CurrentSentence -> IO CurrentSentence
 tagSentence cs = do
