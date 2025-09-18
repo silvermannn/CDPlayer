@@ -29,8 +29,6 @@ class Engine
     DepRelStatistics drStat;
 
     Sentence unkWordOnly;
-    Word unknownWord;
-    Word serviceWord;
 
     bool parseDirectory(const std::string& path, const std::string& parserName);
 
@@ -53,8 +51,6 @@ public:
     bool trainTagger(float smoothingFactor);
 
     bool trainTreeBuilder(double smoothingFactor);
-
-    Strings tokenize(const std::string& sentence);
 
     bool parse(const std::string& path, const std::string& parserName);
 

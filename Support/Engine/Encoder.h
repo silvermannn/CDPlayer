@@ -24,8 +24,8 @@ class Encoder
     BidirectionalMap<CompoundPOSTag, TagId> tags;
     BidirectionalMap<CompoundDepRelTag, TagId> depRelTags;
 
-    WordId serviceTag = 0;
-    Word unknownWord;
+    Word _serviceWord;
+    Word _unknownWord;
 
 public:
     Encoder();
@@ -48,7 +48,8 @@ public:
 
     TagId depRelsSize() const;
 
-    WordId serviceTagId();
+    Word serviceWord() const;
+    Word unknownWord() const;
 
     WordId addWord(const std::string& word);
 

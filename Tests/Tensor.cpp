@@ -26,7 +26,7 @@ TEST(TensorTest, SetGet)
     constexpr size_t x = 31415;
     constexpr size_t y = 42;
 
-    Tensor<int, size_t, arity> t(0.0f, {x, y});
+    Tensor<int, uint16_t, arity> t(0.0f, {x, y});
 
     EXPECT_EQ(t.size(), x * y);
     EXPECT_EQ(t.sizeAt(0), x);
@@ -62,7 +62,7 @@ TEST(TensorTest, Resize2D)
     EXPECT_EQ(t.sizeAt(0), 0);
     EXPECT_EQ(t.sizeAt(1), 0);
     
-    for(size_t i = 0; i < 100; ++i)
+    for(size_t i = 0; i < 10; ++i)
     {
         const uint16_t x = 1 + std::rand() % 5000;
         const uint16_t y = 1 + std::rand() % 5000;
@@ -80,6 +80,14 @@ TEST(TensorTest, Resize2D)
                 t.at(j,k) = (k+1)*(j+1)*(i+1);
             }
         }
+
+        for (uint16_t j = 0; j < x; ++j)
+        {
+            for (uint16_t k = 0; k < y; ++k)
+            {
+                EXPECT_EQ(t.at(j,k), (k+1)*(j+1)*(i+1));
+            }
+        }
     }
 }
 
@@ -94,7 +102,7 @@ TEST(TensorTest, Resize3D)
     EXPECT_EQ(t.sizeAt(1), 0);
     EXPECT_EQ(t.sizeAt(2), 0);
     
-    for(size_t i = 0; i < 100; ++i)
+    for(size_t i = 0; i < 5; ++i)
     {
         const uint16_t x = 1 + std::rand() % 500;
         const uint16_t y = 1 + std::rand() % 500;
@@ -117,6 +125,17 @@ TEST(TensorTest, Resize3D)
                 }
             }
         }
+
+        for (uint16_t j = 0; j < x; ++j)
+        {
+            for (uint16_t k = 0; k < y; ++k)
+            {
+                for (uint16_t n = 0; n < z; ++n)
+                {
+                    EXPECT_EQ(t.at(j,k,n), (k+1)*(j+1)*(i+1)*n);
+                }
+            }
+        }
     }
 }
 
@@ -132,7 +151,7 @@ TEST(TensorTest, Resize4D)
     EXPECT_EQ(t.sizeAt(2), 0);
     EXPECT_EQ(t.sizeAt(3), 0);
     
-    for(size_t i = 0; i < 100; ++i)
+    for(size_t i = 0; i < 10; ++i)
     {
         const uint8_t x = 1 + std::rand() % 50;
         const uint8_t y = 1 + std::rand() % 50;
@@ -156,6 +175,20 @@ TEST(TensorTest, Resize4D)
                     for (uint8_t m = 0; m < w; ++m)
                     {
                         t.at(j,k,n,m) = (k+1)*(j+1)*(i+1)*n-m;
+                    }
+                }
+            }
+        }
+
+        for (uint8_t j = 0; j < x; ++j)
+        {
+            for (uint8_t k = 0; k < y; ++k)
+            {
+                for (uint8_t n = 0; n < z; ++n)
+                {
+                    for (uint8_t m = 0; m < w; ++m)
+                    {
+                        EXPECT_EQ(t.at(j,k,n,m), (k+1)*(j+1)*(i+1)*n-m);
                     }
                 }
             }

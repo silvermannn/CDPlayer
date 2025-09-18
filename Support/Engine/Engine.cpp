@@ -38,9 +38,12 @@ void Engine::reset(void)
     spdlog::info("Resetting");
     clearSentences();
     
-    unkWordOnly.words.push_back(unknownWord);
-
     encoder.reset();
+
+    unkWordOnly.words.push_back(encoder.unknownWord());
+
+    spdlog::debug("Encoder service word {}, tag {}", encoder.serviceWord().tags, encoder.serviceWord().word);
+    spdlog::debug("Encoder unknown word {}, tag {}", encoder.unknownWord().tags, encoder.unknownWord().word);
 }
 
 std::vector<std::string> Engine::availableParsers() const
@@ -224,7 +227,6 @@ bool Engine::saveTagger(const std::string& fileName) const
 
     zfile.write(encoder.wordsSize());
     zfile.write(encoder.tagsSize());
-    zfile.write(serviceWord.tags);
 
     hmm.saveBinary(zfile);
 
@@ -254,7 +256,7 @@ bool Engine::loadTagger(const std::string& fileName)
     WordId wordsSize = 0;
     TagId tagsSize = 0;
 
-    if (!zfile.read(wordsSize) || !zfile.read(tagsSize) || !zfile.read(serviceWord.tags))
+    if (!zfile.read(wordsSize) || !zfile.read(tagsSize))
     {
         return false;
     }
@@ -320,7 +322,7 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
         return;
     }
 
-    hmm.addHiddenState2HiddenState(serviceWord.tags, sentence.words[0].tags);
+    hmm.addHiddenState2HiddenState(encoder.serviceWord().tags, sentence.words[0].tags);
     hmm.addHiddenState2Emission(sentence.words[0].tags, sentence.words[0].word);
 
     for (size_t wix = 1; wix < sentence.words.size(); ++wix)
@@ -329,17 +331,14 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
         hmm.addHiddenState2Emission(sentence.words[wix].tags, sentence.words[wix].word);
     }
 
-    hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, serviceWord.tags);
-    hmm.addHiddenState2Emission(serviceWord.tags, serviceWord.word);
+    hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, encoder.serviceWord().tags);
+    hmm.addHiddenState2Emission(encoder.serviceWord().tags, encoder.serviceWord().word);
 }
 
 
 bool Engine::trainTagger(float smoothingFactor)
 {
     spdlog::debug("Training tagger");
-
-    serviceWord.word = encoder.serviceTagId();
-    serviceWord.tags = encoder.serviceTagId();
 
     hmm.resize(encoder.tagsSize(), encoder.wordsSize());
 
@@ -356,18 +355,11 @@ bool Engine::trainTagger(float smoothingFactor)
     return true;
 }
 
-Strings Engine::tokenize(const std::string& sentence)
-{
-    std::string s(sentence);
-    toLower(s);
-    return split(s, " \t");
-}
-
 std::optional<Tags> Engine::tag(const Words& sentence) const
 {
     spdlog::debug("Tagging");
 
-    return hmm.predict(serviceWord.word, sentence);
+    return hmm.predict(encoder.serviceWord().word, sentence);
 }
 
 bool Engine::trainTreeBuilder(double smoothingFactor)

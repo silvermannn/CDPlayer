@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <string>
+#include <vector>
+
 #include "../Support/Collections/BidirectionalMap.h"
+#include "Utilites.h"
 
 TEST(BidirectionalMapTest, CreateEmpty)
 {
@@ -11,7 +15,7 @@ TEST(BidirectionalMapTest, CreateEmpty)
     EXPECT_FALSE(map.isValidIndex(map.lookup(1)));
 }
 
-TEST(BidirectionalMapTest, Lookup)
+TEST(BidirectionalMapTest, InsertLookup)
 {
     constexpr char a = 'a';
 
@@ -25,6 +29,37 @@ TEST(BidirectionalMapTest, Lookup)
     EXPECT_EQ(map.size(), 1);
 
     EXPECT_EQ(map.lookupIndex(index), a);
+}
+
+TEST(BidirectionalMapTest, InsertLookupMany)
+{
+    for (size_t t = 0; t < 5; ++t)
+    {
+        BidirectionalMap<std::string, size_t> map;
+
+        size_t size = 10 + std::rand() % 10000;
+
+        std::vector<std::string> ss(size);
+        std::vector<size_t> ixs(size);
+
+        for (size_t i = 0; i < size; ++i)
+        {
+            std::string s = randomString();
+            ss[i] = s;
+            ixs[i] = map.lookupOrInsert(s);
+        }
+
+        EXPECT_EQ(map.size(), size);
+
+        for (size_t i = 0; i < size; ++i)
+        {
+            size_t index = map.lookup(ss[i]);
+
+            EXPECT_TRUE(map.isValidIndex(index));
+            EXPECT_EQ(index, ixs[i]);
+            EXPECT_EQ(map.lookupIndex(index), ss[i]);
+        }
+    }
 }
 
 TEST(BidirectionalMapTest, SaveLoad)

@@ -12,14 +12,7 @@ Encoder::Encoder()
     , depRels(DEP_RELS)
     , depRelModifiers(DEP_RELS_MODIFIERS)
 {
-    CompoundPOSTag dt;
-    dt.POS = words.lookupOrInsert(defServiceTag);
-    serviceTag = tags.lookupOrInsert(dt);
-
-    CompoundPOSTag ut;
-    ut.POS = posTags.lookup("x");
-    unknownWord.tags = tags.lookupOrInsert(ut);
-    unknownWord.word = words.lookupOrInsert("");
+    reset();
 }
 
 bool Encoder::operator==(const Encoder& other) const
@@ -33,8 +26,8 @@ bool Encoder::operator==(const Encoder& other) const
            words == other.words &&
            tags == other.tags &&
            depRelTags == other.depRelTags &&
-           serviceTag == other.serviceTag &&
-           unknownWord == other.unknownWord;
+           _serviceWord == other._serviceWord &&
+           _unknownWord == other._unknownWord;
 }
 
 void Encoder::reset()
@@ -42,8 +35,15 @@ void Encoder::reset()
     words.clear();
     tags.clear();
 
-    spdlog::info("Encoder service word/tag: {}", serviceTag);
-    spdlog::info("Encoder unknown word {}, tag {}", unknownWord.tags, unknownWord.word);
+    CompoundPOSTag dt;
+    dt.POS = 0;
+    _serviceWord.tags = tags.lookupOrInsert(dt);
+    _serviceWord.word = words.lookupOrInsert(defServiceTag);
+
+    CompoundPOSTag ut;
+    ut.POS = posTags.lookup("x");
+    _unknownWord.tags = tags.lookupOrInsert(ut);
+    _unknownWord.word = words.lookupOrInsert("<unknown>");
 }
 
 void Encoder::logStatistics(void)
@@ -54,9 +54,14 @@ void Encoder::logStatistics(void)
     spdlog::info("Dependency relation tags: {}", depRelTags.size());
 }
 
-WordId Encoder::serviceTagId()
+Word Encoder::serviceWord() const
 {
-    return serviceTag;
+    return _serviceWord;
+}
+
+Word Encoder::unknownWord() const
+{
+    return _unknownWord;
 }
 
 WordId Encoder::wordsSize() const
@@ -94,7 +99,7 @@ WordId Encoder::word2index(const std::string& ws) const
     WordId res = words.lookup(ws);
     if(!isValidIndex(res))
     {
-        res = unknownWord.word;
+        res = _unknownWord.word;
     }
 
     return res;

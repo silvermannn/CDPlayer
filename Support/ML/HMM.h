@@ -73,11 +73,12 @@ public:
         Tensor<N, size_t, 2> prob(-std::numeric_limits<N>::infinity(), {seqSize, hsNum});
         Tensor<N, size_t, 2> prev(0, {seqSize, hsNum});
 
-        const std::vector<N> inits(hsNum);
+        std::vector<N> inits(hsNum);
         for (size_t i = 0; i < inits.size(); ++i)
         {
-            hss2hs.at(serviceTag, i);
+            inits[i] = hss2hs.at(serviceTag, i);
         }
+
         for(HS hsTo = 0; hsTo < hsNum; hsTo++)
             prob.at(0, hsTo) = inits[hsTo] + hss2es.at(hsTo, emissions[0]);
 

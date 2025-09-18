@@ -56,13 +56,13 @@ class Tensor
     IndexT sumsSize = 0;
 
     template<typename T, typename...Rest>
-    IndexT getOffset(IndexT sizeIdx, T ix, Rest... indexes) const
+    uint64_t getOffset(IndexT sizeIdx, T ix, Rest... indexes) const
     {
         return ix + getOffset(sizeIdx + 1, indexes...) * sizes[sizeIdx];
     }
 
     template<typename T>
-    IndexT getOffset(IndexT, T ix) const
+    uint64_t getOffset(IndexT, T ix) const
     {
         return ix;
     }
@@ -232,7 +232,7 @@ public:
     const N& at(Ints... indexes) const
     {
         static_assert(sizeof...(indexes) == Arity);
-        IndexT offset = getOffset(0, indexes...);
+        uint64_t offset = getOffset(0, indexes...);
         return data[offset];
     }
 
@@ -240,7 +240,7 @@ public:
     N& at(Ints... indexes)
     {
         static_assert(sizeof...(indexes) == Arity);
-        IndexT offset = getOffset(0, indexes...);
+        uint64_t offset = getOffset(0, indexes...);
         return data[offset];
     }
 
@@ -306,8 +306,6 @@ public:
                 std::cout << N(sums[i]) << ", ";
             }
         }
-        else
-            std::cout << " no sums ";
         std::cout << std::endl << std::endl;
    }
 };
