@@ -6,6 +6,7 @@ import Editor.State
 import Editor.Commands.Types
 import Editor.Commands.Handlers
 import Editor.Commands.Handlers.Help
+import Editor.Commands.Handlers.RunScript
 import Editor.Commands.Handlers.CDDB
 import Editor.Commands.Handlers.Rules
 import Editor.Commands.Handlers.Templates
@@ -18,6 +19,9 @@ import Editor.Commands.Handlers.Sentence
 commands :: CmdDescrs
 commands = [
     CmdDescr ["help"]                          []                            (CRDEStringList "topic") (cmdShowHelp commands)     "Help.",
+
+    CmdDescr ["run","script"]                  [CADFilePath "path.script"]   CRDNothing               (cmdRunScript commands)    "Run script.",
+
     CmdDescr ["new","cddb"]                    []                            CRDNothing               cmdNewCDDB                 "Create new CD database.",
     CmdDescr ["dump","cddb"]                   []                            CRDNothing               cmdDumpCDDB                "Dump CD database.",
     CmdDescr ["save","cddb"]                   [CADFilePath "path.json"]     CRDNothing               cmdSaveCDDB                "Save CD database.",
