@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <optional>
+#include <utility>
+#include <unordered_map>
 
 #include "../Types.h"
 #include "../Engine/Sentence.h"
@@ -17,6 +19,7 @@ class DepRelStatistics
 
     T stat;
 
+    std::unordered_map<TagId, std::unordered_map<TagId, size_t>> statistics;
 public:
     typedef G::Edge Edge;
     typedef G::Edges Edges;
@@ -45,4 +48,6 @@ public:
     void saveBinary(ZLibFile& zfile) const;
 
     bool loadBinary(ZLibFile& zfile);
+
+    void printStatistics(const Encoder& encoder) const;
 };

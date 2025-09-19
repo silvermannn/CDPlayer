@@ -218,7 +218,7 @@ TagId Encoder::getSimplifiedTag(TagId tag) const
     {
         return tags.invalidIndex;
     }
-    
+
     return res->second;
 }
 

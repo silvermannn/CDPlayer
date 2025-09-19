@@ -33,6 +33,8 @@ test*
 *.log
 *.dot
 *.svg
+*.csv
+*.script
 analisys.txt
 gmon.out
 editor*

@@ -9,6 +9,15 @@
 
 void DepRelStatistics::processSentence(const Encoder& encoder, const Sentence& sentence)
 {
+    size_t zeroCount = 0;
+    for (const auto& word: sentence.words)
+    {
+        if (word.depHead == 0)
+            ++zeroCount;
+        if (zeroCount > 2)
+            return;
+    }
+
     for (size_t i = 0; i < sentence.words.size(); ++i)
     {
         const auto& word = sentence.words[i];
@@ -23,6 +32,8 @@ void DepRelStatistics::processSentence(const Encoder& encoder, const Sentence& s
         TagId src = word.depHead == 0 ? encoder.depRelRoot(): encoder.getSimplifiedTag(sentence.words[word.depHead - 1].tags);
         TagId dest = encoder.getSimplifiedTag(word.tags);
         ++stat.at(word.depRel, src, dest);
+
+        (statistics[dest][word.depRel])++;
     }
 }
 
@@ -49,17 +60,11 @@ std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Enco
         {
             TagId src = encoder.getSimplifiedTag(tags[i1]);
 
-            if (stat.at(depRel, 0, src) == -INFINITY)
-                continue;
-
-            g.addEdge(0, i1 + 1, depRel, stat.at(depRel, 0, src) - 1);
+            g.addEdge(0, i1 + 1, depRel, stat.at(depRel, 0, src));
 
             for (TagId i2 = 0; i2 < tags.size(); ++i2)
             {
                 TagId dest = encoder.getSimplifiedTag(tags[i2]);
-
-                if (stat.at(depRel, src, dest) == -INFINITY)
-                    continue;
 
                 if (i1 == i2)
                     continue;
@@ -101,4 +106,59 @@ void DepRelStatistics::saveBinary(ZLibFile& zfile) const
 bool DepRelStatistics::loadBinary(ZLibFile& zfile)
 {
     return stat.loadBinary(zfile);
+}
+
+void DepRelStatistics::printStatistics(const Encoder& encoder) const
+{
+    std::ofstream stream("dr.csv");
+    stream << "tags\t" << statistics.size() << std::endl;
+
+    stream << "TAG/RELNAME" ;
+    for (size_t dr = 0; dr < encoder.depRelsSize(); ++dr)
+    {
+        auto drTag = encoder.getCompoundDependencyRelationTag(dr);
+        if (!drTag)
+        {
+            continue;
+        }
+
+        auto drName = encoder.index2dependencyRelation(drTag->depRel);
+        if (!drName)
+        {
+            continue;
+        }
+
+        stream << "\t" << dr << ":" << *drName;
+
+        auto drMod = encoder.index2dependencyRelationModifier(drTag->depRel);
+
+        if (drMod)
+        {
+            stream << ":" << *drMod;
+        }
+
+        stream << (drTag->headBefore?"->":"<-");
+
+    }
+
+    stream << std::endl;
+
+    for (const auto& [t, m]: statistics)
+    {
+        auto ct = encoder.getCompoundPOSTag(t);
+        if (ct)
+        {
+            auto tn = encoder.index2POSTag(ct->POS);
+            stream << *tn ;
+        }
+        for (size_t dr = 0; dr < encoder.depRelsSize(); ++dr)
+        {
+            auto v = m.find(dr);
+            if (v == m.end())
+                stream << "\t 0";
+            else
+                stream << "\t" << v->second;
+        }
+        stream << std::endl;
+    }
 }

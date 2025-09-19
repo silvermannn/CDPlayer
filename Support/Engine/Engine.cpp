@@ -375,6 +375,8 @@ bool Engine::trainTreeBuilder(double smoothingFactor)
     }
 
     drStat.normalize(smoothingFactor);
+    
+    drStat.printStatistics(encoder);
 
     return true;
 }

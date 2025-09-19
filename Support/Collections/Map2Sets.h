@@ -22,7 +22,7 @@ public:
             std::for_each(item.items.begin(), item.items.end(), [&](auto subitem) {
                 mapCheck[item.name].insert(subitem);
             });
-            
+
             mapSimple[item.name];
             std::for_each(item.simpleItems.begin(), item.simpleItems.end(), [&](auto subitem) {
                 mapSimple[item.name].insert(subitem);
@@ -46,7 +46,7 @@ public:
 
         return it->second.contains(v);
     }
-    
+
     bool checkIsSimple(const K& k, const V& v) const
     {
         auto it = mapSimple.find(k);
@@ -58,7 +58,7 @@ public:
 
         return it->second.contains(v);
     }
-    
+
     void print(void) const
     {
         for (auto [k, v]: mapCheck)
