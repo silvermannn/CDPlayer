@@ -75,10 +75,10 @@ describeDependencyTree (DTNode widx tix children) = do
 
 describeDepRelTag :: Int -> IO String
 describeDepRelTag t = do
-    Just [rel, modifier] <- getCompoundDeprelTag t
+    Just [rel, modifier, direction] <- getCompoundDeprelTag t
     r <- index2dependencyRelation rel
     m <- index2dependencyRelationModifier modifier
-    return $ fromMaybe unknownWord r ++ ":" ++ fromMaybe unknownWord m
+    return $ fromMaybe unknownWord r ++ ":" ++ fromMaybe unknownWord m ++ ":" ++ if direction == 1 then "->" else "<-"
 
 describeTags :: Tags Int -> IO (Tags String)
 describeTags tags = do

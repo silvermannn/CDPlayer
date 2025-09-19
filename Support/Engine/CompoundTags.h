@@ -47,11 +47,11 @@ struct CompoundDepRelTag
 {
     ShortWordId depRel = 0;
     ShortWordId modifier = 0;
-    bool before;
+    bool headBefore = false;
 
     bool operator==(const CompoundDepRelTag& other) const
     {
-        return depRel == other.depRel && modifier == other.modifier;
+        return depRel == other.depRel && modifier == other.modifier && headBefore == other.headBefore;
     }
 };
 
@@ -60,6 +60,6 @@ struct std::hash<CompoundDepRelTag>
 {
   std::size_t operator()(const CompoundDepRelTag& k) const
   {
-    return std::hash<uint64_t>{}((uint64_t)k.depRel ^ (uint64_t)k.modifier << 32);
+    return std::hash<uint64_t>{}((uint64_t)k.depRel ^ (uint64_t)k.modifier << 32) ^ (uint64_t)k.headBefore << 17;
   }
 };

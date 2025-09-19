@@ -22,8 +22,7 @@ void DepRelStatistics::processSentence(const Encoder& encoder, const Sentence& s
         }
         TagId src = word.depHead == 0 ? encoder.depRelRoot(): encoder.getSimplifiedTag(sentence.words[word.depHead - 1].tags);
         TagId dest = encoder.getSimplifiedTag(word.tags);
-        float distance = ((word.depHead == 0) || (i == word.depHead)) ? i: std::fabs(float(i) - float(word.depHead));
-        stat.at(word.depRel, src, dest) += 1 + sentence.words.size()/(1 + distance);
+        ++stat.at(word.depRel, src, dest);
     }
 }
 
@@ -64,13 +63,15 @@ std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Enco
 
                 if (i1 == i2)
                     continue;
-                
-                if (drTag->before == (i1 < i2)) 
+
+                if (drTag->headBefore != (i1 < i2))
                 {
                     continue;
                 }
 
-                g.addEdge(i1 + 1, i2 + 1, depRel, stat.at(depRel, src, dest));
+                float distancePenalty = std::log(std::fabs(float(i1) - float(i2)));
+
+                g.addEdge(i1 + 1, i2 + 1, depRel, stat.at(depRel, src, dest) - distancePenalty);
             }
         }
     }

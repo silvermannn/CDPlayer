@@ -234,7 +234,7 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                 if (encoder.isValidIndex(word.depHead) && wordData.size() > 7 && wordData[7] != "_")
                 {
                     CompoundDepRelTag dr;
-                    dr.before = word.depHead > sentence.words.size();
+                    dr.headBefore = word.depHead <= sentence.words.size();
                     std::string depRelMain, depRelMod;
                     if (!parsePair(wordData[7], ":", depRelMain, depRelMod))
                     {

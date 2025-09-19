@@ -73,7 +73,7 @@ class ChuLiuEdmondsMST
             {
                 continue;
             }
-            
+
             for (Label l = 0; l < graph.numLabels(); ++l)
             {
                 const Weight& w = graph.weight(src, v, l);

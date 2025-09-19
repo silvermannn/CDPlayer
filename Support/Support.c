@@ -279,9 +279,10 @@ bool getCompoundDeprelTag(size_t tag, size_t* result, size_t* len)
         return false;
     }
 
-    *len = 2;
+    *len = 3;
     result[0] = cpt->depRel;
     result[1] = cpt->modifier;
+    result[2] = cpt->headBefore;
 
     return true;
 }
