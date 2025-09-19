@@ -11,6 +11,7 @@
 #include "Parser.h"
 #include "Sentence.h"
 #include "Encoder.h"
+#include "Printer.h"
 
 typedef std::vector<std::string> Strings;
 typedef std::vector<TagId> Tags;
@@ -24,15 +25,27 @@ class Engine
 
     Encoder encoder;
 
+    Printer printer;
+
     HMM<float, TagId, WordId> hmm;
 
     DepRelStatistics drStat;
 
     Sentence unkWordOnly;
 
+    TagId verb;
+    TagId subCat;
+    TagId subCatValues[4];
+
     bool parseDirectory(const std::string& path, const std::string& parserName);
 
+    bool parseFile(const std::string& path, const std::string& parserName);
+
     void trainHMMOnSentence(const Sentence& sentence);
+
+    void extractAdditionalInfo(Sentence& sentence);
+
+    void extractAdditionalInfo(void);
 public:
     static Engine& singleton();
 

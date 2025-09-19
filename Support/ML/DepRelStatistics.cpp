@@ -60,7 +60,7 @@ std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Enco
         {
             TagId src = encoder.getSimplifiedTag(tags[i1]);
 
-            g.addEdge(0, i1 + 1, depRel, stat.at(depRel, 0, src));
+            g.addEdge(0, i1 + 1, depRel, stat.at(depRel, 0, src) - std::log(tags.size() + i1));
 
             for (TagId i2 = 0; i2 < tags.size(); ++i2)
             {

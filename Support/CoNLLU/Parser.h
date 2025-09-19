@@ -11,5 +11,5 @@ class CoNLLUParser: public Parser
 public:
     virtual ~CoNLLUParser() {};
 
-    virtual bool parse(const std::string& fileName, Sentences& sentences, Encoder& encoder);
+    virtual bool parse(const std::string& fileName, Sentences& sentences, Encoder& encoder, Printer& printer);
 };

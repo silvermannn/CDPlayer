@@ -25,6 +25,13 @@ Engine::Engine()
     spdlog::set_level(spdlog::level::debug);
     spdlog::flush_on(spdlog::level::debug);
 
+    verb = encoder.POSTag2Index("verb");
+    subCat = encoder.featureName2Index(verb, "subcat");
+    subCatValues[0] = encoder.featureValue2Index("indir");
+    subCatValues[1] = encoder.featureValue2Index("intr");
+    subCatValues[2] = encoder.featureValue2Index("tran");
+    subCatValues[3] = encoder.featureValue2Index("ditr");
+
     spdlog::info("Created Engine");
 
     static CoNLLUParser conlluParser;
@@ -275,7 +282,7 @@ bool Engine::parseDirectory(const std::string& path, const std::string& parserNa
     {
         if (std::filesystem::is_regular_file(dir_entry))
         {
-            parse(dir_entry.path(), parserName);
+            parseFile(dir_entry.path(), parserName);
             continue;
         }
     }
@@ -283,15 +290,8 @@ bool Engine::parseDirectory(const std::string& path, const std::string& parserNa
     return true;
 }
 
-bool Engine::parse(const std::string& path, const std::string& parserName)
+bool Engine::parseFile(const std::string& path, const std::string& parserName)
 {
-    spdlog::debug("Parsing {}", path);
-
-    if (std::filesystem::is_directory(path))
-    {
-        return parseDirectory(path, parserName);
-    }
-
     if (!std::filesystem::exists(path))
     {
         spdlog::error("Failed to open {}", path);
@@ -305,14 +305,112 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
         return false;
     }
 
-    if (!parser->second.parse(path, sentences, encoder))
+    if (!parser->second.parse(path, sentences, encoder, printer))
     {
         spdlog::error("Parser {} failed to load {}", parserName, path);
         return false;
     }
 
+    return true;
+}
+
+bool Engine::parse(const std::string& path, const std::string& parserName)
+{
+    printer.init(std::string("Parsing ") + path, 1);
+
+    if (std::filesystem::is_directory(path))
+    {
+        parseDirectory(path, parserName);
+    }
+    else
+    {
+        parseFile(path, parserName);
+    }
+
+    extractAdditionalInfo();
+
     encoder.logStatistics();
     return true;
+}
+
+void Engine::extractAdditionalInfo(void)
+{
+    printer.init(std::string("Extracting additional info"), sentences.size());
+    for (auto& sentence: sentences)
+    {
+        extractAdditionalInfo(sentence);
+    }
+}
+
+void Engine::extractAdditionalInfo(Sentence& sentence)
+{
+    printer.incProgress();
+    // extract verb transitivity
+    for (size_t i = 0; i < sentence.words.size(); ++i)
+    {
+        auto tag = encoder.getCompoundPOSTag(sentence.words[i].tags);
+        size_t degree = 0;
+        if (tag)
+        {
+            if(tag->POS == verb)
+            {
+                for (const auto& word: sentence.words)
+                {
+                    if (word.depHead == i - 1)
+                    {
+                        auto drTag = encoder.getCompoundDependencyRelationTag(word.depRel);
+                        if (!drTag)
+                        {
+                            continue;
+                        }
+
+                        auto drName = encoder.index2dependencyRelation(drTag->depRel);
+                        if (!drName)
+                        {
+                            continue;
+                        }
+
+                        if (degree < 1 && *drName == "nsubj")
+                        {
+                            degree = 1;
+                        }
+
+                        if (degree < 2 && *drName == "obj")
+                        {
+                            degree = 2;
+                        }
+
+                        if (degree < 3 && *drName == "iobj")
+                        {
+                            degree = 3;
+                            break;
+                        }
+                    }
+                }
+
+                CompoundPOSTag res;
+                res = *tag;
+                bool found = false;
+                size_t f = 0;
+                for (; f < MAX_FEATURES_PER_WORD && res.features[f].featureNameId != 0; ++f)
+                {
+                    if (res.features[f].featureNameId == subCat)
+                    {
+                        res.features[f].featureValueId = subCatValues[degree];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    res.features[f].featureNameId = subCat;
+                    res.features[f].featureValueId = subCatValues[degree];
+                }
+
+                sentence.words[i].tags = encoder.addTag(res);
+            }
+        }
+    }
 }
 
 void Engine::trainHMMOnSentence(const Sentence& sentence)
@@ -339,7 +437,7 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
 
 bool Engine::trainTagger(float smoothingFactor)
 {
-    spdlog::debug("Training tagger");
+    printer.init(std::string("Training tagger"), sentences.size() + 1);
 
     hmm.resize(encoder.tagsSize(), encoder.wordsSize());
 
@@ -347,10 +445,12 @@ bool Engine::trainTagger(float smoothingFactor)
 
     for (const auto& sentence: sentences)
     {
+        printer.incProgress();
         trainHMMOnSentence(sentence);
     }
 
-    spdlog::debug("Normalizing tagger");
+    printer.print("Normalizing tagger");
+    printer.incProgress();
     hmm.normalize(smoothingFactor);
 
     return true;
@@ -365,17 +465,20 @@ std::optional<Tags> Engine::tag(const Words& sentence) const
 
 bool Engine::trainTreeBuilder(double smoothingFactor)
 {
-    spdlog::info("Training tree builder");
+    printer.init(std::string("Training tree builder"), sentences.size() + 1);
 
     drStat.resize(encoder.depRelsSize(), encoder.tagsSize());
 
     for (const auto& sentence: sentences)
     {
+        printer.incProgress();
         drStat.processSentence(encoder, sentence);
     }
 
+    printer.print("Normalizing tree builder");
+    printer.incProgress();
     drStat.normalize(smoothingFactor);
-    
+
     drStat.printStatistics(encoder);
 
     return true;

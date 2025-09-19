@@ -29,7 +29,7 @@ class Encoder
     Word _serviceWord;
     Word _unknownWord;
     TagId _depRelRoot;
-    
+
     CompoundPOSTag simplify(const CompoundPOSTag& tag) const;
 
 public:

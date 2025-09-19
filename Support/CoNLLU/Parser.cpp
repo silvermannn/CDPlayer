@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 #include "../Engine/Utility.h"
 
@@ -104,9 +105,12 @@ bool fixFeatureValue(std::string& s)
     return true;
 }
 
-bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Encoder& encoder)
+bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Encoder& encoder, Printer& printer)
 {
     spdlog::info("Loading file {}", fileName);
+
+    printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
+
     std::ifstream stream(fileName, std::fstream::in);
 
     if (stream.is_open())
@@ -115,6 +119,7 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
         size_t lines = 0;
         for (std::string line; std::getline(stream, line, '\n');)
         {
+            printer.incProgress(line.size());
             ++lines;
             if (line.empty() || line.starts_with('#') || line.starts_with('='))
             {

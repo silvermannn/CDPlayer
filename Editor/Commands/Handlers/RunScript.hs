@@ -12,11 +12,13 @@ cmdRunScript :: CmdDescrs -> CommandHandler
 cmdRunScript ds state [CAString path] CRNothing = do
     handle <- openFile path ReadMode
     fileContent <- hGetContents handle
+    putStrLn "\rStarting..."
     state' <- foldM runLine (Right state) $ lines fileContent
+    putStrLn "\rDone."
     return state'
     where
         runLine (Right st) line = do
-            putStrLn $ "Running: " ++ line
+            putStr $ "\rRunning: " ++ line
             runInput st (words line) ds
         runLine l _ = return l
 cmdRunScript _ _ _ _ = undefined
