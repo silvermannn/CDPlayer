@@ -34,6 +34,17 @@ CompoundPOSTag Encoder::simplify(const CompoundPOSTag& tag) const
 {
     CompoundPOSTag res;
     res.POS = tag.POS;
+    auto pos = posTags.lookupIndex(res.POS);
+    for (size_t f = 0, s = 0; f < MAX_FEATURES_PER_WORD && tag.features[f].featureNameId != 0; ++f)
+    {
+        auto fn = featureNames.lookupIndex(tag.features[f].featureNameId);
+        if (featureNamesConstraints.checkIsSimple(pos, fn))
+        {
+            res.features[s].featureNameId = tag.features[f].featureNameId;
+            res.features[s].featureValueId = tag.features[f].featureValueId;
+            ++s;
+        }
+    }
     return res;
 }
 
@@ -103,8 +114,9 @@ WordId Encoder::addWord(const std::string& word)
 
 TagId Encoder::addTag(const CompoundPOSTag& tag)
 {
-    tags.lookupOrInsert(simplify(tag));
-    return tags.lookupOrInsert(tag);
+    auto res = tags.lookupOrInsert(tag);
+    simplifiedTags[res] = tags.lookupOrInsert(simplify(tag));
+    return res;
 }
 
 TagId Encoder::addDepRel(const CompoundDepRelTag& dr)
@@ -201,13 +213,13 @@ std::optional<std::string> Encoder::index2FeatureValue(TagId tag) const
 
 TagId Encoder::getSimplifiedTag(TagId tag) const
 {
-    auto res = getCompoundPOSTag(tag);
-    if (res)
+    const auto& res = simplifiedTags.find(tag);
+    if (res == simplifiedTags.end())
     {
-        return tags.lookup(simplify(*res));   
+        return tags.invalidIndex;
     }
-                           
-    return tags.invalidIndex;
+    
+    return res->second;
 }
 
 ShortWordId Encoder::dependencyRelation2index(const std::string& s) const

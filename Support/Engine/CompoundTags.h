@@ -47,6 +47,7 @@ struct CompoundDepRelTag
 {
     ShortWordId depRel = 0;
     ShortWordId modifier = 0;
+    bool before;
 
     bool operator==(const CompoundDepRelTag& other) const
     {

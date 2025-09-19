@@ -3,16 +3,17 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <unordered_map>
 
 #include "../Types.h"
-#include "../Collections/Map2Set.h"
+#include "../Collections/Map2Sets.h"
 #include "../Collections/BidirectionalMap.h"
 #include "CompoundTags.h"
 #include "Sentence.h"
 
 class Encoder
 {
-    const Map2Set<std::string, std::string> featureNamesConstraints;
+    const Map2Sets<std::string, std::string> featureNamesConstraints;
 
     const BidirectionalMap<std::string, ShortWordId> posTags;
     const BidirectionalMap<std::string, ShortWordId> featureNames;
@@ -23,6 +24,7 @@ class Encoder
     BidirectionalMap<std::string, WordId> words;
     BidirectionalMap<CompoundPOSTag, TagId> tags;
     BidirectionalMap<CompoundDepRelTag, TagId> depRelTags;
+    std::unordered_map<TagId, TagId> simplifiedTags;
 
     Word _serviceWord;
     Word _unknownWord;

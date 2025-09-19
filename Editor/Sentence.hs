@@ -48,6 +48,8 @@ showSentence (n, cs) = do
     case deptree cs of
         Nothing -> putStrLn "No dependency tree built yet."
         Just dt -> do
+            putStrLn "Dependency edges:"
+            putStrLn $ show $ edges cs
             --putStrLn "Dependency tree IDs:"
             --putStrLn $ show $ deptree cs
             --putStrLn $ drawDTTree show 0 dt

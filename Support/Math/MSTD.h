@@ -63,6 +63,39 @@ class ChuLiuEdmondsMST
         return found ? std::make_optional(maxEdge) : std::optional<Edge>();
     }
 
+    std::optional<Edge> maxIncomingWeightRestricted(Vertex v, Vertex alreadySrc) const
+    {
+        Edge maxEdge;
+        bool found = false;
+        for (Vertex src = 0; src < graph.numVertices(); ++src)
+        {
+            if (src == alreadySrc)
+            {
+                continue;
+            }
+            
+            for (Label l = 0; l < graph.numLabels(); ++l)
+            {
+                const Weight& w = graph.weight(src, v, l);
+                if (w == 0)
+                {
+                    continue;
+                }
+
+                if (graph.isEdge(w) && w > maxEdge.weight)
+                {
+                    maxEdge.weight = w;
+                    maxEdge.src = src;
+                    maxEdge.dest = v;
+                    maxEdge.label= l;
+
+                    found = true;
+                }
+            }
+        }
+        return found ? std::make_optional(maxEdge) : std::optional<Edge>();
+    }
+
     void subtractWeightFromIncomingNodes(Vertex v, Weight w)
     {
         for (Vertex src = 0; src < graph.numVertices(); ++src)
@@ -117,8 +150,10 @@ public:
 
         for (Vertex dest = 0; dest < graph.numVertices(); ++dest)
         {
+            spdlog::debug("Processing vertex {}", dest);
             if (dsu.find(dest) != dsu.notFound)
             {
+                spdlog::debug("{} found at DSU {}, continue", dest, dsu.find(dest));
                 continue;
             }
 
@@ -144,6 +179,7 @@ public:
                     spdlog::debug("No maximum incoming weight for destinatoin vertex {}", src);
                     return {};
                 }
+                spdlog::debug("{}, maximum weight {}, continue up", src, e.weight);
                 const Edge e = *res;
                 found.push_back(e);
                 subtractWeightFromIncomingNodes(src, e.weight);
@@ -153,12 +189,14 @@ public:
 
             if (dsu.find(src) == dsu.find(root))
             {
+                spdlog::debug("{}, went to root {}", src, root);
                 std::for_each(path.edges.begin(), path.edges.end(), [&](const auto &e) {dsu.makeUnion(e.dest, root);});
             }
             else if (path.vertices.contains(src))
             {
-               std::for_each(path.edges.begin(), path.edges.end(), [&](const auto &e) {dsu.makeUnion(e.dest, dest);});
-               cycles.push_back(path);
+                spdlog::debug("{}, found cycle {}", src, path.edges.size());
+                std::for_each(path.edges.begin(), path.edges.end(), [&](const auto &e) {dsu.makeUnion(e.dest, dest);});
+                cycles.push_back(path);
             }
             else
             {
@@ -166,11 +204,13 @@ public:
                 {
                     dsu.singleton(src);
                 }
+                spdlog::debug("{}, found group {} for {}", src, path.edges.size(), dsu.find(src));
                 std::for_each(path.edges.begin(), path.edges.end(), [&](const auto &e) {dsu.makeUnion(e.dest, src);});
             }
 
         }
 
+        spdlog::debug("Found {} cycles", cycles.size());
         for (auto& cycle: cycles)
         {
             Vertex src = cycle.edges[cycle.edges.size() - 1].src;
@@ -183,7 +223,7 @@ public:
                 }
                 if (erasing)
                 {
-                    cycle.edges.erase(cycle.edges.begin());
+                    cycle.edges.erase(cycle.edges.begin()); ///rewrite it
                 }
             }
 
@@ -191,10 +231,10 @@ public:
             Edge maxEdge;
             for (auto& edge: cycle.edges)
             {
-                const auto& res = maxIncomingWeight(edge.src);
+                const auto& res = maxIncomingWeightRestricted(edge.dest, edge.src);
                 if (!res)
                 {
-                    spdlog::debug("No maximum incoming weight for destinatoin vertex {}", edge.src);
+                    spdlog::debug("No maximum incoming weight for destinatoin vertex {} <- {}", edge.dest, edge.src);
                     return {};
                 }
 
@@ -212,10 +252,12 @@ public:
                 if (found[i].dest == maxEdge.dest)
                 {
                     maxEdge.weight += found[i].weight;
-                    found.erase(found.begin() + 1);
+                    spdlog::debug("Erasing {} {} {} = {}", found[i].src, found[i].dest, found[i].label, found[i].weight);
+                    found.erase(found.begin() + i);
                     break;
                 }
             }
+            spdlog::debug("Adding {} {} {} = {}", maxEdge.src, maxEdge.dest, maxEdge.label, maxEdge.weight);
             found.push_back(maxEdge);
         }
 

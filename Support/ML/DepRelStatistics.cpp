@@ -1,6 +1,7 @@
 #include "DepRelStatistics.h"
 
 #include <fstream>
+#include <cmath>
 
 #include "spdlog/spdlog.h"
 
@@ -8,8 +9,9 @@
 
 void DepRelStatistics::processSentence(const Encoder& encoder, const Sentence& sentence)
 {
-    for (const auto& word: sentence.words)
+    for (size_t i = 0; i < sentence.words.size(); ++i)
     {
+        const auto& word = sentence.words[i];
         if (!encoder.isValidIndex(word.depHead))
         {
             continue;
@@ -20,7 +22,8 @@ void DepRelStatistics::processSentence(const Encoder& encoder, const Sentence& s
         }
         TagId src = word.depHead == 0 ? encoder.depRelRoot(): encoder.getSimplifiedTag(sentence.words[word.depHead - 1].tags);
         TagId dest = encoder.getSimplifiedTag(word.tags);
-        ++stat.at(word.depRel, src, dest);
+        float distance = ((word.depHead == 0) || (i == word.depHead)) ? i: std::fabs(float(i) - float(word.depHead));
+        stat.at(word.depRel, src, dest) += 1 + sentence.words.size()/(1 + distance);
     }
 }
 
@@ -38,6 +41,11 @@ std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Enco
 
     for (TagId depRel = 0; depRel < stat.sizeAt(0); ++depRel)
     {
+        auto drTag = encoder.getCompoundDependencyRelationTag(depRel);
+        if (!drTag)
+        {
+            continue;
+        }
         for (TagId i1 = 0; i1 < tags.size(); ++i1)
         {
             TagId src = encoder.getSimplifiedTag(tags[i1]);
@@ -45,7 +53,7 @@ std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Enco
             if (stat.at(depRel, 0, src) == -INFINITY)
                 continue;
 
-            g.addEdge(0, i1 + 1, depRel, stat.at(depRel, 0, src));
+            g.addEdge(0, i1 + 1, depRel, stat.at(depRel, 0, src) - 1);
 
             for (TagId i2 = 0; i2 < tags.size(); ++i2)
             {
@@ -54,14 +62,34 @@ std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Enco
                 if (stat.at(depRel, src, dest) == -INFINITY)
                     continue;
 
+                if (i1 == i2)
+                    continue;
+                
+                if (drTag->before == (i1 < i2)) 
+                {
+                    continue;
+                }
+
                 g.addEdge(i1 + 1, i2 + 1, depRel, stat.at(depRel, src, dest));
             }
         }
     }
 
+    {
+        std::ofstream s("dr-src.dot");
+        g.saveDot(s);
+    }
+
     ChuLiuEdmondsMST solver(g);
 
-    return solver.getSpanningTree(0);
+    auto p = solver.getSpanningTree(0);
+
+    {
+        std::ofstream s("dr.dot");
+        g.saveDot(s);
+    }
+
+    return p;
 }
 
 void DepRelStatistics::saveBinary(ZLibFile& zfile) const

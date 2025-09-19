@@ -118,7 +118,7 @@ public:
             }
             else
             {
-                stream << edge.src << " -> " << edge.dest <<  " [color=lightblue, label=\"" << edge.weight << "\"]" << std::endl;
+                stream << edge.src << " -> " << edge.dest <<  " [color=lightblue, label=\""  << edge.label << " (" << edge.weight << ")\"]" << std::endl;
             }
         }
         stream << "}" << std::endl;
