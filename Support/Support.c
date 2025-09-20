@@ -153,10 +153,10 @@ bool getCompoundPOSTag(size_t tag, size_t* result, size_t* len)
     *len = 1;
     result[0] = cpt->POS;
 
-    for (size_t f = 0; f < size_t(MAX_FEATURES_PER_WORD) && cpt->features[f].featureNameId != 0; ++f)
+    for (const auto& [k, v]: cpt->features)
     {
-        result[2 * f + 1] = cpt->features[f].featureNameId;
-        result[2 * f + 2] = cpt->features[f].featureValueId;
+        result[*len] = k;
+        result[*len + 1] = v;
         *len += 2;
     }
 

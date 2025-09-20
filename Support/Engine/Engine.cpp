@@ -318,13 +318,19 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
 {
     printer.init(std::string("Parsing ") + path, 1);
 
+    bool result = false;
     if (std::filesystem::is_directory(path))
     {
-        parseDirectory(path, parserName);
+        result = parseDirectory(path, parserName);
     }
     else
     {
-        parseFile(path, parserName);
+        result = parseFile(path, parserName);
+    }
+
+    if (!result)
+    {
+        return false;
     }
 
     extractAdditionalInfo();
@@ -388,26 +394,8 @@ void Engine::extractAdditionalInfo(Sentence& sentence)
                     }
                 }
 
-                CompoundPOSTag res;
-                res = *tag;
-                bool found = false;
-                size_t f = 0;
-                for (; f < MAX_FEATURES_PER_WORD && res.features[f].featureNameId != 0; ++f)
-                {
-                    if (res.features[f].featureNameId == subCat)
-                    {
-                        res.features[f].featureValueId = subCatValues[degree];
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                {
-                    res.features[f].featureNameId = subCat;
-                    res.features[f].featureValueId = subCatValues[degree];
-                }
-
-                sentence.words[i].tags = encoder.addTag(res);
+                tag->features[subCat] = subCatValues[degree];
+                sentence.words[i].tags = encoder.addTag(*tag);
             }
         }
     }

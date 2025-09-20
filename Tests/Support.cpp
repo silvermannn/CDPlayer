@@ -4,6 +4,7 @@
 
 #include "../Support/Support.h"
 #include "../Support/Engine/Parser.h"
+#include "../Support/Engine/Printer.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -36,7 +37,7 @@ struct FakeParser: public Parser
 {
     bool success = false;
 
-    virtual bool parse(const std::string&, Sentences&, Encoder&)
+    virtual bool parse(const std::string&, Sentences&, Encoder&, Printer&)
     {
         return success;
     };

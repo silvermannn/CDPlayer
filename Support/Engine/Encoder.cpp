@@ -1,5 +1,8 @@
 #include "Encoder.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "StdDefs.h"
 
 #include "spdlog/spdlog.h"
@@ -35,16 +38,8 @@ CompoundPOSTag Encoder::simplify(const CompoundPOSTag& tag) const
     CompoundPOSTag res;
     res.POS = tag.POS;
     auto pos = posTags.lookupIndex(res.POS);
-    for (size_t f = 0, s = 0; f < MAX_FEATURES_PER_WORD && tag.features[f].featureNameId != 0; ++f)
-    {
-        auto fn = featureNames.lookupIndex(tag.features[f].featureNameId);
-        if (featureNamesConstraints.checkIsSimple(pos, fn))
-        {
-            res.features[s].featureNameId = tag.features[f].featureNameId;
-            res.features[s].featureValueId = tag.features[f].featureValueId;
-            ++s;
-        }
-    }
+    std::copy_if(tag.features.begin(), tag.features.end(), std::inserter(res.features, res.features.end()),
+                 [&](const auto& k) { auto fn = featureNames.lookupIndex(k.first); return featureNamesConstraints.checkIsSimple(pos, fn); });
     return res;
 }
 

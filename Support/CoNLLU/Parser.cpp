@@ -207,8 +207,7 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
                         }
                         else
                         {
-                            tag.features[addedFeatures].featureNameId = fname;
-                            tag.features[addedFeatures].featureValueId = fvalue;
+                            tag.features[fname] = fvalue;
                             ++addedFeatures;
                         }
 

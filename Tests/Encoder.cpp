@@ -8,7 +8,7 @@ TEST(EncoderTest, Create)
 
     EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
-    EXPECT_EQ(encoder.depRelsSize(), 0);
+    EXPECT_EQ(encoder.depRelsSize(), 1);
 }
 
 TEST(EncoderTest, Words)
@@ -19,7 +19,7 @@ TEST(EncoderTest, Words)
 
     EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
-    EXPECT_EQ(encoder.depRelsSize(), 0);
+    EXPECT_EQ(encoder.depRelsSize(), 1);
 
     EXPECT_TRUE(Encoder::isValidIndex(encoder.word2index(word)));
     WordId id = encoder.addWord(word);
@@ -43,7 +43,7 @@ TEST(EncoderTest, Tags)
 
     EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
-    EXPECT_EQ(encoder.depRelsSize(), 0);
+    EXPECT_EQ(encoder.depRelsSize(), 1);
 
     EXPECT_FALSE(Encoder::isValidIndex(encoder.POSTag2Index(unk)));
     EXPECT_FALSE(Encoder::isValidIndex(encoder.featureName2Index(0, unk)));
@@ -51,12 +51,15 @@ TEST(EncoderTest, Tags)
 
     CompoundPOSTag tag;
     tag.POS = encoder.POSTag2Index(noun);
-    tag.features[0].featureNameId = encoder.featureName2Index(tag.POS, case1);
-    tag.features[0].featureValueId = encoder.featureValue2Index(acc);
+    tag.features[encoder.featureName2Index(tag.POS, case1)] = encoder.featureValue2Index(acc);
 
     EXPECT_TRUE(Encoder::isValidIndex(tag.POS));
-    EXPECT_TRUE(Encoder::isValidIndex(tag.features[0].featureNameId));
-    EXPECT_TRUE(Encoder::isValidIndex(tag.features[0].featureValueId));
+    EXPECT_EQ(tag.features.size(), 1);
+    for (const auto& [k, v]: tag.features)
+    {
+        EXPECT_TRUE(Encoder::isValidIndex(k));
+        EXPECT_TRUE(Encoder::isValidIndex(v));
+    }
 
     TagId id = encoder.addTag(tag);
     EXPECT_EQ(encoder.tagsSize(), 3);
@@ -78,16 +81,18 @@ TEST(EncoderTest, Tags)
         EXPECT_EQ(*res, noun);
     }
 
+    for (const auto& [k, v]: tag.features)
     {
-        auto res = encoder.index2FeatureName(tag.features[0].featureNameId);
-        EXPECT_TRUE(res);
-        EXPECT_EQ(*res, case1);
-    }
-
-    {
-        auto res = encoder.index2FeatureValue(tag.features[0].featureValueId);
-        EXPECT_TRUE(res);
-        EXPECT_EQ(*res, acc);
+        {
+            auto res = encoder.index2FeatureName(k);
+            EXPECT_TRUE(res);
+            EXPECT_EQ(*res, case1);
+        }
+        {
+            auto res = encoder.index2FeatureValue(v);
+            EXPECT_TRUE(res);
+            EXPECT_EQ(*res, acc);
+        }
     }
 }
 
@@ -101,7 +106,7 @@ TEST(EncoderTest, Deprels)
 
     EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
-    EXPECT_EQ(encoder.depRelsSize(), 0);
+    EXPECT_EQ(encoder.depRelsSize(), 1);
 
     EXPECT_FALSE(Encoder::isValidIndex(encoder.dependencyRelation2index(unk)));
     EXPECT_FALSE(Encoder::isValidIndex(encoder.dependencyRelationModifier2index(unk)));
@@ -114,7 +119,7 @@ TEST(EncoderTest, Deprels)
     EXPECT_TRUE(Encoder::isValidIndex(tag.modifier));
 
     TagId id = encoder.addDepRel(tag);
-    EXPECT_EQ(encoder.depRelsSize(), 1);
+    EXPECT_EQ(encoder.depRelsSize(), 2);
 
     {
         auto res = encoder.index2dependencyRelation(1000);
@@ -189,8 +194,7 @@ TEST(EncoderTest, SaveLoad)
 
     CompoundPOSTag ptag;
     ptag.POS = e1.POSTag2Index(noun);
-    ptag.features[0].featureNameId = e1.featureName2Index(ptag.POS, case1);
-    ptag.features[0].featureValueId = e1.featureValue2Index(acc);
+    ptag.features[e1.featureName2Index(ptag.POS, case1)] = e1.featureValue2Index(acc);
     e1.addTag(ptag);
 
     CompoundDepRelTag drtag;

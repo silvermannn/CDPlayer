@@ -3,28 +3,32 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <unordered_map>
 
 #include <cstring>
 #include <x86intrin.h>
 
 #include "../Types.h"
+#include "../ZLibFile/ZLibFile.h"
 
 const size_t MAX_FEATURES_PER_WORD = 16;
 
 struct CompoundPOSTag
 {
     ShortWordId POS = 0;
-    struct
-    {
-        ShortWordId featureNameId = 0;
-        ShortWordId featureValueId = 0;
-    } features[MAX_FEATURES_PER_WORD];
+    std::unordered_map<ShortWordId, ShortWordId> features;
 
     bool operator==(const CompoundPOSTag& other) const
     {
-        return POS == other.POS && std::memcmp(features, other.features, sizeof(features)) == 0;
+        return POS == other.POS && features == other.features;
     }
 };
+
+template<>
+void ZLibFile::write<CompoundPOSTag>(const CompoundPOSTag& s);
+
+template<>
+bool ZLibFile::read<CompoundPOSTag>(CompoundPOSTag& s);
 
 template <>
 struct std::hash<CompoundPOSTag>
@@ -32,11 +36,11 @@ struct std::hash<CompoundPOSTag>
   std::size_t operator()(const CompoundPOSTag& k) const
   {
     uint64_t res = (uint64_t)k.POS;
-    for (const auto f: k.features)
+    for (const auto& [k, v]: k.features)
     {
-        res ^= uint64_t(f.featureNameId);
+        res ^= uint64_t(k);
         _rotl(res, 8);
-        res ^= uint64_t(f.featureValueId);
+        res ^= uint64_t(v);
         _rotl(res, 8);
     }
     return std::hash<uint64_t>{}(res);
