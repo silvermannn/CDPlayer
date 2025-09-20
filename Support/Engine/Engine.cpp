@@ -45,10 +45,10 @@ void Engine::reset(void)
 
     encoder.reset();
 
-    unkWordOnly.words.push_back(encoder.unknownWord());
+    //unkWordOnly.words.push_back(encoder.unknownWord());
 
-    spdlog::debug("Encoder service word {}, tag {}", encoder.serviceWord().tags, encoder.serviceWord().word);
-    spdlog::debug("Encoder unknown word {}, tag {}", encoder.unknownWord().tags, encoder.unknownWord().word);
+    //spdlog::debug("Encoder service word {}, tag {}", encoder.serviceWord().tags, encoder.serviceWord().word);
+    //spdlog::debug("Encoder unknown word {}, tag {}", encoder.unknownWord().tags, encoder.unknownWord().word);
     spdlog::debug("Encoder dependency relation root {}", encoder.depRelRoot());
 }
 
@@ -230,7 +230,7 @@ bool Engine::saveTagger(const std::string& fileName) const
 
     zfile.writePtr(MAGIC, sizeof(MAGIC));
 
-    zfile.write(encoder.wordsSize());
+    zfile.write(wordsCollection.wordsSize());
     zfile.write(encoder.tagsSize());
 
     hmm.saveBinary(zfile);
@@ -330,110 +330,8 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
         return false;
     }
 
-    extractAdditionalInfo();
-
     spdlog::info("Words loaded: {}", wordsCollection.wordsSize());
     return true;
-}
-
-void Engine::extractAdditionalInfo(void)
-{
-    printer.init(std::string("Extracting additional info"), sentences.size() * 2);
-
-    // extract verb transitivity
-    std::unordered_map<WordId, TagId> subCategories;
-    TagId verb = encoder.POSTag2Index("verb");
-    TagId subCat = encoder.featureName2Index(verb, "subcat");
-    TagId subCatStart = encoder.featureValue2Index("indir");
-
-    printer.print("Extracting subcategories for verbs");
-    for (auto& sentence: sentences)
-    {
-        printer.incProgress();
-        for (size_t i = 0; i < sentence.words.size(); ++i)
-        {
-            auto tag = encoder.getCompoundPOSTag(sentence.words[i].tags);
-            if (!tag || tag->POS != verb)
-            {
-                continue;
-            }
-
-            TagId degree = subCategories[sentence.words[i].initialWord];
-            if (degree == 0)
-            {
-                degree = subCatStart;
-            }
-
-            const auto& sc = tag->features.find(subCat);
-            if (sc != tag->features.end() && sc->second > degree)
-            {
-                degree = sc->second;
-            }
-
-            for (const auto& word: sentence.words)
-            {
-                if (word.depHead == i + 1)
-                {
-                    auto drTag = encoder.getCompoundDependencyRelationTag(word.depRel);
-                    if (!drTag)
-                    {
-                        continue;
-                    }
-
-                    auto drName = encoder.index2dependencyRelation(drTag->depRel);
-                    if (!drName)
-                    {
-                        continue;
-                    }
-
-                    if (degree < subCatStart + 1 && *drName == "nsubj")
-                    {
-                        degree = subCatStart + 1;
-                    }
-
-                    if (degree < subCatStart + 2 && *drName == "obj")
-                    {
-                        degree = subCatStart + 2;
-                    }
-
-                    if (degree < subCatStart + 3 && *drName == "iobj")
-                    {
-                        degree = subCatStart + 3;
-                        break;
-                    }
-                }
-            }
-
-            subCategories[sentence.words[i].initialWord] = degree;
-        }
-    }
-
-    std::ofstream stream("verbs.txt");
-    for (const auto& [k, v]: subCategories)
-    {
-        stream << *(encoder.index2word(k)) << " : " << *(encoder.index2FeatureValue(v)) << std::endl;
-    }
-
-    printer.print("Updating subcategories for verbs: " + std::to_string(subCategories.size()) + " initial forms of verbs");
-    for (auto& sentence: sentences)
-    {
-        printer.incProgress();
-        for (auto& word: sentence.words)
-        {
-            auto tag = encoder.getCompoundPOSTag(word.tags);
-            if (!tag || tag->POS != verb)
-            {
-                continue;
-            }
-
-            const auto& sc = subCategories.find(word.initialWord);
-            if (sc != subCategories.end())
-            {
-                tag->features[subCat] = sc->second;
-                word.tags = encoder.addTag(*tag);
-            }
-        }
-    }
 }
 
 void Engine::trainHMMOnSentence(const Sentence& sentence)
@@ -444,7 +342,7 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
         return;
     }
 
-    hmm.addHiddenState2HiddenState(encoder.serviceWord().tags, sentence.words[0].tags);
+    //hmm.addHiddenState2HiddenState(encoder.serviceWord().tags, sentence.words[0].tags);
     hmm.addHiddenState2Emission(sentence.words[0].tags, sentence.words[0].word);
 
     for (size_t wix = 1; wix < sentence.words.size(); ++wix)
@@ -453,8 +351,8 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
         hmm.addHiddenState2Emission(sentence.words[wix].tags, sentence.words[wix].word);
     }
 
-    hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, encoder.serviceWord().tags);
-    hmm.addHiddenState2Emission(encoder.serviceWord().tags, encoder.serviceWord().word);
+    //hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, encoder.serviceWord().tags);
+    //hmm.addHiddenState2Emission(encoder.serviceWord().tags, wordsCollection.serviceWord());
 }
 
 
@@ -462,7 +360,7 @@ bool Engine::trainTagger(float smoothingFactor)
 {
     printer.init(std::string("Training tagger"), sentences.size() + 1);
 
-    hmm.resize(encoder.tagsSize(), encoder.wordsSize());
+    hmm.resize(encoder.tagsSize(), wordsCollection.wordsSize());
 
     trainHMMOnSentence(unkWordOnly);
 
@@ -483,7 +381,7 @@ std::optional<Tags> Engine::tag(const Words& sentence) const
 {
     spdlog::debug("Tagging");
 
-    return hmm.predict(encoder.serviceWord().word, sentence);
+    return hmm.predict(wordsCollection.serviceWord(), sentence);
 }
 
 bool Engine::trainTreeBuilder(double smoothingFactor)
@@ -571,4 +469,9 @@ std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::ve
 Encoder& Engine::getEncoder()
 {
     return encoder;
+}
+
+WordsCollection& Engine::getWordsCollection()
+{
+    return wordsCollection;
 }

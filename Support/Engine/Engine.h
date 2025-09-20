@@ -44,9 +44,6 @@ class Engine
 
     void trainHMMOnSentence(const Sentence& sentence);
 
-    void extractAdditionalInfo(Sentence& sentence);
-
-    void extractAdditionalInfo(void);
 public:
     static Engine& singleton();
 
@@ -89,4 +86,5 @@ public:
     std::optional<DepRelStatistics::Edges> buildDependencyTree(const std::vector<TagId>& tags);
 
     Encoder& getEncoder();
+    WordsCollection& getWordsCollection();
 };

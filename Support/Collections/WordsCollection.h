@@ -27,13 +27,18 @@ class WordsCollection
     WordId _unknownWord;
 
 public:
+    WordsCollection();
 
     WordId addInitialWord(const std::string& word);
     WordId addWordForm(WordId initialForm, TagId tagId, const std::string& word);
 
-    size_t wordsSize() const;
+    WordId serviceWord() const;
+    WordId unknownWord() const;
 
-    WordId findWord(const std::string& word);
+    size_t wordsSize() const;
+    
+    WordId word2index(const std::string& word) const;
+    std::optional<std::string> index2word(WordId word);
 
     bool saveBinary(ZLibFile& zfile) const;
     bool loadBinary(ZLibFile& zfile);

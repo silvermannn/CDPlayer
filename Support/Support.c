@@ -82,7 +82,7 @@ bool index2word(size_t w, char** result)
         return false;
     }
 
-    const auto s = Engine::singleton().getEncoder().index2word(w);
+    const auto s = Engine::singleton().getWordsCollection().index2word(w);
 
     if (!s)
     {
@@ -106,7 +106,7 @@ bool word2index(char* word, size_t* result)
         return false;
     }
 
-    result[0] = Engine::singleton().getEncoder().word2index(word);
+    result[0] = Engine::singleton().getWordsCollection().word2index(word);
 
     return true;
 }

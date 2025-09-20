@@ -21,15 +21,11 @@ class Encoder
     const BidirectionalMap<std::string, ShortWordId> depRels;
     const BidirectionalMap<std::string, ShortWordId> depRelModifiers;
 
-    BidirectionalMap<std::string, WordId> words;
     BidirectionalMap<CompoundPOSTag, TagId> tags;
     BidirectionalMap<CompoundDepRelTag, TagId> depRelTags;
 
     std::unordered_map<TagId, TagId> simplifiedTags;
-    std::unordered_map<WordId, WordId> initialForms;
 
-    Word _serviceWord;
-    Word _unknownWord;
     TagId _depRelRoot;
 
     CompoundPOSTag simplify(const CompoundPOSTag& tag) const;
@@ -47,28 +43,16 @@ public:
         return BidirectionalMap<std::string, Index>::isValidIndex(ix);
     }
 
-    WordId wordsSize() const;
-
     TagId tagsSize() const;
 
     TagId depRelsSize() const;
 
-    Word serviceWord() const;
-    Word unknownWord() const;
     TagId depRelRoot() const;
-
-    WordId addWord(const std::string& word);
-
-    void addWordInitialForm(WordId word, WordId initialWord);
 
     TagId addTag(const CompoundPOSTag& tag);
 
     TagId addDepRel(const CompoundDepRelTag& dr);
 
-    WordId word2index(const std::string& ws) const;
-    std::optional<std::string> index2word(WordId w) const;
-    WordId getInitialWord(WordId word);
-    
     std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
 
     std::optional<std::string> index2POSTag(TagId tag) const;

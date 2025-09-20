@@ -144,13 +144,8 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
 
                 // skip words counter wordData[0]
 
-                filterNumbers(wordData[1]);
-                word.word = encoder.addWord(wordData[1]);
-
                 filterNumbers(wordData[2]);
-                word.initialWord = encoder.addWord(wordData[2]);
-
-                encoder.addWordInitialForm(word.word, word.initialWord);
+                word.initialWord = wc.addInitialWord(wordData[2]);
 
                 bool needToFillFeatures = true;
                 size_t reassignCounter = 0;
@@ -222,6 +217,9 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                     {
                         continue;
                     }
+
+                    filterNumbers(wordData[1]);
+                    word.word = wc.addWordForm(word.initialWord, word.tags, wordData[1]);
 
                     word.tags = encoder.addTag(tag);
                 }

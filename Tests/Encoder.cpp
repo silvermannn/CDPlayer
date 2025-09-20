@@ -6,30 +6,8 @@ TEST(EncoderTest, Create)
 {
     Encoder encoder;
 
-    EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
     EXPECT_EQ(encoder.depRelsSize(), 1);
-}
-
-TEST(EncoderTest, Words)
-{
-    const std::string word("test");
-
-    Encoder encoder;
-
-    EXPECT_EQ(encoder.wordsSize(), 2);
-    EXPECT_EQ(encoder.tagsSize(), 2);
-    EXPECT_EQ(encoder.depRelsSize(), 1);
-
-    EXPECT_TRUE(Encoder::isValidIndex(encoder.word2index(word)));
-    WordId id = encoder.addWord(word);
-    EXPECT_EQ(encoder.wordsSize(), 3);
-    EXPECT_EQ(encoder.word2index(word), id);
-    EXPECT_TRUE(Encoder::isValidIndex(encoder.word2index(word)));
-
-    auto res = encoder.index2word(id);
-    EXPECT_TRUE(res);
-    EXPECT_EQ(*res, word);
 }
 
 TEST(EncoderTest, Tags)
@@ -41,7 +19,6 @@ TEST(EncoderTest, Tags)
 
     Encoder encoder;
 
-    EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
     EXPECT_EQ(encoder.depRelsSize(), 1);
 
@@ -104,7 +81,6 @@ TEST(EncoderTest, Deprels)
 
     Encoder encoder;
 
-    EXPECT_EQ(encoder.wordsSize(), 2);
     EXPECT_EQ(encoder.tagsSize(), 2);
     EXPECT_EQ(encoder.depRelsSize(), 1);
 
@@ -182,7 +158,6 @@ TEST(EncoderTest, SaveLoadEmpty)
 TEST(EncoderTest, SaveLoad)
 {
     constexpr const char* fileName = "./encoder.bin.gz";
-    const std::string word("test");
     const std::string noun("noun");
     const std::string case1("case");
     const std::string acc("acc");
@@ -190,7 +165,6 @@ TEST(EncoderTest, SaveLoad)
     const std::string nummod("nummod");
 
     Encoder e1;
-    e1.addWord(word);
 
     CompoundPOSTag ptag;
     ptag.POS = e1.POSTag2Index(noun);

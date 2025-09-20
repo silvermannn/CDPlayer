@@ -3,8 +3,10 @@
 #include <fstream>
 
 #include "../Support/Support.h"
-#include "../Support/Engine/Parser.h"
+#include "../Support/Parsers/Parser.h"
 #include "../Support/Engine/Printer.h"
+#include "../Support/Collections/WordsCollection.h"
+#include "../Support/Collections/TagsCollection.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -37,7 +39,7 @@ struct FakeParser: public Parser
 {
     bool success = false;
 
-    virtual bool parse(const std::string&, Sentences&, Encoder&, Printer&)
+    virtual bool parse(const std::string&, WordsCollection&, TagsCollection&, Sentences&, Encoder&, Printer&)
     {
         return success;
     };

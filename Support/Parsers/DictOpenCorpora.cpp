@@ -222,13 +222,19 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
 
                 SimpleTagId nameId = tc.featureName2Index(featurePair->second.first);
                 SimpleTagId valueId = tc.featureValue2Index(featurePair->second.second);
+                
+                if (nameId == -1 || valueId == -1)
+                {
+                    spdlog::error("Skipped feature name/value '{}={}' in '{}'", featurePair->second.first, featurePair->second.second, line);
+                    continue;
+                }
 
                 tag.features[nameId] = valueId;
             }
 
             TagId tid = tc.addTag(tag);
 
-            WordId wid = wc.addWordForm(initialWord, tid, wordData[0]);
+            wc.addWordForm(initialWord, tid, wordData[0]);
         }
     }
 

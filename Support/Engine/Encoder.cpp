@@ -26,11 +26,8 @@ bool Encoder::operator==(const Encoder& other) const
            featureValues == other.featureValues &&
            depRels == other.depRels &&
            depRelModifiers == other.depRelModifiers &&
-           words == other.words &&
            tags == other.tags &&
-           depRelTags == other.depRelTags &&
-           _serviceWord == other._serviceWord &&
-           _unknownWord == other._unknownWord;
+           depRelTags == other.depRelTags;
 }
 
 CompoundPOSTag Encoder::simplify(const CompoundPOSTag& tag) const
@@ -45,18 +42,7 @@ CompoundPOSTag Encoder::simplify(const CompoundPOSTag& tag) const
 
 void Encoder::reset()
 {
-    words.clear();
     tags.clear();
-
-    CompoundPOSTag dt;
-    dt.POS = 0;
-    _serviceWord.tags = tags.lookupOrInsert(dt);
-    _serviceWord.word = words.lookupOrInsert(defServiceTag);
-
-    CompoundPOSTag ut;
-    ut.POS = posTags.lookup("x");
-    _unknownWord.tags = tags.lookupOrInsert(ut);
-    _unknownWord.word = words.lookupOrInsert("<unknown>");
 
     CompoundDepRelTag root;
     root.depRel = dependencyRelation2index("root");
@@ -64,24 +50,9 @@ void Encoder::reset()
     _depRelRoot = addDepRel(root);
 }
 
-Word Encoder::serviceWord() const
-{
-    return _serviceWord;
-}
-
-Word Encoder::unknownWord() const
-{
-    return _unknownWord;
-}
-
 TagId Encoder::depRelRoot() const
 {
     return _depRelRoot;
-}
-
-WordId Encoder::wordsSize() const
-{
-    return words.size();
 }
 
 TagId Encoder::tagsSize() const
@@ -94,16 +65,6 @@ TagId Encoder::depRelsSize() const
     return depRelTags.size();
 }
 
-WordId Encoder::addWord(const std::string& word)
-{
-    return words.lookupOrInsert(word);
-}
-
-void Encoder::addWordInitialForm(WordId word, WordId initialWord)
-{
-    initialForms[word] = initialWord;
-}
-
 TagId Encoder::addTag(const CompoundPOSTag& tag)
 {
     auto res = tags.lookupOrInsert(tag);
@@ -114,33 +75,6 @@ TagId Encoder::addTag(const CompoundPOSTag& tag)
 TagId Encoder::addDepRel(const CompoundDepRelTag& dr)
 {
     return depRelTags.lookupOrInsert(dr);
-}
-
-WordId Encoder::word2index(const std::string& ws) const
-{
-    WordId res = words.lookup(ws);
-    if(!isValidIndex(res))
-    {
-        res = _unknownWord.word;
-    }
-
-    return res;
-}
-
-std::optional<std::string> Encoder::index2word(WordId w) const
-{
-    if (w >= words.size())
-    {
-        spdlog::error("Wrong word id {}", w);
-        return {};
-    }
-
-    return std::make_optional(words.lookupIndex(w));
-}
-
-WordId Encoder::getInitialWord(WordId word)
-{
-    return initialForms[word];
 }
 
 std::optional<CompoundPOSTag> Encoder::getCompoundPOSTag(TagId tag) const
@@ -264,14 +198,12 @@ std::optional<CompoundDepRelTag> Encoder::getCompoundDependencyRelationTag(TagId
 
 void Encoder::saveBinary(ZLibFile& zfile) const
 {
-    words.saveBinary(zfile);
     tags.saveBinary(zfile);
     depRelTags.saveBinary(zfile);
 }
 
 bool Encoder::loadBinary(ZLibFile& zfile)
 {
-    return words.loadBinary(zfile) &&
-           tags.loadBinary(zfile) &&
+    return tags.loadBinary(zfile) &&
            depRelTags.loadBinary(zfile);
 }
