@@ -154,7 +154,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                     needToFillFeatures = false;
                     CompoundPOSTag tag;
 
-                    tag.POS = encoder.POSTag2Index(fixTag(wordData[3]));
+                    tag.POS = tc.POSTag2Index(fixTag(wordData[3]));
 
                     if (!encoder.isValidIndex(tag.POS))
                     {
@@ -194,8 +194,8 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                             continue;
                         }
 
-                        ShortWordId fname = encoder.featureName2Index(tag.POS, name);
-                        ShortWordId fvalue = encoder.featureValue2Index(value);
+                        SimpleTagId fname = tc.featureName2Index(name);
+                        SimpleTagId fvalue = tc.featureValue2Index(value);
                         if (!encoder.isValidIndex(fname) || !encoder.isValidIndex(fvalue))
                         {
                             //spdlog::warn("Unknown feature pair '{}={}/{}' for POS tag '{}'", name, value, featurePair, wordData[3]);

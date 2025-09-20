@@ -10,9 +10,9 @@
 #include "../ML/DepRelStatistics.h"
 #include "../Collections/WordsCollection.h"
 #include "../Collections/TagsCollection.h"
+#include "../Collections/DepRelsCollection.h"
 #include "../Parsers/Parser.h"
 #include "Sentence.h"
-#include "Encoder.h"
 #include "Printer.h"
 
 typedef std::vector<std::string> Strings;
@@ -87,4 +87,5 @@ public:
 
     Encoder& getEncoder();
     WordsCollection& getWordsCollection();
+    TagsCollection& getTagsCollection();
 };

@@ -3,10 +3,10 @@
 #include <string>
 
 #include "Parser.h"
-#include "../Collections/TagsCollection.h"
 #include "../Collections/WordsCollection.h"
+#include "../Collections/TagsCollection.h"
+#include "../Collections/DepRelsCollection.h"
 #include "../Engine/Sentence.h"
-#include "../Engine/Encoder.h"
 
 class CoNLLUParser: public Parser
 {

@@ -7,7 +7,7 @@
 
 #include "../Math/MSTD.h"
 
-void DepRelStatistics::processSentence(const Encoder& encoder, const Sentence& sentence)
+void DepRelStatistics::processSentence(const TagsCollection& tc, const Encoder& encoder, const Sentence& sentence)
 {
     size_t zeroCount = 0;
     for (const auto& word: sentence.words)
@@ -43,7 +43,7 @@ void DepRelStatistics::normalize(float smoothingFactor)
     stat.normalizeLog(smoothingFactor, 2);
 }
 
-std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const Encoder& encoder, const std::vector<TagId>& tags)
+std::optional<DepRelStatistics::Edges> DepRelStatistics::extractGraph(const TagsCollection& tc, const Encoder& encoder, const std::vector<TagId>& tags)
 {
     spdlog::debug("Extracting tree from graph for {} tags, {} labels, root {}", tags.size(), stat.sizeAt(0), encoder.depRelRoot());
 
@@ -108,7 +108,7 @@ bool DepRelStatistics::loadBinary(ZLibFile& zfile)
     return stat.loadBinary(zfile);
 }
 
-void DepRelStatistics::printStatistics(const Encoder& encoder) const
+void DepRelStatistics::printStatistics(const TagsCollection& tc, const Encoder& encoder) const
 {
     std::ofstream stream("dr.csv");
     stream << "tags\t" << statistics.size() << std::endl;
@@ -145,10 +145,10 @@ void DepRelStatistics::printStatistics(const Encoder& encoder) const
 
     for (const auto& [t, m]: statistics)
     {
-        auto ct = encoder.getCompoundPOSTag(t);
+        auto ct = tc.getPOSTag(t);
         if (ct)
         {
-            auto tn = encoder.index2POSTag(ct->POS);
+            auto tn = tc.index2POSTag(ct->POS);
             stream << *tn ;
         }
         for (size_t dr = 0; dr < encoder.depRelsSize(); ++dr)

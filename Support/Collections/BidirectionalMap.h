@@ -16,7 +16,7 @@ class BidirectionalMap
 public:
     BidirectionalMap() {};
 
-    BidirectionalMap(const std::vector<Item> items)
+    BidirectionalMap(const std::initializer_list<Item> items)
     {
         std::for_each(items.begin(), items.end(), [this](auto item) { lookupOrInsert(item); });
     }

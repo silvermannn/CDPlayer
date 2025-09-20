@@ -142,7 +142,7 @@ bool getCompoundPOSTag(size_t tag, size_t* result, size_t* len)
         return false;
     }
 
-    const auto cpt = Engine::singleton().getEncoder().getCompoundPOSTag(tag);
+    const auto cpt = Engine::singleton().getTagsCollection().getPOSTag(tag);
 
     if (!cpt)
     {
@@ -171,7 +171,7 @@ bool index2POSTag(size_t tag, char** result)
         return false;
     }
 
-    const auto s = Engine::singleton().getEncoder().index2POSTag(tag);
+    const auto s = Engine::singleton().getTagsCollection().index2POSTag(tag);
 
     if (!s)
     {
@@ -195,7 +195,7 @@ bool index2FeatureName(size_t tag, char** result)
         return false;
     }
 
-    const auto s = Engine::singleton().getEncoder().index2FeatureName(tag);
+    const auto s = Engine::singleton().getTagsCollection().index2FeatureName(tag);
 
     if (!s)
     {
@@ -219,7 +219,7 @@ bool index2FeatureValue(size_t tag, char** result)
         return false;
     }
 
-    const auto s = Engine::singleton().getEncoder().index2FeatureValue(tag);
+    const auto s = Engine::singleton().getTagsCollection().index2FeatureValue(tag);
 
     if (!s)
     {

@@ -6,10 +6,10 @@
 #include <unordered_map>
 
 #include "../Types.h"
-#include "../Collections/Map2Sets.h"
-#include "../Collections/BidirectionalMap.h"
+#include "Map2Sets.h"
+#include "BidirectionalMap.h"
 #include "CompoundTags.h"
-#include "Sentence.h"
+#include "../Engine/Sentence.h"
 
 class Encoder
 {
@@ -43,8 +43,6 @@ public:
         return BidirectionalMap<std::string, Index>::isValidIndex(ix);
     }
 
-    TagId tagsSize() const;
-
     TagId depRelsSize() const;
 
     TagId depRelRoot() const;
@@ -52,17 +50,6 @@ public:
     TagId addTag(const CompoundPOSTag& tag);
 
     TagId addDepRel(const CompoundDepRelTag& dr);
-
-    std::optional<CompoundPOSTag> getCompoundPOSTag(TagId tag) const;
-
-    std::optional<std::string> index2POSTag(TagId tag) const;
-    ShortWordId POSTag2Index(const std::string& s) const;
-
-    std::optional<std::string> index2FeatureName(TagId tag) const;
-    ShortWordId featureName2Index(ShortWordId POSTag, const std::string& s) const;
-
-    std::optional<std::string> index2FeatureValue(TagId tag) const;
-    ShortWordId featureValue2Index(const std::string& s) const;
 
     TagId getSimplifiedTag(TagId tag) const;
 

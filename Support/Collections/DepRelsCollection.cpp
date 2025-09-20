@@ -1,9 +1,9 @@
-#include "Encoder.h"
+#include "DepRelsCollection.h"
 
 #include <algorithm>
 #include <iterator>
 
-#include "StdDefs.h"
+#include "../Engine/StdDefs.h"
 
 #include "spdlog/spdlog.h"
 
@@ -11,9 +11,9 @@ Encoder::Encoder()
     : featureNamesConstraints(TAG_DESCRIPTIONS)
     , posTags(TAG_DESCRIPTIONS, true)
     , featureNames(TAG_DESCRIPTIONS, false)
-    , featureValues(FEATURE_VALUES)
-    , depRels(DEP_RELS)
-    , depRelModifiers(DEP_RELS_MODIFIERS)
+    //, featureValues(FEATURE_VALUES)
+    //, depRels(DEP_RELS)
+    //, depRelModifiers(DEP_RELS_MODIFIERS)
 {
     reset();
 }
@@ -55,11 +55,6 @@ TagId Encoder::depRelRoot() const
     return _depRelRoot;
 }
 
-TagId Encoder::tagsSize() const
-{
-    return tags.size();
-}
-
 TagId Encoder::depRelsSize() const
 {
     return depRelTags.size();
@@ -75,71 +70,6 @@ TagId Encoder::addTag(const CompoundPOSTag& tag)
 TagId Encoder::addDepRel(const CompoundDepRelTag& dr)
 {
     return depRelTags.lookupOrInsert(dr);
-}
-
-std::optional<CompoundPOSTag> Encoder::getCompoundPOSTag(TagId tag) const
-{
-    if (tag >= tags.size())
-    {
-        spdlog::error("Wrong tag id {}", tag);
-        return {};
-    }
-
-    return std::make_optional(tags.lookupIndex(tag));
-}
-
-ShortWordId Encoder::featureName2Index(ShortWordId POSTag, const std::string& s) const
-{
-    auto pos = posTags.lookupIndex(POSTag);
-    if (featureNamesConstraints.check(pos, s))
-    {
-        return featureNames.lookup(s);
-    }
-
-    return featureNames.invalidIndex;
-}
-
-ShortWordId Encoder::featureValue2Index(const std::string& s) const
-{
-    return featureValues.lookup(s);
-}
-
-ShortWordId Encoder::POSTag2Index(const std::string& s) const
-{
-    return posTags.lookup(s);
-}
-
-std::optional<std::string> Encoder::index2POSTag(TagId tag) const
-{
-    if (tag >= posTags.size())
-    {
-        spdlog::error("Wrong POS tag id {}", tag);
-        return {};
-    }
-
-    return std::make_optional(posTags.lookupIndex(tag));
-}
-
-std::optional<std::string> Encoder::index2FeatureName(TagId tag) const
-{
-    if (tag >= featureNames.size())
-    {
-        spdlog::error("Wrong feature name tag id {}", tag);
-        return {};
-    }
-
-    return std::make_optional(featureNames.lookupIndex(tag));
-}
-
-std::optional<std::string> Encoder::index2FeatureValue(TagId tag) const
-{
-    if (tag >= featureValues.size())
-    {
-        spdlog::error("Wrong feature value tag id {}", tag);
-        return {};
-    }
-
-    return std::make_optional(featureValues.lookupIndex(tag));
 }
 
 TagId Encoder::getSimplifiedTag(TagId tag) const

@@ -8,16 +8,21 @@
 
 class TagsCollection
 {
-    const BidirectionalMap<std::string, SimpleTagId> posTags;
-    const BidirectionalMap<std::string, SimpleTagId> featureNames;
-    const BidirectionalMap<std::string, SimpleTagId> featureValues;
-
     BidirectionalMap<POSTag, TagId> tags;
+
+    TagId _serviceTag;
+    TagId _unknownTag;
 
 public:
     TagsCollection();
     
+    TagId tagsSize() const;
+
     TagId addTag(const POSTag& tag);
+    std::optional<POSTag> getPOSTag(TagId tag) const;
+    
+    TagId serviceTag() const;
+    TagId unknownTag() const;
 
     std::optional<std::string> index2POSTag(SimpleTagId tag) const;
     SimpleTagId POSTag2Index(const std::string& s) const;

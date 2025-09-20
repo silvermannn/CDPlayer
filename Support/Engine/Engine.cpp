@@ -47,8 +47,8 @@ void Engine::reset(void)
 
     //unkWordOnly.words.push_back(encoder.unknownWord());
 
-    //spdlog::debug("Encoder service word {}, tag {}", encoder.serviceWord().tags, encoder.serviceWord().word);
-    //spdlog::debug("Encoder unknown word {}, tag {}", encoder.unknownWord().tags, encoder.unknownWord().word);
+    spdlog::debug("Encoder service word {}, tag {}", tagsCollection.serviceTag(), wordsCollection.serviceWord());
+    spdlog::debug("Encoder unknown word {}, tag {}", tagsCollection.unknownTag(), wordsCollection.unknownWord());
     spdlog::debug("Encoder dependency relation root {}", encoder.depRelRoot());
 }
 
@@ -231,7 +231,7 @@ bool Engine::saveTagger(const std::string& fileName) const
     zfile.writePtr(MAGIC, sizeof(MAGIC));
 
     zfile.write(wordsCollection.wordsSize());
-    zfile.write(encoder.tagsSize());
+    zfile.write(tagsCollection.tagsSize());
 
     hmm.saveBinary(zfile);
 
@@ -342,7 +342,7 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
         return;
     }
 
-    //hmm.addHiddenState2HiddenState(encoder.serviceWord().tags, sentence.words[0].tags);
+    hmm.addHiddenState2HiddenState(tagsCollection.serviceTag(), tagsCollection.serviceTag());
     hmm.addHiddenState2Emission(sentence.words[0].tags, sentence.words[0].word);
 
     for (size_t wix = 1; wix < sentence.words.size(); ++wix)
@@ -351,8 +351,8 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
         hmm.addHiddenState2Emission(sentence.words[wix].tags, sentence.words[wix].word);
     }
 
-    //hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, encoder.serviceWord().tags);
-    //hmm.addHiddenState2Emission(encoder.serviceWord().tags, wordsCollection.serviceWord());
+    hmm.addHiddenState2HiddenState(sentence.words[sentence.words.size() - 1].tags, tagsCollection.serviceTag());
+    hmm.addHiddenState2Emission(tagsCollection.serviceTag(), wordsCollection.serviceWord());
 }
 
 
@@ -360,7 +360,7 @@ bool Engine::trainTagger(float smoothingFactor)
 {
     printer.init(std::string("Training tagger"), sentences.size() + 1);
 
-    hmm.resize(encoder.tagsSize(), wordsCollection.wordsSize());
+    hmm.resize(tagsCollection.tagsSize(), wordsCollection.wordsSize());
 
     trainHMMOnSentence(unkWordOnly);
 
@@ -388,19 +388,19 @@ bool Engine::trainTreeBuilder(double smoothingFactor)
 {
     printer.init(std::string("Training tree builder"), sentences.size() + 1);
 
-    drStat.resize(encoder.depRelsSize(), encoder.tagsSize());
+    drStat.resize(encoder.depRelsSize(), tagsCollection.tagsSize());
 
     for (const auto& sentence: sentences)
     {
         printer.incProgress();
-        drStat.processSentence(encoder, sentence);
+        drStat.processSentence(tagsCollection, encoder, sentence);
     }
 
     printer.print("Normalizing tree builder");
     printer.incProgress();
     drStat.normalize(smoothingFactor);
 
-    drStat.printStatistics(encoder);
+    drStat.printStatistics(tagsCollection, encoder);
 
     return true;
 }
@@ -419,7 +419,7 @@ bool Engine::saveTreeBuilder(const std::string& fileName) const
 
     zfile.writePtr(MAGIC, sizeof(MAGIC));
 
-    zfile.write(encoder.tagsSize());
+    zfile.write(tagsCollection.tagsSize());
     zfile.write(encoder.depRelsSize());
 
     drStat.saveBinary(zfile);
@@ -455,7 +455,7 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
         return false;
     }
 
-    drStat.resize(encoder.depRelsSize(), encoder.tagsSize());
+    drStat.resize(encoder.depRelsSize(), tagsCollection.tagsSize());
 
     return drStat.loadBinary(zfile);
 }
@@ -463,7 +463,7 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
 std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::vector<TagId>& tags)
 {
     spdlog::info("Build dependency tree");
-    return drStat.extractGraph(encoder, tags);
+    return drStat.extractGraph(tagsCollection, encoder, tags);
 }
 
 Encoder& Engine::getEncoder()
@@ -474,4 +474,9 @@ Encoder& Engine::getEncoder()
 WordsCollection& Engine::getWordsCollection()
 {
     return wordsCollection;
+}
+
+TagsCollection& Engine::getTagsCollection()
+{
+    return tagsCollection;
 }
