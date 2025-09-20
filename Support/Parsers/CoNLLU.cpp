@@ -1,4 +1,4 @@
-#include "Parser.h"
+#include "CoNLLU.h"
 
 #include <sstream>
 #include <fstream>
@@ -105,10 +105,8 @@ bool fixFeatureValue(std::string& s)
     return true;
 }
 
-bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Encoder& encoder, Printer& printer)
+bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, Sentences& sentences, Encoder& encoder, Printer& printer)
 {
-    spdlog::info("Loading file {}", fileName);
-
     printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
 
     std::ifstream stream(fileName, std::fstream::in);
@@ -151,6 +149,8 @@ bool CoNLLUParser::parse(const std::string& fileName, Sentences& sentences, Enco
 
                 filterNumbers(wordData[2]);
                 word.initialWord = encoder.addWord(wordData[2]);
+
+                encoder.addWordInitialForm(word.word, word.initialWord);
 
                 bool needToFillFeatures = true;
                 size_t reassignCounter = 0;

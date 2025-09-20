@@ -6,8 +6,6 @@ import Control.Monad (foldM)
 import Editor.Commands.Types
 import Editor.Commands.Handlers
 
-import Support.Support
-
 cmdRunScript :: CmdDescrs -> CommandHandler
 cmdRunScript ds state [CAString path] CRNothing = do
     handle <- openFile path ReadMode

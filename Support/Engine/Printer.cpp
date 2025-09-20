@@ -25,7 +25,10 @@ void Printer::show(void)
 
 void Printer::init(const std::string& header, size_t size)
 {
+    spdlog::debug(header);
+
     _header = header;
+    _message.clear();
     _size = size;
     _lastProgress = 0;
     _progress = 0;

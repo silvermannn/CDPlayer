@@ -1,4 +1,6 @@
-#include <string>
+#include "TagsCollection.h"
+
+#include <spdlog/spdlog.h>
 
 const char defServiceTag[] = "<>";
 
@@ -100,9 +102,9 @@ const std::vector<std::string> FEATURE_VALUES = {
     /* foreign   */ "yes",
     /* extpos    */ "adj", "adp", "adv", "aux", "cconj", "det", "intj", "pron", "propn", "sconj",
     /* gender    */ "com", "fem", "masc", "neut",
-    /* animacy   */ "anim", "hum", "inan", "nhum",
+    /* animacy   */ "anim", "hum", "inan", "nhum", "any"
     /* nounclass */ // skipped intentionally
-    /* number    */ "coll", "count", "dual", "grpa", "grpl", "inv", "pauc", "plur", "ptan", "sing", "tri",
+    /* number    */ "coll", "count", "dual", "grpa", "grpl", "inv", "pauc", "plur", "ptan", "stan", "sing", "tri",
     /* case      */ "nom", "gen", "dat", "acc", "abl", "ins", "voc", "par", "loc",
                     "abs", "ben", "cmp", "cns", "equ", "erg", "ess", "com", "lat", "ter", "tra", "cau",
                     "ine", "ill", "ela", "add", "ade", "all", "sup", "spl", "del", "sub", "sbe", "per",
@@ -131,20 +133,70 @@ const std::vector<std::string> FEATURE_VALUES = {
     /* decl      */ "zero"
 };
 
-const std::vector<std::string> DEP_RELS = {
-    /* Core arguments      */ "nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp",
-    /* Non-core dependents */ "obl", "vocative", "expl", "dislocated", "advcl",
-                              "advmod", "discourse", "aux", "cop", "mark",
-    /* Nominal dependents  */ "nmod", "appos", "nummod", "acl", "amod", "det", "clf", "case",
-    /* Coordination        */ "conj", "cc",
-    /* Headless            */ "fixed", "flat",
-    /* Loose               */ "list", "parataxis",
-    /* Special             */ "compound", "orphan", "goeswith", "reparandum",
-    /* Other               */ "punct", "root", "dep",
-};
 
-const std::vector<std::string> DEP_RELS_MODIFIERS = {
-    "", "outer", "pass", "agent", "arg", "lmod", "tmod", "outer", "pass", "emph", "lmod", "impers", "pass", "relcl", "poss",
-    "pass", "tmod", "numgov", "nummod", "gov", "foreign", "name", "lvc", "prt", "redup", "svc", "pv", "relcl", "poss", "preconj",
-    "entity", "discourse",
-};
+TagsCollection::TagsCollection()
+{
+}
+
+TagId TagsCollection::addTag(const POSTag& tag)
+{
+    return tags.lookupOrInsert(tag);
+}
+
+SimpleTagId TagsCollection::POSTag2Index(const std::string& s) const
+{
+    return posTags.lookup(s);
+}
+
+SimpleTagId TagsCollection::featureName2Index(const std::string& s) const
+{
+    return featureNames.lookup(s);
+}
+
+SimpleTagId TagsCollection::featureValue2Index(const std::string& s) const
+{
+    return featureValues.lookup(s);
+}
+
+std::optional<std::string> TagsCollection::index2POSTag(SimpleTagId tag) const
+{
+    if (tag >= posTags.size())
+    {
+        spdlog::error("Wrong POS tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(posTags.lookupIndex(tag));
+}
+
+std::optional<std::string> TagsCollection::index2FeatureName(SimpleTagId tag) const
+{
+    if (tag >= featureNames.size())
+    {
+        spdlog::error("Wrong feature name tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(featureNames.lookupIndex(tag));
+}
+
+std::optional<std::string> TagsCollection::index2FeatureValue(SimpleTagId tag) const
+{
+    if (tag >= featureValues.size())
+    {
+        spdlog::error("Wrong feature value tag id {}", tag);
+        return {};
+    }
+
+    return std::make_optional(featureValues.lookupIndex(tag));
+}
+
+bool TagsCollection::saveBinary(ZLibFile& zfile) const
+{
+    return false;
+}
+
+bool TagsCollection::loadBinary(ZLibFile& zfile)
+{
+    return false;
+}

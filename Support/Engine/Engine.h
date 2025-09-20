@@ -8,7 +8,9 @@
 #include "../Types.h"
 #include "../ML/HMM.h"
 #include "../ML/DepRelStatistics.h"
-#include "Parser.h"
+#include "../Collections/WordsCollection.h"
+#include "../Collections/TagsCollection.h"
+#include "../Parsers/Parser.h"
 #include "Sentence.h"
 #include "Encoder.h"
 #include "Printer.h"
@@ -23,6 +25,9 @@ class Engine
 
     std::vector<Sentence> sentences;
 
+    WordsCollection wordsCollection;
+    TagsCollection tagsCollection;
+
     Encoder encoder;
 
     Printer printer;
@@ -32,10 +37,6 @@ class Engine
     DepRelStatistics drStat;
 
     Sentence unkWordOnly;
-
-    TagId verb;
-    TagId subCat;
-    TagId subCatValues[4];
 
     bool parseDirectory(const std::string& path, const std::string& parserName);
 

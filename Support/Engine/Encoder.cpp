@@ -64,14 +64,6 @@ void Encoder::reset()
     _depRelRoot = addDepRel(root);
 }
 
-void Encoder::logStatistics(void)
-{
-    spdlog::info("Encoder statistics:");
-    spdlog::info("Words: {}", words.size());
-    spdlog::info("Tags: {}", tags.size());
-    spdlog::info("Dependency relation tags: {}", depRelTags.size());
-}
-
 Word Encoder::serviceWord() const
 {
     return _serviceWord;
@@ -107,6 +99,11 @@ WordId Encoder::addWord(const std::string& word)
     return words.lookupOrInsert(word);
 }
 
+void Encoder::addWordInitialForm(WordId word, WordId initialWord)
+{
+    initialForms[word] = initialWord;
+}
+
 TagId Encoder::addTag(const CompoundPOSTag& tag)
 {
     auto res = tags.lookupOrInsert(tag);
@@ -139,6 +136,11 @@ std::optional<std::string> Encoder::index2word(WordId w) const
     }
 
     return std::make_optional(words.lookupIndex(w));
+}
+
+WordId Encoder::getInitialWord(WordId word)
+{
+    return initialForms[word];
 }
 
 std::optional<CompoundPOSTag> Encoder::getCompoundPOSTag(TagId tag) const

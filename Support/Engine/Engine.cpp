@@ -1,10 +1,12 @@
 #include "Engine.h"
 
 #include <filesystem>
+#include <fstream>
 
 #include "Utility.h"
 #include "../ZLibFile/ZLibFile.h"
-#include "../CoNLLU/Parser.h"
+#include "../Parsers/CoNLLU.h"
+#include "../Parsers/DictOpenCorpora.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -25,18 +27,14 @@ Engine::Engine()
     spdlog::set_level(spdlog::level::debug);
     spdlog::flush_on(spdlog::level::debug);
 
-    verb = encoder.POSTag2Index("verb");
-    subCat = encoder.featureName2Index(verb, "subcat");
-    subCatValues[0] = encoder.featureValue2Index("indir");
-    subCatValues[1] = encoder.featureValue2Index("intr");
-    subCatValues[2] = encoder.featureValue2Index("tran");
-    subCatValues[3] = encoder.featureValue2Index("ditr");
-
     spdlog::info("Created Engine");
 
     static CoNLLUParser conlluParser;
+    static DOCParser docParser;
 
     registerParser("CoNLLU", conlluParser);
+    registerParser("DictOpenCorpora", docParser);
+
     reset();
 }
 
@@ -215,7 +213,6 @@ bool Engine::loadEncoder(const std::string& fileName)
         return false;
     }
 
-    encoder.logStatistics();
     return true;
 }
 
@@ -305,7 +302,7 @@ bool Engine::parseFile(const std::string& path, const std::string& parserName)
         return false;
     }
 
-    if (!parser->second.parse(path, sentences, encoder, printer))
+    if (!parser->second.parse(path, wordsCollection, tagsCollection, sentences, encoder, printer))
     {
         spdlog::error("Parser {} failed to load {}", parserName, path);
         return false;
@@ -335,67 +332,105 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
 
     extractAdditionalInfo();
 
-    encoder.logStatistics();
+    spdlog::info("Words loaded: {}", wordsCollection.wordsSize());
     return true;
 }
 
 void Engine::extractAdditionalInfo(void)
 {
-    printer.init(std::string("Extracting additional info"), sentences.size());
+    printer.init(std::string("Extracting additional info"), sentences.size() * 2);
+
+    // extract verb transitivity
+    std::unordered_map<WordId, TagId> subCategories;
+    TagId verb = encoder.POSTag2Index("verb");
+    TagId subCat = encoder.featureName2Index(verb, "subcat");
+    TagId subCatStart = encoder.featureValue2Index("indir");
+
+    printer.print("Extracting subcategories for verbs");
     for (auto& sentence: sentences)
     {
-        extractAdditionalInfo(sentence);
-    }
-}
-
-void Engine::extractAdditionalInfo(Sentence& sentence)
-{
-    printer.incProgress();
-    // extract verb transitivity
-    for (size_t i = 0; i < sentence.words.size(); ++i)
-    {
-        auto tag = encoder.getCompoundPOSTag(sentence.words[i].tags);
-        size_t degree = 0;
-        if (tag)
+        printer.incProgress();
+        for (size_t i = 0; i < sentence.words.size(); ++i)
         {
-            if(tag->POS == verb)
+            auto tag = encoder.getCompoundPOSTag(sentence.words[i].tags);
+            if (!tag || tag->POS != verb)
             {
-                for (const auto& word: sentence.words)
+                continue;
+            }
+
+            TagId degree = subCategories[sentence.words[i].initialWord];
+            if (degree == 0)
+            {
+                degree = subCatStart;
+            }
+
+            const auto& sc = tag->features.find(subCat);
+            if (sc != tag->features.end() && sc->second > degree)
+            {
+                degree = sc->second;
+            }
+
+            for (const auto& word: sentence.words)
+            {
+                if (word.depHead == i + 1)
                 {
-                    if (word.depHead == i - 1)
+                    auto drTag = encoder.getCompoundDependencyRelationTag(word.depRel);
+                    if (!drTag)
                     {
-                        auto drTag = encoder.getCompoundDependencyRelationTag(word.depRel);
-                        if (!drTag)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        auto drName = encoder.index2dependencyRelation(drTag->depRel);
-                        if (!drName)
-                        {
-                            continue;
-                        }
+                    auto drName = encoder.index2dependencyRelation(drTag->depRel);
+                    if (!drName)
+                    {
+                        continue;
+                    }
 
-                        if (degree < 1 && *drName == "nsubj")
-                        {
-                            degree = 1;
-                        }
+                    if (degree < subCatStart + 1 && *drName == "nsubj")
+                    {
+                        degree = subCatStart + 1;
+                    }
 
-                        if (degree < 2 && *drName == "obj")
-                        {
-                            degree = 2;
-                        }
+                    if (degree < subCatStart + 2 && *drName == "obj")
+                    {
+                        degree = subCatStart + 2;
+                    }
 
-                        if (degree < 3 && *drName == "iobj")
-                        {
-                            degree = 3;
-                            break;
-                        }
+                    if (degree < subCatStart + 3 && *drName == "iobj")
+                    {
+                        degree = subCatStart + 3;
+                        break;
                     }
                 }
+            }
 
-                tag->features[subCat] = subCatValues[degree];
-                sentence.words[i].tags = encoder.addTag(*tag);
+            subCategories[sentence.words[i].initialWord] = degree;
+        }
+    }
+
+    std::ofstream stream("verbs.txt");
+    for (const auto& [k, v]: subCategories)
+    {
+        stream << *(encoder.index2word(k)) << " : " << *(encoder.index2FeatureValue(v)) << std::endl;
+    }
+
+    printer.print("Updating subcategories for verbs: " + std::to_string(subCategories.size()) + " initial forms of verbs");
+    for (auto& sentence: sentences)
+    {
+        printer.incProgress();
+        for (auto& word: sentence.words)
+        {
+            auto tag = encoder.getCompoundPOSTag(word.tags);
+            if (!tag || tag->POS != verb)
+            {
+                continue;
+            }
+
+            const auto& sc = subCategories.find(word.initialWord);
+            if (sc != subCategories.end())
+            {
+                tag->features[subCat] = sc->second;
+                word.tags = encoder.addTag(*tag);
             }
         }
     }

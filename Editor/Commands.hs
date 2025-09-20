@@ -11,7 +11,7 @@ import Editor.Commands.Handlers.CDDB
 import Editor.Commands.Handlers.Rules
 import Editor.Commands.Handlers.Templates
 import Editor.Commands.Handlers.Runner
-import Editor.Commands.Handlers.CoNLLU
+import Editor.Commands.Handlers.Parse
 import Editor.Commands.Handlers.SaveLoad
 import Editor.Commands.Handlers.Train
 import Editor.Commands.Handlers.Sentence
@@ -55,7 +55,8 @@ commands = [
     CmdDescr ["run","current","tree"]          []                            CRDNothing               cmdRunCurrentTree          "Run current tree on CD database.",
 
 -- Working with support lib
-    CmdDescr ["parse","conllu"]                []                            (CRDFilePathList "path") cmdParseCoNLLU             "Parse CoNNLU files or directories.",
+    CmdDescr ["parse","conllu"]                []                            (CRDFilePathList "path") (cmdParse "CoNLLU")        "Parse CoNNLU files or directories.",
+    CmdDescr ["parse","OpenCorpora", "dict"]   []                            (CRDFilePathList "path") (cmdParse "DictOpenCorpora") "Parse Dict OpenCorpora files or directories.",
     CmdDescr ["save","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdSaveSentences           "Save parsed/loaded sentences.",
     CmdDescr ["load","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdLoadSentences           "Load sentences.",
     CmdDescr ["save","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdSaveEncoder             "Save word/tag encoder.",
