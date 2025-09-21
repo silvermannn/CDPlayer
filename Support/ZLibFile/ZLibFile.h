@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+
 #include <zlib.h>
 
 class ZLibFile
@@ -64,6 +66,50 @@ public:
         }
 
         return (rest == 0) || ((uint64_t)gzread(fileHande, reinterpret_cast<char*>(t) + chunks * CHUNK_SIZE, rest) == rest);
+    }
+
+    template<typename K, typename V>
+    bool write(const std::unordered_map<K, V>& m)
+    {
+        uint32_t size = m.size();
+        if (!write(size))
+        {
+            return false;
+        }
+        
+        for(const auto& [k, v]: m)
+        {
+            if (!write(k) || !write(v))
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    template<typename K, typename V>
+    bool read(std::unordered_map<K, V>& m)
+    {
+        uint32_t size = 0;
+        if (!read(size))
+        {
+            return false;
+        }
+    
+        for (size_t i = 0; i < size; ++i)
+        {
+            K k;
+            V v;
+            if (!read(k) || !read(v))
+            {
+                return false;
+            }
+            
+            m[k] = v;
+        }
+    
+        return true;
     }
 };
 
