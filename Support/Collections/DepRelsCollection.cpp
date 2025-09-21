@@ -101,9 +101,9 @@ std::optional<DepRelTag> DepRelsCollection::getDependencyRelationTag(TagId tag) 
     return std::make_optional(depRelTags.lookupIndex(tag));
 }
 
-void DepRelsCollection::saveBinary(ZLibFile& zfile) const
+bool DepRelsCollection::saveBinary(ZLibFile& zfile) const
 {
-    depRelTags.saveBinary(zfile);
+    return depRelTags.saveBinary(zfile);
 }
 
 bool DepRelsCollection::loadBinary(ZLibFile& zfile)

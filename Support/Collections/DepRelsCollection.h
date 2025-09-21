@@ -36,7 +36,7 @@ public:
     SimpleTagId dependencyRelationModifier2index(const std::string& s) const;
     std::optional<std::string> index2dependencyRelationModifier(SimpleTagId tag) const;
 
-    void saveBinary(ZLibFile& zfile) const;
+    bool saveBinary(ZLibFile& zfile) const;
 
     bool loadBinary(ZLibFile& zfile);
 };

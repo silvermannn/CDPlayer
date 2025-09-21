@@ -184,9 +184,9 @@ bool Engine::saveCollections(const std::string& fileName) const
 
     zfile.writePtr(MAGIC, sizeof(MAGIC));
 
-    depRelsCollection.saveBinary(zfile);
-
-    return true;
+    return wordsCollection.saveBinary(zfile) &&
+           tagsCollection.saveBinary(zfile) &&
+           depRelsCollection.saveBinary(zfile);
 }
 
 bool Engine::loadCollections(const std::string& fileName)
@@ -206,6 +206,18 @@ bool Engine::loadCollections(const std::string& fileName)
     if (!zfile.readPtr(buffer, sizeof(MAGIC)) || memcmp(buffer, MAGIC, sizeof(MAGIC)) != 0)
     {
         spdlog::error("Wrong magic");
+        return false;
+    }
+
+    if (!wordsCollection.loadBinary(zfile))
+    {
+        spdlog::error("Failed to load wordsCollection");
+        return false;
+    }
+
+    if (!tagsCollection.loadBinary(zfile))
+    {
+        spdlog::error("Failed to load tagsCollection");
         return false;
     }
 
