@@ -159,7 +159,7 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
             printer.incProgress(line.size());
             if (line.empty() || line.starts_with('#') || line.starts_with('='))
             {
-                initialWord = invalidIndex();
+                initialWord = invalidIndex<WordId>();
                 continue;
             }
 
@@ -169,7 +169,7 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
 
             if (wordData.size() < 2)
             {
-                initialWord = invalidIndex();
+                initialWord = invalidIndex<WordId>();
                 continue;
             }
 
