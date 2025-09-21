@@ -30,7 +30,7 @@ WordId WordsCollection::addWordForm(WordId initialForm, TagId tagId, const std::
     {
         return invalidIndex<WordId>();
     }
-    
+
     Word w{initialForm, tagId};
 
     WordId id = _words2ids.lookupOrInsert(word);
@@ -66,8 +66,23 @@ std::optional<std::string> WordsCollection::index2word(WordId word)
     {
         return {};
     }
-    
+
     return std::make_optional(_words2ids.lookupIndex(word));
+}
+
+TagId WordsCollection::findTagForWord(WordId word, WordId initialForm) const
+{
+    const auto& its = _ids2words.equal_range(word);
+
+    for (auto it = its.first; it != its.second; ++it)
+    {
+        if (it->second._initialWord == initialForm)
+        {
+            return it->second._posTag;
+        }
+    }
+
+    return invalidIndex<WordId>();
 }
 
 bool WordsCollection::saveBinary(ZLibFile& zfile) const

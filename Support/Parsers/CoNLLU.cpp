@@ -142,87 +142,30 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
             {
                 Word word;
 
-                // skip words counter wordData[0]
-
                 filterNumbers(wordData[2]);
-                word.initialWord = wc.addInitialWord(wordData[2]);
-
-                bool needToFillFeatures = true;
-                size_t reassignCounter = 0;
-                while (needToFillFeatures)
+                word.initialWord = wc.word2index(wordData[2]);
+                if (!isValidIndex(word.initialWord))
                 {
-                    needToFillFeatures = false;
-                    POSTag tag;
-
-                    tag.POS = tc.POSTag2Index(fixTag(wordData[3]));
-
-                    if (!isValidIndex(tag.POS))
-                    {
-                        spdlog::warn("Unknown POS tag: '{}' -> 'x'", wordData[3]);
-                        wordData[3] = "x";
-                        continue;
-                    }
-
-                    std::string featuresLine;
-                    if (wordData.size() > 4 && wordData[4] != "_") featuresLine += wordData[4];
-                    if (wordData.size() > 5 && wordData[5] != "_") featuresLine += '|' + wordData[5];
-
-                    std::vector<std::string> features = split(featuresLine, "/|");
-                    std::sort(features.begin(), features.end());
-                    size_t addedFeatures = 0;
-                    for (auto featurePair: features)
-                    {
-                        std::string name, value;
-                        if (!parsePair(featurePair, "=", name, value))
-                        {
-                            //spdlog::warn("Wrong feature pair without '=': '{}' for POS tag '{}' in '{}'", featurePair, wordData[3], featuresLine);
-                            continue;
-                        }
-
-                        std::string newPOS;
-                        if (name.empty() || value.empty() || !fixFeatureName(name, wordData[3], newPOS)|| !fixFeatureValue(value))
-                        {
-                            //spdlog::info("Ignored feature pair '{}' for POS tag '{}'", featurePair, wordData[3]);
-                            if (!newPOS.empty())
-                            {
-                                //spdlog::warn("New POS tag assigned: {} -> {} for features '{}'", wordData[3], newPOS, featuresLine);
-                                wordData[3] = newPOS;
-                                ++reassignCounter;
-                                needToFillFeatures = true;
-                                break;
-                            }
-                            continue;
-                        }
-
-                        SimpleTagId fname = tc.featureName2Index(name);
-                        SimpleTagId fvalue = tc.featureValue2Index(value);
-                        if (!isValidIndex(fname) || !isValidIndex(fvalue))
-                        {
-                            //spdlog::warn("Unknown feature pair '{}={}/{}' for POS tag '{}'", name, value, featurePair, wordData[3]);
-                        }
-                        else
-                        {
-                            tag.features[fname] = fvalue;
-                            ++addedFeatures;
-                        }
-
-                        if (addedFeatures >= sizeof(tag.features) / sizeof(tag.features[0]))
-                        {
-                            spdlog::info("Maximum features number reached for POS tag '{}'", wordData[3]);
-                            break;
-                        }
-                    }
-
-                    if (needToFillFeatures)
-                    {
-                        continue;
-                    }
-
-                    filterNumbers(wordData[1]);
-                    word.word = wc.addWordForm(word.initialWord, word.tags, wordData[1]);
-
-                    word.tags = tc.addTag(tag);
+                    spdlog::warn("Unknown word initial form '{}' in '{}'", wordData[2], line);
+                    word.initialWord = wc.unknownWord();
                 }
+
+                filterNumbers(wordData[1]);
+                word.word = wc.word2index(wordData[1]);
+                if (!isValidIndex(word.word))
+                {
+                    spdlog::warn("Unknown word '{}' in '{}'", wordData[1], line);
+                    word.word = wc.unknownWord();
+                }
+
+                word.tags = wc.findTagForWord(word.word, word.initialWord);
+                if (!isValidIndex(word.tags))
+                {
+                    spdlog::warn("Tag not found for word pair '{}' '{}' in '{}'", wordData[2], wordData[1], line);
+                    word.tags = tc.unknownTag();
+                }
+
+                // Ignore tags for now.
 
                 try
                 {

@@ -26,7 +26,7 @@ class WordsCollection
 
     BidirectionalMap<std::string, WordId> _words2ids;
 
-    std::unordered_map<WordId, Word> _ids2words;
+    std::unordered_multimap<WordId, Word> _ids2words;
 
     WordId _serviceWord;
     WordId _unknownWord;
@@ -48,6 +48,8 @@ public:
 
     WordId word2index(const std::string& word) const;
     std::optional<std::string> index2word(WordId word);
+    
+    TagId findTagForWord(WordId word, WordId initialForm) const;
 
     bool saveBinary(ZLibFile& zfile) const;
     bool loadBinary(ZLibFile& zfile);
