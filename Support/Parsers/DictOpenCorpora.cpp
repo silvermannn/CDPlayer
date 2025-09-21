@@ -159,7 +159,7 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
             printer.incProgress(line.size());
             if (line.empty() || line.starts_with('#') || line.starts_with('='))
             {
-                initialWord = -1;
+                initialWord = invalidIndex();
                 continue;
             }
 
@@ -169,11 +169,11 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
 
             if (wordData.size() < 2)
             {
-                initialWord = -1;
+                initialWord = invalidIndex();
                 continue;
             }
 
-            if (initialWord == -1)
+            if (!isValidIndex(initialWord))
             {
                 initialWord = wc.addInitialWord(wordData[0]);
             }
@@ -188,7 +188,7 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
             POSTag tag;
 
             tag.POS = tc.POSTag2Index(posTagTrtd->second);
-            if(tag.POS == -1)
+            if(!isValidIndex(tag.POS))
             {
                spdlog::error("Unknown translated POS tag name '{}' in '{}'", wordData[1], line);
                return false;
@@ -223,7 +223,7 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 SimpleTagId nameId = tc.featureName2Index(featurePair->second.first);
                 SimpleTagId valueId = tc.featureValue2Index(featurePair->second.second);
 
-                if (nameId == -1 || valueId == -1)
+                if (!isValidIndex(nameId) || !isValidIndex(valueId))
                 {
                     spdlog::error("Skipped feature name/value '{}={}' in '{}'", featurePair->second.first, featurePair->second.second, line);
                     continue;
