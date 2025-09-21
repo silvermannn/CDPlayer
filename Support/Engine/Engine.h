@@ -26,13 +26,11 @@ class Engine
 
     WordsCollection wordsCollection;
     TagsCollection tagsCollection;
-
     DepRelsCollection depRelsCollection;
 
     Printer printer;
 
     HMM<float, TagId, WordId> hmm;
-
     DepRelStatistics drStat;
 
     Sentence unkWordOnly;
