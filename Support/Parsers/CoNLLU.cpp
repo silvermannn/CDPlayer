@@ -105,7 +105,7 @@ bool fixFeatureValue(std::string& s)
     return true;
 }
 
-bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, Sentences& sentences, Encoder& encoder, Printer& printer)
+bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences, Printer& printer)
 {
     printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
 
@@ -152,11 +152,11 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                 while (needToFillFeatures)
                 {
                     needToFillFeatures = false;
-                    CompoundPOSTag tag;
+                    POSTag tag;
 
                     tag.POS = tc.POSTag2Index(fixTag(wordData[3]));
 
-                    if (!encoder.isValidIndex(tag.POS))
+                    if (!isValidIndex(tag.POS))
                     {
                         spdlog::warn("Unknown POS tag: '{}' -> 'x'", wordData[3]);
                         wordData[3] = "x";
@@ -196,7 +196,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
 
                         SimpleTagId fname = tc.featureName2Index(name);
                         SimpleTagId fvalue = tc.featureValue2Index(value);
-                        if (!encoder.isValidIndex(fname) || !encoder.isValidIndex(fvalue))
+                        if (!isValidIndex(fname) || !isValidIndex(fvalue))
                         {
                             //spdlog::warn("Unknown feature pair '{}={}/{}' for POS tag '{}'", name, value, featurePair, wordData[3]);
                         }
@@ -221,7 +221,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                     filterNumbers(wordData[1]);
                     word.word = wc.addWordForm(word.initialWord, word.tags, wordData[1]);
 
-                    word.tags = encoder.addTag(tag);
+                    word.tags = tc.addTag(tag);
                 }
 
                 try
@@ -233,9 +233,9 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                     word.depHead = -1;
                 }
 
-                if (encoder.isValidIndex(word.depHead) && wordData.size() > 7 && wordData[7] != "_")
+                if (isValidIndex(word.depHead) && wordData.size() > 7 && wordData[7] != "_")
                 {
-                    CompoundDepRelTag dr;
+                    DepRelTag dr;
                     dr.headBefore = word.depHead <= sentence.words.size();
                     std::string depRelMain, depRelMod;
                     if (!parsePair(wordData[7], ":", depRelMain, depRelMod))
@@ -244,19 +244,19 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                         depRelMod = "";
                     }
 
-                    dr.depRel = encoder.dependencyRelation2index(depRelMain);
-                    if (!encoder.isValidIndex(dr.depRel))
+                    dr.depRel = drc.dependencyRelation2index(depRelMain);
+                    if (!isValidIndex(dr.depRel))
                     {
                         spdlog::warn("Unknown dependency relation '{}' for POS tag '{}' in '{}'", depRelMain, wordData[3], wordData[7]);
                     }
 
-                    dr.modifier = encoder.dependencyRelationModifier2index(depRelMod);
-                    if (!encoder.isValidIndex(dr.modifier))
+                    dr.modifier = drc.dependencyRelationModifier2index(depRelMod);
+                    if (!isValidIndex(dr.modifier))
                     {
                         spdlog::warn("Unknown dependency relation modifier '{} : {}' for POS tag '{}' in '{}'", depRelMain, depRelMod, wordData[3], wordData[7]);
                     }
 
-                    word.depRel = encoder.addDepRel(dr);
+                    word.depRel = drc.addDepRel(dr);
                 }
                 else
                 {

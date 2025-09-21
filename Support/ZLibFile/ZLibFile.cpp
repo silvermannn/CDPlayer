@@ -22,11 +22,10 @@ ZLibFile::~ZLibFile()
 };
 
 template<>
-void ZLibFile::write<std::string>(const std::string& s)
+bool ZLibFile::write<std::string>(const std::string& s)
 {
     uint32_t l = std::min(s.length(), MAX_STRING_LEN - 1);
-    write(l);
-    writePtr(s.c_str(), l);
+    return write(l) && writePtr(s.c_str(), l);
 }
 
 template<>

@@ -75,6 +75,18 @@ static const BidirectionalMap<std::string, SimpleTagId> FEATURE_VALUES = {
 
 TagsCollection::TagsCollection()
 {
+    reset();
+}
+
+bool TagsCollection::operator==(const TagsCollection& other) const
+{
+    return tags == other.tags;
+}
+
+void TagsCollection::reset()
+{
+    tags.clear();
+
     POSTag t;
     t.POS = POS_TAGS.lookup("x");
     _serviceTag = addTag(t);
@@ -103,7 +115,7 @@ TagId TagsCollection::addTag(const POSTag& tag)
 
 std::optional<POSTag> TagsCollection::getPOSTag(TagId tag) const
 {
-    if (tag >= tags.size())
+    if (!isValidIndex(tag) || tag >= tags.size())
     {
         spdlog::error("Wrong tag id {}", tag);
         return {};
@@ -128,7 +140,7 @@ SimpleTagId TagsCollection::featureValue2Index(const std::string& s) const
 
 std::optional<std::string> TagsCollection::index2POSTag(SimpleTagId tag) const
 {
-    if (tag >= POS_TAGS.size())
+    if (!isValidIndex(tag) || tag >= POS_TAGS.size())
     {
         spdlog::error("Wrong POS tag id {}", tag);
         return {};
@@ -139,7 +151,7 @@ std::optional<std::string> TagsCollection::index2POSTag(SimpleTagId tag) const
 
 std::optional<std::string> TagsCollection::index2FeatureName(SimpleTagId tag) const
 {
-    if (tag >= FEATURE_NAMES.size())
+    if (!isValidIndex(tag) || tag >= FEATURE_NAMES.size())
     {
         spdlog::error("Wrong feature name tag id {}", tag);
         return {};
@@ -150,7 +162,7 @@ std::optional<std::string> TagsCollection::index2FeatureName(SimpleTagId tag) co
 
 std::optional<std::string> TagsCollection::index2FeatureValue(SimpleTagId tag) const
 {
-    if (tag >= FEATURE_VALUES.size())
+    if (!isValidIndex(tag) || tag >= FEATURE_VALUES.size())
     {
         spdlog::error("Wrong feature value tag id {}", tag);
         return {};
@@ -161,10 +173,10 @@ std::optional<std::string> TagsCollection::index2FeatureValue(SimpleTagId tag) c
 
 bool TagsCollection::saveBinary(ZLibFile& zfile) const
 {
-    return false;
+    return tags.saveBinary(zfile);
 }
 
 bool TagsCollection::loadBinary(ZLibFile& zfile)
 {
-    return false;
+    return tags.loadBinary(zfile);
 }

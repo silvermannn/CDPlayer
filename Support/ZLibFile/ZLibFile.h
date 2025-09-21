@@ -20,13 +20,13 @@ public:
     }
 
     template<typename T>
-    void write(const T& t)
+    bool write(const T& t)
     {
-        gzwrite(fileHande, reinterpret_cast<const char*>(&t), sizeof(T));
+        return gzwrite(fileHande, reinterpret_cast<const char*>(&t), sizeof(T)) == sizeof(T);
     }
 
     template<typename T>
-    void writePtr(const T* const t, uint64_t len)
+    bool writePtr(const T* const t, uint64_t len)
     {
         const uint64_t chunks = (sizeof(T) * len) / CHUNK_SIZE;
         const uint64_t rest = (sizeof(T) * len) % CHUNK_SIZE;
@@ -39,6 +39,8 @@ public:
         {
             gzwrite(fileHande, reinterpret_cast<const char*>(t) + chunks * CHUNK_SIZE, rest);
         }
+        
+        return true;
     }
 
     template<typename T>
@@ -66,7 +68,7 @@ public:
 };
 
 template<>
-void ZLibFile::write<std::string>(const std::string& s);
+bool ZLibFile::write<std::string>(const std::string& s);
 
 template<>
 bool ZLibFile::read<std::string>(std::string& s);

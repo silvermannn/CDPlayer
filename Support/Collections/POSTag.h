@@ -21,7 +21,7 @@ struct POSTag
 };
 
 template<>
-void ZLibFile::write<POSTag>(const POSTag& s);
+bool ZLibFile::write<POSTag>(const POSTag& s);
 
 template<>
 bool ZLibFile::read<POSTag>(POSTag& s);

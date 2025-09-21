@@ -5,7 +5,6 @@
 #include <utility>
 #include <unordered_map>
 
-#include "../Types.h"
 #include "../Engine/Sentence.h"
 #include "../Collections/DepRelsCollection.h"
 #include "../Collections/TagsCollection.h"
@@ -40,15 +39,15 @@ public:
         stat.resize(0, {depRelsNum, tagsNum, tagsNum});
     }
 
-    void processSentence(const TagsCollection& tc, const Encoder& encoder, const Sentence& sentence);
+    void processSentence(const TagsCollection& tc, const DepRelsCollection& drc, const Sentence& sentence);
 
     void normalize(float smoothingFactor);
 
-    std::optional<Edges> extractGraph(const TagsCollection& tc, const Encoder& encoder, const std::vector<TagId>& tags);
+    std::optional<Edges> extractGraph(const TagsCollection& tc, const DepRelsCollection& drc, const std::vector<TagId>& tags);
 
     void saveBinary(ZLibFile& zfile) const;
 
     bool loadBinary(ZLibFile& zfile);
 
-    void printStatistics(const TagsCollection& tc, const Encoder& encoder) const;
+    void printStatistics(const TagsCollection& tc, const DepRelsCollection& drc) const;
 };

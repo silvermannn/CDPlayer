@@ -6,8 +6,11 @@
 
 #include "spdlog/spdlog.h"
 
-const size_t MAX_NAME_LENGTH = 16;
+const size_t MAX_NAME_LENGTH = 64;
+const size_t MAX_FEATURES_PER_WORD = 16;
 const size_t MAX_BUFFER_SIZE = (2 * MAX_FEATURES_PER_WORD + 1) * MAX_NAME_LENGTH;
+
+static char buffer[MAX_BUFFER_SIZE];
 
 bool registerParser(char* parserName, void* parser)
 {
@@ -46,12 +49,12 @@ bool loadSentences(char* path)
 
 bool saveEncoder(char* path)
 {
-    return Engine::singleton().saveEncoder(path);
+    return Engine::singleton().saveCollections(path);
 }
 
 bool loadEncoder(char* path)
 {
-    return Engine::singleton().loadEncoder(path);
+    return Engine::singleton().loadCollections(path);
 }
 
 bool saveTreeBuilder(char* path)
@@ -89,8 +92,6 @@ bool index2word(size_t w, char** result)
         spdlog::error("Failed to get word for index {}", w);
         return false;
     }
-
-    static char buffer[MAX_BUFFER_SIZE];
 
     result[0] = buffer;
     stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
@@ -179,8 +180,6 @@ bool index2POSTag(size_t tag, char** result)
         return false;
     }
 
-    static char buffer[MAX_BUFFER_SIZE];
-
     result[0] = buffer;
     stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
 
@@ -203,8 +202,6 @@ bool index2FeatureName(size_t tag, char** result)
         return false;
     }
 
-    static char buffer[MAX_BUFFER_SIZE];
-
     result[0] = buffer;
     stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
 
@@ -226,8 +223,6 @@ bool index2FeatureValue(size_t tag, char** result)
         spdlog::error("failed to get feature value name for tag {}", tag);
         return false;
     }
-
-    static char buffer[MAX_BUFFER_SIZE];
 
     result[0] = buffer;
     stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
@@ -271,7 +266,7 @@ bool getCompoundDeprelTag(size_t tag, size_t* result, size_t* len)
         return false;
     }
 
-    const auto cpt = Engine::singleton().getEncoder().getCompoundDependencyRelationTag(tag);
+    const auto cpt = Engine::singleton().getDepRelsCollection().getDependencyRelationTag(tag);
 
     if (!cpt)
     {
@@ -295,15 +290,13 @@ bool index2dependencyRelation(size_t tag, char** result)
         return false;
     }
 
-    const auto s = Engine::singleton().getEncoder().index2dependencyRelation(tag);
+    const auto s = Engine::singleton().getDepRelsCollection().index2dependencyRelation(tag);
 
     if (!s)
     {
         spdlog::error("Failed to get description for tag {}", tag);
         return false;
     }
-
-    static char buffer[MAX_BUFFER_SIZE];
 
     result[0] = buffer;
     stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);
@@ -319,15 +312,13 @@ bool index2dependencyRelationModifier(size_t tag, char** result)
         return false;
     }
 
-    const auto s = Engine::singleton().getEncoder().index2dependencyRelationModifier(tag);
+    const auto s = Engine::singleton().getDepRelsCollection().index2dependencyRelationModifier(tag);
 
     if (!s)
     {
         spdlog::error("Failed to get description for tag {}", tag);
         return false;
     }
-
-    static char buffer[MAX_BUFFER_SIZE];
 
     result[0] = buffer;
     stpncpy(result[0], s->c_str(), MAX_NAME_LENGTH);

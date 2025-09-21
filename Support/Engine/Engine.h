@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <optional>
 
-#include "../Types.h"
 #include "../ML/HMM.h"
 #include "../ML/DepRelStatistics.h"
 #include "../Collections/WordsCollection.h"
@@ -28,7 +27,7 @@ class Engine
     WordsCollection wordsCollection;
     TagsCollection tagsCollection;
 
-    Encoder encoder;
+    DepRelsCollection depRelsCollection;
 
     Printer printer;
 
@@ -69,9 +68,9 @@ public:
 
     bool loadSentences(const std::string& fileName);
 
-    bool saveEncoder(const std::string& fileName) const;
+    bool saveCollections(const std::string& fileName) const;
 
-    bool loadEncoder(const std::string& fileName);
+    bool loadCollections(const std::string& fileName);
 
     std::optional<Tags> tag(const Words& sentence) const;
 
@@ -85,7 +84,7 @@ public:
 
     std::optional<DepRelStatistics::Edges> buildDependencyTree(const std::vector<TagId>& tags);
 
-    Encoder& getEncoder();
     WordsCollection& getWordsCollection();
     TagsCollection& getTagsCollection();
+    DepRelsCollection& getDepRelsCollection();
 };

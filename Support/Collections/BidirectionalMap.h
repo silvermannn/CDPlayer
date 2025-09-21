@@ -7,6 +7,19 @@
 
 #include "../ZLibFile/ZLibFile.h"
 
+template <class Index>
+const Index& invalidIndex()
+{
+    static const Index iix = Index(-1);
+    return iix;
+};
+
+template <class Index>
+bool isValidIndex(Index ix)
+{
+    return ix != invalidIndex<Index>();
+};
+
 template <class Item, class Index>
 class BidirectionalMap
 {
@@ -19,22 +32,6 @@ public:
     BidirectionalMap(const std::initializer_list<Item> items)
     {
         std::for_each(items.begin(), items.end(), [this](auto item) { lookupOrInsert(item); });
-    }
-
-    template<typename Initializer>
-    BidirectionalMap(const std::vector<Initializer> initializers, bool names)
-    {
-        std::for_each(initializers.begin(), initializers.end(), [this, names](auto item)
-        {
-            if (names)
-            {
-                lookupOrInsert(item.name);
-            }
-            else
-            {
-                std::for_each(item.items.begin(), item.items.end(), [this](auto subitem) { lookupOrInsert(subitem); });
-            }
-        });
     }
 
     bool operator==(const BidirectionalMap<Item, Index>& other) const
@@ -68,7 +65,7 @@ public:
         auto res = item2index.find(item);
         if (res == item2index.end())
         {
-            return invalidIndex;
+            return invalidIndex<Index>();
         }
 
         return res->second;
@@ -76,7 +73,7 @@ public:
 
     const Item& lookupIndex(const Index index) const
     {
-        if (index < index2item.size())
+        if (isValidIndex<Index>(index) && index < index2item.size())
         {
             return *index2item[index];
         }
@@ -84,25 +81,32 @@ public:
         assert("Index too big!" && false);
     }
 
-    static bool isValidIndex(const Index index)
-    {
-        return index != invalidIndex;
-    }
-
-    void saveBinary(ZLibFile& zfile) const
+    bool saveBinary(ZLibFile& zfile) const
     {
         uint32_t l = size();
-        zfile.write(l);
+        if (!zfile.write(l))
+        {
+            return false;
+        }
+
         for (size_t i = 0; i < l; ++i)
         {
-            zfile.write(lookupIndex(i));
+            if (!zfile.write(lookupIndex(i)))
+            {
+                return false;
+            }
         }
+
+        return true;
     }
 
     bool loadBinary(ZLibFile& zfile)
     {
         uint32_t size = 0;
-        zfile.read(size);
+        if (!zfile.read(size))
+        {
+            return false;
+        }
 
         index2item.resize(size);
 
@@ -122,9 +126,4 @@ public:
 
         return true;
     }
-
-    static Index invalidIndex;
 };
-
-template <class Item, class Index>
-Index BidirectionalMap<Item, Index>::invalidIndex(-1);

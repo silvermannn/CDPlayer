@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "Types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

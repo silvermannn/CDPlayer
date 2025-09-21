@@ -2,6 +2,19 @@
 
 WordsCollection::WordsCollection()
 {
+    reset();
+}
+
+bool WordsCollection::operator==(const WordsCollection& other) const
+{
+    return _words2ids == other._words2ids && _ids2words == other._ids2words;
+}
+
+void WordsCollection::reset()
+{
+    _words2ids.clear();
+    _ids2words.clear();
+
     _serviceWord = addInitialWord("<>");
     _unknownWord = addInitialWord("<unknown>");
 }
@@ -13,6 +26,11 @@ WordId WordsCollection::addInitialWord(const std::string& word)
 
 WordId WordsCollection::addWordForm(WordId initialForm, TagId tagId, const std::string& word)
 {
+    if (!isValidIndex(initialForm) || !isValidIndex(tagId))
+    {
+        return invalidIndex<WordId>();
+    }
+    
     Word w{initialForm, tagId};
 
     WordId id = _words2ids.lookupOrInsert(word);
@@ -44,7 +62,7 @@ WordId WordsCollection::word2index(const std::string& word) const
 
 std::optional<std::string> WordsCollection::index2word(WordId word)
 {
-    if (word > _words2ids.size())
+    if (!isValidIndex(word) || word > _words2ids.size())
     {
         return {};
     }
@@ -54,10 +72,10 @@ std::optional<std::string> WordsCollection::index2word(WordId word)
 
 bool WordsCollection::saveBinary(ZLibFile& zfile) const
 {
-    return false;
+    return _words2ids.saveBinary(zfile) && false;
 }
 
 bool WordsCollection::loadBinary(ZLibFile& zfile)
 {
-    return false;
+    return _words2ids.loadBinary(zfile) && false;
 }

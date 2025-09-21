@@ -10,7 +10,7 @@
 
 struct Parser
 {
-    virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, Sentences& sentences, Encoder& encoder, Printer& printer) = 0;
+    virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences, Printer& printer) = 0;
 
     virtual ~Parser() = 0;
 };

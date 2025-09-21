@@ -12,7 +12,7 @@ TEST(BidirectionalMapTest, CreateEmpty)
 
     EXPECT_EQ(map.size(), 0);
 
-    EXPECT_FALSE(map.isValidIndex(map.lookup(1)));
+    EXPECT_FALSE(isValidIndex(map.lookup(1)));
 }
 
 TEST(BidirectionalMapTest, InsertLookup)
@@ -23,8 +23,8 @@ TEST(BidirectionalMapTest, InsertLookup)
 
     size_t index = map.lookupOrInsert(a);
 
-    EXPECT_TRUE(map.isValidIndex(index));
-    EXPECT_TRUE(map.isValidIndex(map.lookup(a)));
+    EXPECT_TRUE(isValidIndex(index));
+    EXPECT_TRUE(isValidIndex(map.lookup(a)));
 
     EXPECT_EQ(map.size(), 1);
 
@@ -55,7 +55,7 @@ TEST(BidirectionalMapTest, InsertLookupMany)
         {
             size_t index = map.lookup(ss[i]);
 
-            EXPECT_TRUE(map.isValidIndex(index));
+            EXPECT_TRUE(isValidIndex(index));
             EXPECT_EQ(index, ixs[i]);
             EXPECT_EQ(map.lookupIndex(index), ss[i]);
         }

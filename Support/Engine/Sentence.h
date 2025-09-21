@@ -2,7 +2,8 @@
 
 #include <vector>
 
-#include "../Types.h"
+#include "../Collections/POSTag.h"
+#include "../Collections/WordsCollection.h"
 #include "../ZLibFile/ZLibFile.h"
 
 struct Word

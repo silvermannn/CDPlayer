@@ -1,7 +1,7 @@
-#include "CompoundTags.h"
+#include "POSTag.h"
 
 template<>
-void ZLibFile::write<CompoundPOSTag>(const CompoundPOSTag& t)
+bool ZLibFile::write<POSTag>(const POSTag& t)
 {
     write(t.POS);
 
@@ -13,10 +13,12 @@ void ZLibFile::write<CompoundPOSTag>(const CompoundPOSTag& t)
         write(k);
         write(v);
     }
+
+    return true;
 }
 
 template<>
-bool ZLibFile::read<CompoundPOSTag>(CompoundPOSTag& t)
+bool ZLibFile::read<POSTag>(POSTag& t)
 {
     if (!read(t.POS))
         return false;
@@ -27,7 +29,7 @@ bool ZLibFile::read<CompoundPOSTag>(CompoundPOSTag& t)
 
     for (size_t i = 0; i < l; ++i)
     {
-        ShortWordId k, v;
+        SimpleTagId k, v;
         if (!read(k) || !read(v))
         {
             return false;

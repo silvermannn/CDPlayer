@@ -2,7 +2,7 @@
 
 #include <optional>
 
-#include "../Engine/POSTag.h"
+#include "POSTag.h"
 #include "../ZLibFile/ZLibFile.h"
 #include "BidirectionalMap.h"
 
@@ -16,6 +16,10 @@ class TagsCollection
 public:
     TagsCollection();
     
+    bool operator==(const TagsCollection& other) const;
+
+    void reset();
+
     TagId tagsSize() const;
 
     TagId addTag(const POSTag& tag);

@@ -11,5 +11,5 @@ class DOCParser: public Parser
 public:
     virtual ~DOCParser() {};
 
-    virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, Sentences& sentences, Encoder& encoder, Printer& printer);
+    virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences, Printer& printer);
 };

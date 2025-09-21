@@ -43,13 +43,15 @@ void Engine::reset(void)
     spdlog::info("Resetting");
     clearSentences();
 
-    encoder.reset();
+    wordsCollection.reset();
+    tagsCollection.reset();
+    depRelsCollection.reset();
 
-    //unkWordOnly.words.push_back(encoder.unknownWord());
+    //unkWordOnly.words.push_back(depRelsCollection.unknownWord());
 
-    spdlog::debug("Encoder service word {}, tag {}", tagsCollection.serviceTag(), wordsCollection.serviceWord());
-    spdlog::debug("Encoder unknown word {}, tag {}", tagsCollection.unknownTag(), wordsCollection.unknownWord());
-    spdlog::debug("Encoder dependency relation root {}", encoder.depRelRoot());
+    spdlog::debug("Service word {}, tag {}", tagsCollection.serviceTag(), wordsCollection.serviceWord());
+    spdlog::debug("Unknown word {}, tag {}", tagsCollection.unknownTag(), wordsCollection.unknownWord());
+    spdlog::debug("Dependency relation root {}", depRelsCollection.depRelRoot());
 }
 
 std::vector<std::string> Engine::availableParsers() const
@@ -168,9 +170,9 @@ bool Engine::loadSentences(const std::string& fileName)
     return true;
 }
 
-bool Engine::saveEncoder(const std::string& fileName) const
+bool Engine::saveCollections(const std::string& fileName) const
 {
-    spdlog::debug("Saving encoder {}", fileName);
+    spdlog::debug("Saving coillections {}", fileName);
 
     ZLibFile zfile(fileName, true);
 
@@ -182,14 +184,14 @@ bool Engine::saveEncoder(const std::string& fileName) const
 
     zfile.writePtr(MAGIC, sizeof(MAGIC));
 
-    encoder.saveBinary(zfile);
+    depRelsCollection.saveBinary(zfile);
 
     return true;
 }
 
-bool Engine::loadEncoder(const std::string& fileName)
+bool Engine::loadCollections(const std::string& fileName)
 {
-    spdlog::info("Loading encoder");
+    spdlog::info("Loading collections");
 
     ZLibFile zfile(fileName, false);
 
@@ -207,9 +209,9 @@ bool Engine::loadEncoder(const std::string& fileName)
         return false;
     }
 
-    if (!encoder.loadBinary(zfile))
+    if (!depRelsCollection.loadBinary(zfile))
     {
-        spdlog::error("Failed to load encoder");
+        spdlog::error("Failed to load depRelsCollection");
         return false;
     }
 
@@ -302,7 +304,7 @@ bool Engine::parseFile(const std::string& path, const std::string& parserName)
         return false;
     }
 
-    if (!parser->second.parse(path, wordsCollection, tagsCollection, sentences, encoder, printer))
+    if (!parser->second.parse(path, wordsCollection, tagsCollection, depRelsCollection, sentences, printer))
     {
         spdlog::error("Parser {} failed to load {}", parserName, path);
         return false;
@@ -388,19 +390,19 @@ bool Engine::trainTreeBuilder(double smoothingFactor)
 {
     printer.init(std::string("Training tree builder"), sentences.size() + 1);
 
-    drStat.resize(encoder.depRelsSize(), tagsCollection.tagsSize());
+    drStat.resize(depRelsCollection.depRelsSize(), tagsCollection.tagsSize());
 
     for (const auto& sentence: sentences)
     {
         printer.incProgress();
-        drStat.processSentence(tagsCollection, encoder, sentence);
+        drStat.processSentence(tagsCollection, depRelsCollection, sentence);
     }
 
     printer.print("Normalizing tree builder");
     printer.incProgress();
     drStat.normalize(smoothingFactor);
 
-    drStat.printStatistics(tagsCollection, encoder);
+    drStat.printStatistics(tagsCollection, depRelsCollection);
 
     return true;
 }
@@ -420,7 +422,7 @@ bool Engine::saveTreeBuilder(const std::string& fileName) const
     zfile.writePtr(MAGIC, sizeof(MAGIC));
 
     zfile.write(tagsCollection.tagsSize());
-    zfile.write(encoder.depRelsSize());
+    zfile.write(depRelsCollection.depRelsSize());
 
     drStat.saveBinary(zfile);
 
@@ -455,7 +457,7 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
         return false;
     }
 
-    drStat.resize(encoder.depRelsSize(), tagsCollection.tagsSize());
+    drStat.resize(depRelsCollection.depRelsSize(), tagsCollection.tagsSize());
 
     return drStat.loadBinary(zfile);
 }
@@ -463,12 +465,12 @@ bool Engine::loadTreeBuilder(const std::string& fileName)
 std::optional<DepRelStatistics::Edges> Engine::buildDependencyTree(const std::vector<TagId>& tags)
 {
     spdlog::info("Build dependency tree");
-    return drStat.extractGraph(tagsCollection, encoder, tags);
+    return drStat.extractGraph(tagsCollection, depRelsCollection, tags);
 }
 
-Encoder& Engine::getEncoder()
+DepRelsCollection& Engine::getDepRelsCollection()
 {
-    return encoder;
+    return depRelsCollection;
 }
 
 WordsCollection& Engine::getWordsCollection()

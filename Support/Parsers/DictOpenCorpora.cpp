@@ -145,7 +145,7 @@ static const std::unordered_set<std::string> _skippedFeatures =
     "ms-f", "Ms-f", "GNdr",
 };
 
-bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, Sentences&, Encoder&, Printer& printer)
+bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection&, Sentences&, Printer& printer)
 {
     printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
 
@@ -222,7 +222,7 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
 
                 SimpleTagId nameId = tc.featureName2Index(featurePair->second.first);
                 SimpleTagId valueId = tc.featureValue2Index(featurePair->second.second);
-                
+
                 if (nameId == -1 || valueId == -1)
                 {
                     spdlog::error("Skipped feature name/value '{}={}' in '{}'", featurePair->second.first, featurePair->second.second, line);

@@ -3,121 +3,96 @@
 #include <algorithm>
 #include <iterator>
 
-#include "../Engine/StdDefs.h"
-
 #include "spdlog/spdlog.h"
 
-Encoder::Encoder()
-    : featureNamesConstraints(TAG_DESCRIPTIONS)
-    , posTags(TAG_DESCRIPTIONS, true)
-    , featureNames(TAG_DESCRIPTIONS, false)
-    //, featureValues(FEATURE_VALUES)
-    //, depRels(DEP_RELS)
-    //, depRelModifiers(DEP_RELS_MODIFIERS)
+static const BidirectionalMap<std::string, SimpleTagId> DEP_RELS = {
+    /* Core arguments      */ "nsubj", "obj", "iobj", "csubj", "ccomp", "xcomp",
+    /* Non-core dependents */ "obl", "vocative", "expl", "dislocated", "advcl",
+                              "advmod", "discourse", "aux", "cop", "mark",
+    /* Nominal dependents  */ "nmod", "appos", "nummod", "acl", "amod", "det", "clf", "case",
+    /* Coordination        */ "conj", "cc",
+    /* Headless            */ "fixed", "flat",
+    /* Loose               */ "list", "parataxis",
+    /* Special             */ "compound", "orphan", "goeswith", "reparandum",
+    /* Other               */ "punct", "root", "dep",
+};
+
+static const BidirectionalMap<std::string, SimpleTagId> DEP_RELS_MODIFIERS = {
+    "", "outer", "pass", "agent", "arg", "lmod", "tmod", "outer", "pass", "emph", "lmod", "impers", "pass", "relcl", "poss",
+    "pass", "tmod", "numgov", "nummod", "gov", "foreign", "name", "lvc", "prt", "redup", "svc", "pv", "relcl", "poss", "preconj",
+    "entity", "discourse",
+};
+
+DepRelsCollection::DepRelsCollection()
 {
     reset();
 }
 
-bool Encoder::operator==(const Encoder& other) const
+bool DepRelsCollection::operator==(const DepRelsCollection& other) const
 {
-    return featureNamesConstraints == other.featureNamesConstraints &&
-           posTags == other.posTags &&
-           featureNames == other.featureNames &&
-           featureValues == other.featureValues &&
-           depRels == other.depRels &&
-           depRelModifiers == other.depRelModifiers &&
-           tags == other.tags &&
-           depRelTags == other.depRelTags;
+    return depRelTags == other.depRelTags;
 }
 
-CompoundPOSTag Encoder::simplify(const CompoundPOSTag& tag) const
+void DepRelsCollection::reset()
 {
-    CompoundPOSTag res;
-    res.POS = tag.POS;
-    auto pos = posTags.lookupIndex(res.POS);
-    std::copy_if(tag.features.begin(), tag.features.end(), std::inserter(res.features, res.features.end()),
-                 [&](const auto& k) { auto fn = featureNames.lookupIndex(k.first); return featureNamesConstraints.checkIsSimple(pos, fn); });
-    return res;
-}
+    depRelTags.clear();
 
-void Encoder::reset()
-{
-    tags.clear();
-
-    CompoundDepRelTag root;
+    DepRelTag root;
     root.depRel = dependencyRelation2index("root");
     root.modifier = dependencyRelationModifier2index("");
     _depRelRoot = addDepRel(root);
 }
 
-TagId Encoder::depRelRoot() const
+TagId DepRelsCollection::depRelRoot() const
 {
     return _depRelRoot;
 }
 
-TagId Encoder::depRelsSize() const
+TagId DepRelsCollection::depRelsSize() const
 {
     return depRelTags.size();
 }
 
-TagId Encoder::addTag(const CompoundPOSTag& tag)
-{
-    auto res = tags.lookupOrInsert(tag);
-    simplifiedTags[res] = tags.lookupOrInsert(simplify(tag));
-    return res;
-}
-
-TagId Encoder::addDepRel(const CompoundDepRelTag& dr)
+TagId DepRelsCollection::addDepRel(const DepRelTag& dr)
 {
     return depRelTags.lookupOrInsert(dr);
 }
 
-TagId Encoder::getSimplifiedTag(TagId tag) const
+SimpleTagId DepRelsCollection::dependencyRelation2index(const std::string& s) const
 {
-    const auto& res = simplifiedTags.find(tag);
-    if (res == simplifiedTags.end())
-    {
-        return tags.invalidIndex;
-    }
-
-    return res->second;
+    return DEP_RELS.lookup(s);
 }
 
-ShortWordId Encoder::dependencyRelation2index(const std::string& s) const
+std::optional<std::string> DepRelsCollection::index2dependencyRelation(SimpleTagId tag) const
 {
-    return depRels.lookup(s);
-}
-
-std::optional<std::string> Encoder::index2dependencyRelation(TagId tag) const
-{
-    if (tag >= depRels.size())
+    if (!isValidIndex(tag) || tag >= DEP_RELS.size())
     {
         spdlog::error("Wrong dependency relation tag id {}", tag);
         return {};
     }
 
-    return std::make_optional(depRels.lookupIndex(tag));
+    return std::make_optional(DEP_RELS.lookupIndex(tag));
 }
 
-ShortWordId Encoder::dependencyRelationModifier2index(const std::string& s) const
+SimpleTagId DepRelsCollection::dependencyRelationModifier2index(const std::string& s) const
 {
-    return depRelModifiers.lookup(s);
+    return DEP_RELS_MODIFIERS.lookup(s);
 }
 
-std::optional<std::string> Encoder::index2dependencyRelationModifier(TagId tag) const
+std::optional<std::string> DepRelsCollection::index2dependencyRelationModifier(SimpleTagId tag) const
 {
-    if (tag >= depRelModifiers.size())
+    if (!isValidIndex(tag) || tag >= DEP_RELS_MODIFIERS.size())
     {
         spdlog::error("Wrong dependency relation modifier tag id {}", tag);
         return {};
     }
 
-    return std::make_optional(depRelModifiers.lookupIndex(tag));
+    return std::make_optional(DEP_RELS_MODIFIERS.lookupIndex(tag));
 }
 
-std::optional<CompoundDepRelTag> Encoder::getCompoundDependencyRelationTag(TagId tag) const
+std::optional<DepRelTag> DepRelsCollection::getDependencyRelationTag(TagId tag) const
 {
-    if (tag >= depRelTags.size())
+    if (!isValidIndex(tag) || tag >= depRelTags.size())
     {
         spdlog::error("Wrong dependency relation compound tag id {}", tag);
         return {};
@@ -126,14 +101,12 @@ std::optional<CompoundDepRelTag> Encoder::getCompoundDependencyRelationTag(TagId
     return std::make_optional(depRelTags.lookupIndex(tag));
 }
 
-void Encoder::saveBinary(ZLibFile& zfile) const
+void DepRelsCollection::saveBinary(ZLibFile& zfile) const
 {
-    tags.saveBinary(zfile);
     depRelTags.saveBinary(zfile);
 }
 
-bool Encoder::loadBinary(ZLibFile& zfile)
+bool DepRelsCollection::loadBinary(ZLibFile& zfile)
 {
-    return tags.loadBinary(zfile) &&
-           depRelTags.loadBinary(zfile);
+    return depRelTags.loadBinary(zfile);
 }
