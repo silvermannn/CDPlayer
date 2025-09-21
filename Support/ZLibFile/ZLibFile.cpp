@@ -2,7 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-constexpr size_t MAX_STRING_LEN = 1024;
 
 ZLibFile::ZLibFile(const std::string& filename, bool write)
 {
@@ -24,7 +23,7 @@ ZLibFile::~ZLibFile()
 template<>
 bool ZLibFile::write<std::string>(const std::string& s)
 {
-    uint32_t l = std::min(s.length(), MAX_STRING_LEN - 1);
+    uint32_t l = s.length();
     return write(l) && writePtr(s.c_str(), l);
 }
 
@@ -35,15 +34,7 @@ bool ZLibFile::read<std::string>(std::string& s)
     if (!read(l))
         return false;
 
-    l = std::min(size_t(l), MAX_STRING_LEN - 1);
+    s.resize(l);
 
-    static char buffer[MAX_STRING_LEN];
-
-    if (!readPtr((char*)buffer, l))
-        return false;
-
-    buffer[l] = '\0';
-    s = buffer;
-
-    return true;
+    return readPtr((char*)s.data(), l);
 }

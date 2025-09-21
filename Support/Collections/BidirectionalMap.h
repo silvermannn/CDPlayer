@@ -83,45 +83,20 @@ public:
 
     bool saveBinary(ZLibFile& zfile) const
     {
-        uint32_t l = size();
-        if (!zfile.write(l))
-        {
-            return false;
-        }
-
-        for (size_t i = 0; i < l; ++i)
-        {
-            if (!zfile.write(lookupIndex(i)))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return zfile.write(item2index);
     }
 
     bool loadBinary(ZLibFile& zfile)
     {
-        uint32_t size = 0;
-        if (!zfile.read(size))
+        if (!zfile.read(item2index))
         {
             return false;
         }
 
-        index2item.resize(size);
-
-        for (size_t i = 0; i < size; ++i)
+        index2item.resize(item2index.size());
+        for (const auto& [k, v]: item2index)
         {
-            Item item;
-
-            if (!zfile.read(item))
-            {
-                return false;
-            }
-
-            const auto res = item2index.try_emplace(item, i);
-
-            index2item[i] = &res.first->first;
+            index2item[v] = &k;
         }
 
         return true;

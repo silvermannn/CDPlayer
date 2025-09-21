@@ -87,10 +87,10 @@ TagId WordsCollection::findTagForWord(WordId word, WordId initialForm) const
 
 bool WordsCollection::saveBinary(ZLibFile& zfile) const
 {
-    return _words2ids.saveBinary(zfile) && false;
+    return _words2ids.saveBinary(zfile) && zfile.write(_ids2words);
 }
 
 bool WordsCollection::loadBinary(ZLibFile& zfile)
 {
-    return _words2ids.loadBinary(zfile) && false;
+    return _words2ids.loadBinary(zfile) && zfile.read(_ids2words);
 }
