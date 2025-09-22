@@ -130,7 +130,7 @@ void DepRelStatistics::printStatistics(const TagsCollection& tc, const DepRelsCo
 
         stream << "\t" << dr << ":" << *drName;
 
-        auto drMod = drc.index2dependencyRelationModifier(drTag->depRel);
+        auto drMod = drc.index2dependencyRelationModifier(drTag->modifier);
 
         if (drMod)
         {

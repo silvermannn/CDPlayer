@@ -72,7 +72,13 @@ std::pair<WordId, size_t> WordsCollection::maxTagsPerWord() const
 
 WordId WordsCollection::word2index(const std::string& word) const
 {
-    return _words.lookup(word);
+    WordId w = _words.lookup(word);
+    if (!isValidIndex(w))
+    {
+        return _unknownWord;
+    }
+    
+    return w;
 }
 
 std::optional<std::string> WordsCollection::index2word(WordId word)

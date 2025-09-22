@@ -4,7 +4,6 @@
 
 #include "../Support/Support.h"
 #include "../Support/Parsers/Parser.h"
-#include "../Support/Engine/Printer.h"
 #include "../Support/Collections/WordsCollection.h"
 #include "../Support/Collections/TagsCollection.h"
 #include "../Support/Collections/DepRelsCollection.h"
@@ -40,7 +39,7 @@ struct FakeParser: public Parser
 {
     bool success = false;
 
-    virtual bool parse(const std::string&, WordsCollection&, TagsCollection&, DepRelsCollection&, Sentences&, Printer&)
+    virtual bool parse(const std::string&, WordsCollection&, TagsCollection&, DepRelsCollection&, Sentences&)
     {
         return success;
     };

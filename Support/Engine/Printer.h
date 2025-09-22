@@ -13,9 +13,7 @@ class Printer
 
     void show(void);
 public:
-    Printer() {};
-
-    void init(const std::string& header, size_t size);
+    Printer(const std::string& header, size_t size);
 
     void incProgress(size_t inc = 1);
 

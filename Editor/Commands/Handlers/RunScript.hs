@@ -1,5 +1,6 @@
 module Editor.Commands.Handlers.RunScript where
 
+import Data.List (isPrefixOf)
 import System.IO
 import Control.Monad (foldM)
 
@@ -11,7 +12,7 @@ cmdRunScript ds state [CAString path] CRNothing = do
     handle <- openFile path ReadMode
     fileContent <- hGetContents handle
     putStrLn "\rStarting..."
-    state' <- foldM runLine (Right state) $ lines fileContent
+    state' <- foldM runLine (Right state) $ filter (not . ("#" `isPrefixOf`)) $ filter (not . null) $ lines fileContent
     putStrLn "\rDone."
     return state'
     where

@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "../Engine/Utility.h"
+#include "../Engine/Printer.h"
 
 #include <spdlog/spdlog.h>
 
@@ -37,12 +38,13 @@ static const std::unordered_map<std::string, std::string> _POSTagTranslator =
 
 static const std::unordered_map<std::string, std::initializer_list<std::pair<std::string, std::string>>> _POSTagAdder =
 {
-    {"ADJS", {{"variant", "short"}}},
+    //{"ADJS", {{"variant", "short"}}},
     {"GRND", {{"verbform","ger"}}},
     {"INFN", {{"verbform","inf"}}},
     {"PRTF", {{"verbform","part"}}},
     {"PRTS", {{"verbform","part"},
-              {"variant", "short"}}},
+//              {"variant", "short"}}},
+              }},
 };
 
 static const std::unordered_map<std::string, std::pair<std::string, std::string>> _FeatureTranslator(
@@ -50,13 +52,13 @@ static const std::unordered_map<std::string, std::pair<std::string, std::string>
     {"Ques", {"prontype", "int"}},
     {"Dmns", {"prontype", "dem"}},
 
-    {"anim", {"animacy", "anim"}},
-    {"inan", {"animacy", "inan"}},
+//    {"anim", {"animacy", "anim"}},
+//    {"inan", {"animacy", "inan"}},
 
     {"sing", {"number", "sing"}},
     {"plur", {"number", "plur"}},
-    {"Sgtm", {"number", "stan"}},
-    {"Pltm", {"number", "ptan"}},
+    {"Sgtm", {"number", "sing"}},
+    {"Pltm", {"number", "plur"}},
 
     {"Anum", {"numtype", "ord"}},
     {"Coll", {"numtype", "sets"}},
@@ -83,8 +85,8 @@ static const std::unordered_map<std::string, std::pair<std::string, std::string>
     {"intr", {"subcat", "intr"}},
     {"tran", {"subcat", "tran"}},
 
-    {"excl", {"clusivity", "ex"}},
-    {"incl", {"clusivity", "in"}},
+//    {"excl", {"clusivity", "ex"}},
+//   {"incl", {"clusivity", "in"}},
 
     {"nomn", {"case", "nom"}},
     {"gent", {"case", "gen"}},
@@ -119,12 +121,12 @@ static const std::unordered_map<std::string, std::pair<std::string, std::string>
     {"Cmp2", {"degree", "cmp"}},
     {"Poss", {"poss", "yes"}},
 
-    {"Erro", {"typo", "yes"}},
-    {"Dist", {"style", "vrnc"}},
-    {"Slng", {"style", "slng"}},
-    {"Arch", {"style", "arch"}},
-    {"Infr", {"style", "vrnc"}},
-    {"Litr", {"style", "form"}},
+//    {"Erro", {"typo", "yes"}},
+//    {"Dist", {"style", "vrnc"}},
+//    {"Slng", {"style", "slng"}},
+//    {"Arch", {"style", "arch"}},
+//    {"Infr", {"style", "vrnc"}},
+//    {"Litr", {"style", "form"}},
 }, 256);
 
 static const std::unordered_set<std::string> _skippedFeatures =
@@ -147,11 +149,12 @@ static const std::unordered_set<std::string> _skippedFeatures =
     "V-be", "V-en", "V-ie", "V-bi", "V-sh", "V-oy", "V-ej", "V-ey",
     "Vpre",
     "ms-f", "Ms-f", "GNdr",
+    "excl","incl","anim","inan","Erro","Dist","Slng","Arch","Infr","Litr",
 };
 
-bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection&, Sentences& sentences, Printer& printer)
+bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection&, Sentences& sentences)
 {
-    printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
+    Printer printer(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
 
     std::ifstream stream(fileName, std::fstream::in);
 

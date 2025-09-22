@@ -316,7 +316,7 @@ bool Engine::parseFile(const std::string& path, const std::string& parserName)
         return false;
     }
 
-    if (!parser->second.parse(path, wordsCollection, tagsCollection, depRelsCollection, sentences, printer))
+    if (!parser->second.parse(path, wordsCollection, tagsCollection, depRelsCollection, sentences))
     {
         spdlog::error("Parser {} failed to load {}", parserName, path);
         return false;
@@ -327,8 +327,6 @@ bool Engine::parseFile(const std::string& path, const std::string& parserName)
 
 bool Engine::parse(const std::string& path, const std::string& parserName)
 {
-    printer.init(std::string("Parsing ") + path, 1);
-
     bool result = false;
     if (std::filesystem::is_directory(path))
     {
@@ -383,7 +381,7 @@ void Engine::trainHMMOnSentence(const Sentence& sentence)
 
 bool Engine::trainTagger(float smoothingFactor)
 {
-    printer.init(std::string("Training tagger"), sentences.size() + 1);
+    Printer printer("Training tagger", sentences.size() + 1);
 
     hmm.resize(tagsCollection.tagsSize(), wordsCollection.wordsSize());
 
@@ -406,12 +404,12 @@ std::optional<Tags> Engine::tag(const Words& sentence) const
 {
     spdlog::debug("Tagging");
 
-    return hmm.predict(wordsCollection.serviceWord(), sentence);
+    return hmm.predict(tagsCollection.serviceTag(), sentence);
 }
 
 bool Engine::trainTreeBuilder(double smoothingFactor)
 {
-    printer.init(std::string("Training tree builder"), sentences.size() + 1);
+    Printer printer("Training tree builder", sentences.size() + 1);
 
     drStat.resize(depRelsCollection.depRelsSize(), tagsCollection.tagsSize());
 

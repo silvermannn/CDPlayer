@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "../Engine/Utility.h"
+#include "../Engine/Printer.h"
 
 #include "spdlog/spdlog.h"
 
@@ -94,9 +95,9 @@ bool fixFeatureValue(std::string& s)
     return true;
 }
 
-bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences, Printer& printer)
+bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences)
 {
-    printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
+    Printer printer(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
 
     std::ifstream stream(fileName, std::fstream::in);
 

@@ -11,5 +11,5 @@ class OCDParser: public Parser
 public:
     virtual ~OCDParser() {};
 
-    virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences, Printer& printer);
+    virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences);
 };

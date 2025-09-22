@@ -6,6 +6,19 @@
 
 static std::string spaces = "                                                                               ";
 
+Printer::Printer(const std::string& header, size_t size)
+{
+    spdlog::debug(header);
+
+    _header = header;
+    _message.clear();
+    _size = size;
+    _lastProgress = 0;
+    _progress = 0;
+    _force = true;
+    show();
+}
+
 void Printer::show(void)
 {
     if (_size == 0)
@@ -21,19 +34,6 @@ void Printer::show(void)
         _lastProgress = _progress;
         _force = false;
     }
-}
-
-void Printer::init(const std::string& header, size_t size)
-{
-    spdlog::debug(header);
-
-    _header = header;
-    _message.clear();
-    _size = size;
-    _lastProgress = 0;
-    _progress = 0;
-    _force = true;
-    show();
 }
 
 void Printer::incProgress(size_t inc)

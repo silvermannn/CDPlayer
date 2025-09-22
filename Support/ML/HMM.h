@@ -64,6 +64,7 @@ public:
 
         if (emissions.empty())
         {
+            spdlog::debug("No input provided");
             return std::vector<HS>();
         }
 
@@ -80,7 +81,9 @@ public:
         }
 
         for(HS hsTo = 0; hsTo < hsNum; hsTo++)
+        {
             prob.at(0, hsTo) = inits[hsTo] + hss2es.at(hsTo, emissions[0]);
+        }
 
         for (size_t i = 1; i < seqSize; ++i)
         {
