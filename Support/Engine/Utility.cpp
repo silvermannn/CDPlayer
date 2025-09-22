@@ -8,8 +8,11 @@
 
 void toLower(std::string& s)
 {
+    static const icu::UnicodeString je("е", "UTF-8");
+    static const icu::UnicodeString jo("ё", "UTF-8");
     icu::UnicodeString us(s.c_str(), "UTF-8");
     us.toLower();
+    us.findAndReplace(jo, je);
     s.clear();
     us.toUTF8String(s);
 }
@@ -66,4 +69,15 @@ std::vector<std::string> split(std::string s, std::string delims)
     }
 
     return result;
+}
+
+void filterWord(std::string& s)
+{
+    bool replaced = false;
+    std::replace_if(s.begin(), s.end(), [&replaced](unsigned char c){ bool r = std::isdigit(c); replaced = r || replaced; return r; }, 'N');
+    if (replaced)
+    {
+        auto last = std::unique(s.begin(), s.end());
+        s.erase(last, s.end());
+    }
 }

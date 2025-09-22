@@ -344,7 +344,10 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
         return false;
     }
 
+    spdlog::info("Sentences loaded: {}", sentences.size());
     spdlog::info("Words loaded: {}", wordsCollection.wordsSize());
+    spdlog::info("Tags loaded: {}", tagsCollection.tagsSize());
+    spdlog::info("Dependency relations loaded: {}", depRelsCollection.depRelsSize());
     return true;
 }
 

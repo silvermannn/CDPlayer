@@ -8,17 +8,6 @@
 
 #include "spdlog/spdlog.h"
 
-void filterNumbers(std::string& s)
-{
-    bool replaced = false;
-    std::replace_if(s.begin(), s.end(), [&replaced](unsigned char c){ bool r = std::isdigit(c); replaced = r || replaced; return r; }, 'N');
-    if (replaced)
-    {
-        auto last = std::unique(s.begin(), s.end());
-        s.erase(last, s.end());
-    }
-}
-
 std::string fixTag(const std::string& s)
 {
     if (s == "h") { return "adv"; }
@@ -142,15 +131,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
             {
                 Word word;
 
-                filterNumbers(wordData[2]);
-                word.initialWord = wc.word2index(wordData[2]);
-                if (!isValidIndex(word.initialWord))
-                {
-                    spdlog::warn("Unknown word initial form '{}'", wordData[2]);
-                    word.initialWord = wc.unknownWord();
-                }
-
-                filterNumbers(wordData[1]);
+                filterWord(wordData[1]);
                 word.word = wc.word2index(wordData[1]);
                 if (!isValidIndex(word.word))
                 {
@@ -158,8 +139,16 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                     word.word = wc.unknownWord();
                 }
 
+                filterWord(wordData[2]);
+                word.initialWord = wc.word2index(wordData[2]);
+                if (word.word != wc.unknownWord() && !isValidIndex(word.initialWord))
+                {
+                    spdlog::warn("Unknown word initial form '{}'", wordData[2]);
+                    word.initialWord = wc.unknownWord();
+                }
+
                 std::vector<TagId> tags = wc.findTagsForWord(word.word);
-                if (isValidIndex(word.word) && tags.empty())
+                if (word.word != wc.unknownWord() && tags.empty())
                 {
                     spdlog::warn("Not found tags for '{}'", line);
                 }
@@ -212,10 +201,17 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                         }
                     }
 
-                    word.tags = tc.findMostSimilarTag(tag, tags);
-                    if (!isValidIndex(word.tags))
+                    if (word.word != wc.unknownWord())
                     {
-                        spdlog::warn("Not found tag for '{}'", line);
+                        word.tags = tc.findMostSimilarTag(tag, tags);
+                        if (!isValidIndex(word.tags))
+                        {
+                            spdlog::warn("Not found tag for '{}'", line);
+                        }
+                    }
+                    else
+                    {
+                        word.tags = tc.unknownTag();
                     }
                 }
 

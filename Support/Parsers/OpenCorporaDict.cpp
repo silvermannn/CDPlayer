@@ -27,10 +27,11 @@ static const std::unordered_map<std::string, std::string> _POSTagTranslator =
     {"NUMR", "num"},
     {"PRCL", "part"},
     {"PRED", "adv"},
-    {"PREP", "prep"},
+    {"PREP", "adp"},
     {"PRTF", "verb"},
     {"PRTS", "verb"},
-    {"PUNC", "punct"},
+    {"PNCT", "punct"},
+    {"SYM",  "sym"},
     {"VERB", "verb"},
 };
 
@@ -155,35 +156,36 @@ bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
 
     if (stream.is_open())
     {
-        WordId initialWord = -1;
         for (std::string line; std::getline(stream, line, '\n');)
         {
             printer.incProgress(line.size());
             if (line.empty() || line.starts_with('#') || line.starts_with('='))
             {
-                initialWord = invalidIndex<WordId>();
                 continue;
             }
 
-            std::vector<std::string> wordData = split(line, "\t ,");
-
-            if (wordData.size() < 2)
+            std::string form, rest;
+            if (!parsePair(line, "\t", form, rest))
             {
-                initialWord = invalidIndex<WordId>();
                 continue;
             }
 
-            toLower(wordData[0]);
+            filterWord(form);
 
-            if (!isValidIndex(initialWord))
+            std::vector<std::string> wordData = split(rest, "\t ,");
+
+            if (wordData.size() == 0)
             {
-                initialWord = wc.addWord(wordData[0]);
+                spdlog::debug("Skipped line ({} words) '{}'", wordData.size(), line);
+                continue;
             }
 
-            auto posTagTrtd = _POSTagTranslator.find(wordData[1]);
+            toLower(form);
+
+            auto posTagTrtd = _POSTagTranslator.find(wordData[0]);
             if (posTagTrtd == _POSTagTranslator.end())
             {
-               spdlog::error("Untranslatable POS tag name '{}' in '{}'", wordData[1], line);
+               spdlog::error("Untranslatable POS tag name '{}' in '{}'", wordData[0], line);
                return false;
             }
 
@@ -192,11 +194,11 @@ bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
             tag.POS = tc.POSTag2Index(posTagTrtd->second);
             if(!isValidIndex(tag.POS))
             {
-               spdlog::error("Unknown translated POS tag name '{}' in '{}'", wordData[1], line);
+               spdlog::error("Unknown translated POS tag name '{}' in '{}'", posTagTrtd->second, line);
                return false;
             }
 
-            auto POSAdditions = _POSTagAdder.find(wordData[1]);
+            auto POSAdditions = _POSTagAdder.find(wordData[0]);
             if (POSAdditions != _POSTagAdder.end())
             {
                 for (const auto& [k, v]: POSAdditions->second)
@@ -208,7 +210,7 @@ bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 }
             }
 
-            for (size_t i = 2; i < wordData.size(); ++i)
+            for (size_t i = 1; i < wordData.size(); ++i)
             {
                 if (_skippedFeatures.contains(wordData[i]))
                 {
@@ -234,10 +236,10 @@ bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 tag.features[nameId] = valueId;
             }
 
-            // Artificial sentence with oone word only
+            // Artificial sentence with one word only
             Word word;
             word.tags = tc.addTag(tag);
-            word.word = wc.addWordForm(word.tags, wordData[0]);
+            word.word = wc.addWordForm(word.tags, form);
 
             Sentence sentence;
             sentence.words.push_back(word);

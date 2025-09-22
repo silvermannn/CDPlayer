@@ -129,7 +129,7 @@ TagId TagsCollection::findMostSimilarTag(const POSTag& tag, const std::vector<Ta
         }
 
         size_t diff = *t - tag;
-        if (minimalDiff < diff)
+        if (minimalDiff > diff)
         {
             minimalDiff = diff;
             mostSimilarTag = tid;
@@ -141,7 +141,7 @@ TagId TagsCollection::findMostSimilarTag(const POSTag& tag, const std::vector<Ta
         return mostSimilarTag;
     }
 
-    return addTag(tag);
+    return invalidIndex<TagId>();
 }
 
 std::optional<POSTag> TagsCollection::getPOSTag(TagId tag) const
@@ -152,7 +152,8 @@ std::optional<POSTag> TagsCollection::getPOSTag(TagId tag) const
         return {};
     }
 
-    return std::make_optional(tags.lookupIndex(tag));}
+    return std::make_optional(tags.lookupIndex(tag));
+}
 
 SimpleTagId TagsCollection::POSTag2Index(const std::string& s) const
 {
