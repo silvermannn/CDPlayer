@@ -1,10 +1,14 @@
 # CDPlayer
-Playing with Conceptual Dependencies ideas
+
+Обработка текста с использованием идей концептуальных зависимостей Р. Шенка
 
 # Components:
 
-- tokenizer
-- POS tagger: HMM, trained on CoNLLU files -- C++
-- dependency tree builder: statistics (3D matrix *from* -> *to* -> *dependency relation*), building graph of all possible relation for input sentence, then find minimal spanning tree from root (chu liu edmonds algorithm) -- C++
-- coreference resolution
-- tree -> semantic primitives rules -- Haskell
+- Токенайзер - пока самый простой, рахбиваем входное предложение по пробельным символам
+- Словарь слов [OpenCorpora Dict|https://opencorpora.org]
+- Таггер: HMM, тренированная на файлах CoNLLU, корпуса с [https://github.com/natasha/corus] -- C++
+- Построение дерева зависимостей
+    - статистика из CoNLLU файлов (3D matrix *dependency head* -> *to* -> *dependency relation*)
+    - построение ориентированного графа из всех возможных зависимостей с весами из статистики
+    - нахождение минимального осьовного дерева из искуственного корня, ([https://codeforces.com/blog/entry/20079|алгоритм двух китайцев], [https://en.wikipedia.org/wiki/Edmonds%27_algorithm|Chu Liu Edmonds]) -- C++
+- Дерево зависимостей (или построенное на его основе другое синтаксическое дерево) как запрос к базе данных концептуальных зависимостей -- Haskell
