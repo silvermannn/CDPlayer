@@ -1,5 +1,8 @@
 #include "TagsCollection.h"
 
+#include <limits>
+#include <algorithm>
+
 #include <spdlog/spdlog.h>
 
 #include "BidirectionalMap.h"
@@ -8,7 +11,7 @@ static const char defServiceTag[] = "<>";
 
 // https://universaldependencies.org/u/pos/all.html
 static const BidirectionalMap<std::string, SimpleTagId> POS_TAGS = {
-    defServiceTag, 
+    defServiceTag,
     "x", "adj", "adp", "adv", "aux", "cconj", "det", "intj", "noun",
     "num", "part", "pron", "propn", "punct", "sconj", "sym", "verb",
 };
@@ -111,6 +114,34 @@ TagId TagsCollection::unknownTag() const
 TagId TagsCollection::addTag(const POSTag& tag)
 {
     return tags.lookupOrInsert(tag);
+}
+
+TagId TagsCollection::findMostSimilarTag(const POSTag& tag, const std::vector<TagId>& tags)
+{
+    size_t minimalDiff = std::numeric_limits<size_t>::max();
+    TagId mostSimilarTag = invalidIndex<TagId>();
+    for (const auto& tid: tags)
+    {
+        const auto& t = getPOSTag(tid);
+        if (!t)
+        {
+            continue;
+        }
+
+        size_t diff = *t - tag;
+        if (minimalDiff < diff)
+        {
+            minimalDiff = diff;
+            mostSimilarTag = tid;
+        }
+    }
+
+    if (isValidIndex(mostSimilarTag))
+    {
+        return mostSimilarTag;
+    }
+
+    return addTag(tag);
 }
 
 std::optional<POSTag> TagsCollection::getPOSTag(TagId tag) const

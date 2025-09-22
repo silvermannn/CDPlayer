@@ -146,7 +146,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                 word.initialWord = wc.word2index(wordData[2]);
                 if (!isValidIndex(word.initialWord))
                 {
-                    spdlog::warn("Unknown word initial form '{}' in '{}'", wordData[2], line);
+                    spdlog::warn("Unknown word initial form '{}'", wordData[2]);
                     word.initialWord = wc.unknownWord();
                 }
 
@@ -154,18 +154,70 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                 word.word = wc.word2index(wordData[1]);
                 if (!isValidIndex(word.word))
                 {
-                    spdlog::warn("Unknown word '{}' in '{}'", wordData[1], line);
+                    spdlog::warn("Unknown word '{}'", wordData[1], line);
                     word.word = wc.unknownWord();
                 }
 
-                word.tags = wc.findTagForWord(word.word, word.initialWord);
-                if (!isValidIndex(word.tags))
+                std::vector<TagId> tags = wc.findTagsForWord(word.word);
+                if (isValidIndex(word.word) && tags.empty())
                 {
-                    spdlog::warn("Tag not found for word pair '{}' '{}' in '{}'", wordData[2], wordData[1], line);
-                    word.tags = tc.unknownTag();
+                    spdlog::warn("Not found tags for '{}'", line);
                 }
 
-                // Ignore tags for now.
+                if (tags.size() == 1)
+                {
+                    word.tags = tags[0];
+                }
+                else
+                {
+                    POSTag tag;
+
+                    tag.POS = tc.POSTag2Index(fixTag(wordData[3]));
+                    if (!isValidIndex(tag.POS))
+                    {
+                        spdlog::warn("Unknown POS tag: '{}' in '{}'", wordData[3], line);
+                        continue;
+                    }
+
+                    std::string featuresLine;
+                    if (wordData.size() > 4 && wordData[4] != "_") featuresLine += wordData[4];
+                    if (wordData.size() > 5 && wordData[5] != "_") featuresLine += '|' + wordData[5];
+
+                    std::vector<std::string> features = split(featuresLine, "/|");
+                    std::sort(features.begin(), features.end());
+                    for (auto featurePair: features)
+                    {
+                        std::string name, value;
+                        if (!parsePair(featurePair, "=", name, value))
+                        {
+                            continue;
+                        }
+
+                        std::string newPOS;
+                        if (name.empty() || value.empty() || !fixFeatureName(name, wordData[3], newPOS)|| !fixFeatureValue(value))
+                        {
+                            if (!newPOS.empty())
+                            {
+                                tag.POS = tc.POSTag2Index(fixTag(wordData[3]));
+                                break;
+                            }
+                            continue;
+                        }
+
+                        SimpleTagId fname = tc.featureName2Index(name);
+                        SimpleTagId fvalue = tc.featureValue2Index(value);
+                        if (isValidIndex(fname) && isValidIndex(fvalue))
+                        {
+                            tag.features[fname] = fvalue;
+                        }
+                    }
+
+                    word.tags = tc.findMostSimilarTag(tag, tags);
+                    if (!isValidIndex(word.tags))
+                    {
+                        spdlog::warn("Not found tag for '{}'", line);
+                    }
+                }
 
                 try
                 {

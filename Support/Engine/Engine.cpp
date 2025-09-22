@@ -6,7 +6,7 @@
 #include "Utility.h"
 #include "../ZLibFile/ZLibFile.h"
 #include "../Parsers/CoNLLU.h"
-#include "../Parsers/DictOpenCorpora.h"
+#include "../Parsers/OpenCorporaDict.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
@@ -30,10 +30,10 @@ Engine::Engine()
     spdlog::info("Created Engine");
 
     static CoNLLUParser conlluParser;
-    static DOCParser docParser;
+    static OCDParser ocdParser;
 
     registerParser("CoNLLU", conlluParser);
-    registerParser("DictOpenCorpora", docParser);
+    registerParser("OpenCorporaDict", ocdParser);
 
     reset();
 }

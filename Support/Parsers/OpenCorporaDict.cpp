@@ -1,10 +1,11 @@
-#include "DictOpenCorpora.h"
+#include "OpenCorporaDict.h"
 
 #include <fstream>
 #include <filesystem>
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <iostream>
 
 #include "../Engine/Utility.h"
 
@@ -26,9 +27,10 @@ static const std::unordered_map<std::string, std::string> _POSTagTranslator =
     {"NUMR", "num"},
     {"PRCL", "part"},
     {"PRED", "adv"},
-    {"PREP", "adj"},
+    {"PREP", "prep"},
     {"PRTF", "verb"},
     {"PRTS", "verb"},
+    {"PUNC", "punct"},
     {"VERB", "verb"},
 };
 
@@ -145,7 +147,7 @@ static const std::unordered_set<std::string> _skippedFeatures =
     "ms-f", "Ms-f", "GNdr",
 };
 
-bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection&, Sentences&, Printer& printer)
+bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection&, Sentences& sentences, Printer& printer)
 {
     printer.init(std::string("Parse ") + fileName, std::filesystem::file_size(fileName));
 
@@ -163,8 +165,6 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 continue;
             }
 
-            //toLower(line);
-
             std::vector<std::string> wordData = split(line, "\t ,");
 
             if (wordData.size() < 2)
@@ -173,9 +173,11 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 continue;
             }
 
+            toLower(wordData[0]);
+
             if (!isValidIndex(initialWord))
             {
-                initialWord = wc.addInitialWord(wordData[0]);
+                initialWord = wc.addWord(wordData[0]);
             }
 
             auto posTagTrtd = _POSTagTranslator.find(wordData[1]);
@@ -225,16 +227,22 @@ bool DOCParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
 
                 if (!isValidIndex(nameId) || !isValidIndex(valueId))
                 {
-                    spdlog::error("Skipped feature name/value '{}={}' in '{}'", featurePair->second.first, featurePair->second.second, line);
+                    spdlog::warn("Skipped feature name/value '{}={}' in '{}'", featurePair->second.first, featurePair->second.second, line);
                     continue;
                 }
 
                 tag.features[nameId] = valueId;
             }
 
-            TagId tid = tc.addTag(tag);
+            // Artificial sentence with oone word only
+            Word word;
+            word.tags = tc.addTag(tag);
+            word.word = wc.addWordForm(word.tags, wordData[0]);
 
-            wc.addWordForm(initialWord, tid, wordData[0]);
+            Sentence sentence;
+            sentence.words.push_back(word);
+
+            sentences.push_back(sentence);
         }
     }
 

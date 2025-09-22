@@ -18,6 +18,24 @@ struct POSTag
     {
         return POS == other.POS && features == other.features;
     }
+
+    size_t operator-(const auto& other) const
+    {
+        if (&other == this)
+        {
+            return 0;
+        }
+
+        size_t diff = (POS != other.POS)?100:0;
+        size_t maxSize = std::max(features.size(), other.features.size());
+        size_t numberOfSimilar = std::count_if(features.begin(), features.end(), [&](const auto& pair)
+        {
+            const auto& it = other.features.find(pair.first);
+            return it != other.features.end() && it->second == pair.second;
+        });
+
+        return diff + maxSize - numberOfSimilar;
+    }
 };
 
 template<>

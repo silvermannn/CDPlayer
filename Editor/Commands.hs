@@ -56,7 +56,8 @@ commands = [
 
 -- Working with support lib
     CmdDescr ["parse","conllu"]                []                            (CRDFilePathList "path") (cmdParse "CoNLLU")        "Parse CoNNLU files or directories.",
-    CmdDescr ["parse","OpenCorpora", "dict"]   []                            (CRDFilePathList "path") (cmdParse "DictOpenCorpora") "Parse Dict OpenCorpora files or directories.",
+    CmdDescr ["parse","OpenCorpora", "dict"]   []                            (CRDFilePathList "path") (cmdParse "OpenCorporaDict") "Parse OpenCorpora dictionary files.",
+    CmdDescr ["parse","OpenCorpora", "corpus"] []                            (CRDFilePathList "path") (cmdParse "OpenCorporaCorp") "Parse OpenCorpora corpus files.",
     CmdDescr ["save","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdSaveSentences           "Save parsed/loaded sentences.",
     CmdDescr ["load","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdLoadSentences           "Load sentences.",
     CmdDescr ["save","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdSaveEncoder             "Save word/tag encoder.",

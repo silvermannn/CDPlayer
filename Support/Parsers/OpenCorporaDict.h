@@ -6,10 +6,10 @@
 #include "../Collections/DepRelsCollection.h"
 #include "../Engine/Sentence.h"
 
-class DOCParser: public Parser
+class OCDParser: public Parser
 {
 public:
-    virtual ~DOCParser() {};
+    virtual ~OCDParser() {};
 
     virtual bool parse(const std::string& fileName, WordsCollection& wc, TagsCollection& tc, DepRelsCollection& drc, Sentences& sentences, Printer& printer);
 };

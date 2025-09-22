@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <optional>
 
 #include "POSTag.h"
@@ -23,6 +24,8 @@ public:
     TagId tagsSize() const;
 
     TagId addTag(const POSTag& tag);
+    TagId findMostSimilarTag(const POSTag& tag, const std::vector<TagId>& tags);
+    
     std::optional<POSTag> getPOSTag(TagId tag) const;
     
     TagId serviceTag() const;

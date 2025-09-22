@@ -13,20 +13,9 @@ typedef uint32_t WordId;
 
 class WordsCollection
 {
-    struct Word
-    {
-        WordId _initialWord;
-        TagId _posTag;
-        
-        bool operator==(const Word& other) const
-        {
-            return _initialWord == other._initialWord && _posTag == other._posTag;
-        }
-    };
-
     BidirectionalMap<std::string, WordId> _words2ids;
 
-    std::unordered_multimap<WordId, Word> _ids2words;
+    std::unordered_multimap<WordId, TagId> _wids2tags;
 
     WordId _serviceWord;
     WordId _unknownWord;
@@ -39,17 +28,17 @@ public:
     void reset();
 
     size_t wordsSize() const;
-    
-    WordId addInitialWord(const std::string& word);
-    WordId addWordForm(WordId initialForm, TagId tagId, const std::string& word);
+
+    WordId addWord(const std::string& word);
+    WordId addWordForm(TagId tagId, const std::string& word);
 
     WordId serviceWord() const;
     WordId unknownWord() const;
 
     WordId word2index(const std::string& word) const;
     std::optional<std::string> index2word(WordId word);
-    
-    TagId findTagForWord(WordId word, WordId initialForm) const;
+
+    std::vector<TagId> findTagsForWord(WordId word) const;
 
     bool saveBinary(ZLibFile& zfile) const;
     bool loadBinary(ZLibFile& zfile);
