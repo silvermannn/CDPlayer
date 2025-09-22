@@ -346,8 +346,16 @@ bool Engine::parse(const std::string& path, const std::string& parserName)
 
     spdlog::info("Sentences loaded: {}", sentences.size());
     spdlog::info("Words loaded: {}", wordsCollection.wordsSize());
+    const auto wp = wordsCollection.maxTagsPerWord();
+    spdlog::info("Maximum tags per word loaded: {} -> {}", wp.second, *wordsCollection.index2word(wp.first));
     spdlog::info("Tags loaded: {}", tagsCollection.tagsSize());
     spdlog::info("Dependency relations loaded: {}", depRelsCollection.depRelsSize());
+    
+    {
+        std::ofstream s("tags.txt");
+        tagsCollection.saveTags(s);
+    }
+    
     return true;
 }
 

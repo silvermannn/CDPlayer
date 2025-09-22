@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include <x86intrin.h>
 
@@ -37,6 +38,8 @@ struct POSTag
         return diff + maxSize - numberOfSimilar;
     }
 };
+
+typedef std::unordered_set<TagId> TagSet;
 
 template<>
 bool ZLibFile::write<POSTag>(const POSTag& s);

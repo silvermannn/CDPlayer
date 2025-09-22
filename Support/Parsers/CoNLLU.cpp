@@ -147,7 +147,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                     word.initialWord = wc.unknownWord();
                 }
 
-                std::vector<TagId> tags = wc.findTagsForWord(word.word);
+                TagSet tags = wc.findTagsForWord(word.word);
                 if (word.word != wc.unknownWord() && tags.empty())
                 {
                     spdlog::warn("Not found tags for '{}'", line);
@@ -155,7 +155,7 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
 
                 if (tags.size() == 1)
                 {
-                    word.tags = tags[0];
+                    word.tags = *tags.begin();
                 }
                 else
                 {
@@ -198,6 +198,10 @@ bool CoNLLUParser::parse(const std::string& fileName, WordsCollection& wc, TagsC
                         if (isValidIndex(fname) && isValidIndex(fvalue))
                         {
                             tag.features[fname] = fvalue;
+                        }
+                        else
+                        {
+                            spdlog::warn("Wrong feature pair '{}={}'", name, value);
                         }
                     }
 

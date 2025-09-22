@@ -4,6 +4,7 @@
 #include <vector>
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "POSTag.h"
 #include "BidirectionalMap.h"
@@ -13,9 +14,9 @@ typedef uint32_t WordId;
 
 class WordsCollection
 {
-    BidirectionalMap<std::string, WordId> _words2ids;
+    BidirectionalMap<std::string, WordId> _words;
 
-    std::unordered_multimap<WordId, TagId> _wids2tags;
+    std::unordered_map<WordId, TagSet> _wids2tags;
 
     WordId _serviceWord;
     WordId _unknownWord;
@@ -28,6 +29,7 @@ public:
     void reset();
 
     size_t wordsSize() const;
+    std::pair<WordId, size_t> maxTagsPerWord() const;
 
     WordId addWord(const std::string& word);
     WordId addWordForm(TagId tagId, const std::string& word);
@@ -38,7 +40,7 @@ public:
     WordId word2index(const std::string& word) const;
     std::optional<std::string> index2word(WordId word);
 
-    std::vector<TagId> findTagsForWord(WordId word) const;
+    const TagSet& findTagsForWord(WordId word) const;
 
     bool saveBinary(ZLibFile& zfile) const;
     bool loadBinary(ZLibFile& zfile);

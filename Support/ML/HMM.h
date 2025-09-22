@@ -60,7 +60,7 @@ public:
 
     std::vector<HS> predict(HS serviceTag, const std::vector<ES>& emissions) const
     {
-        spdlog::debug("Predicy by HMM");
+        spdlog::debug("Predicting by HMM");
 
         if (emissions.empty())
         {

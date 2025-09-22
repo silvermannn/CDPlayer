@@ -45,7 +45,7 @@ static const std::unordered_map<std::string, std::initializer_list<std::pair<std
               {"variant", "short"}}},
 };
 
-static const std::unordered_map<std::string, std::pair<std::string, std::string>> _FeatureTranslator =
+static const std::unordered_map<std::string, std::pair<std::string, std::string>> _FeatureTranslator(
 {
     {"Ques", {"prontype", "int"}},
     {"Dmns", {"prontype", "dem"}},
@@ -106,6 +106,7 @@ static const std::unordered_map<std::string, std::pair<std::string, std::string>
     {"3per", {"person", "3"}},
 
     {"Abbr", {"abbr", "yes"}},
+    {"Init", {"abbr", "yes"}},
     {"Name", {"nametype", "giv"}},
     {"Surn", {"nametype", "sur"}},
     {"Patr", {"nametype", "pat"}},
@@ -124,7 +125,7 @@ static const std::unordered_map<std::string, std::pair<std::string, std::string>
     {"Arch", {"style", "arch"}},
     {"Infr", {"style", "vrnc"}},
     {"Litr", {"style", "form"}},
-};
+}, 256);
 
 static const std::unordered_set<std::string> _skippedFeatures =
 {
@@ -135,7 +136,7 @@ static const std::unordered_set<std::string> _skippedFeatures =
     "Apro",
     "Coun",
     "Fimp",
-    "Init",
+    //"Init",
     "INFN",
     "Inmx",
     "Hypo",
@@ -170,6 +171,7 @@ bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 continue;
             }
 
+            toLower(form);
             filterWord(form);
 
             std::vector<std::string> wordData = split(rest, "\t ,");
@@ -179,8 +181,6 @@ bool OCDParser::parse(const std::string& fileName, WordsCollection& wc, TagsColl
                 spdlog::debug("Skipped line ({} words) '{}'", wordData.size(), line);
                 continue;
             }
-
-            toLower(form);
 
             auto posTagTrtd = _POSTagTranslator.find(wordData[0]);
             if (posTagTrtd == _POSTagTranslator.end())

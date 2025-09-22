@@ -116,7 +116,7 @@ TagId TagsCollection::addTag(const POSTag& tag)
     return tags.lookupOrInsert(tag);
 }
 
-TagId TagsCollection::findMostSimilarTag(const POSTag& tag, const std::vector<TagId>& tags)
+TagId TagsCollection::findMostSimilarTag(const POSTag& tag, const TagSet& tags)
 {
     size_t minimalDiff = std::numeric_limits<size_t>::max();
     TagId mostSimilarTag = invalidIndex<TagId>();
@@ -211,4 +211,18 @@ bool TagsCollection::saveBinary(ZLibFile& zfile) const
 bool TagsCollection::loadBinary(ZLibFile& zfile)
 {
     return tags.loadBinary(zfile);
+}
+
+void TagsCollection::saveTags(std::ostream& stream)
+{
+    for(size_t i = 0; i < tags.size(); ++i)
+    {
+        const auto& t = tags.lookupIndex(i);
+        stream << *index2POSTag(t.POS) << " (";
+        for (const auto& [k, v]: t.features)
+        {
+            stream << *index2FeatureName(k) << ":" << *index2FeatureValue(v) << ", ";
+        }
+        stream << ")" << std::endl;
+    }
 }

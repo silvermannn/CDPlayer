@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <optional>
+#include <iostream>
 
 #include "POSTag.h"
 #include "../ZLibFile/ZLibFile.h"
@@ -16,7 +17,7 @@ class TagsCollection
 
 public:
     TagsCollection();
-    
+
     bool operator==(const TagsCollection& other) const;
 
     void reset();
@@ -24,10 +25,10 @@ public:
     TagId tagsSize() const;
 
     TagId addTag(const POSTag& tag);
-    TagId findMostSimilarTag(const POSTag& tag, const std::vector<TagId>& tags);
-    
+    TagId findMostSimilarTag(const POSTag& tag, const TagSet& tags);
+
     std::optional<POSTag> getPOSTag(TagId tag) const;
-    
+
     TagId serviceTag() const;
     TagId unknownTag() const;
 
@@ -42,4 +43,6 @@ public:
 
     bool saveBinary(ZLibFile& zfile) const;
     bool loadBinary(ZLibFile& zfile);
+
+    void saveTags(std::ostream& stream);
 };
