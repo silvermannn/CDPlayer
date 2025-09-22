@@ -5,10 +5,10 @@
 # Components:
 
 - Токенайзер - пока самый простой, рахбиваем входное предложение по пробельным символам
-- Словарь слов [OpenCorpora Dict|https://opencorpora.org]
-- Таггер: HMM, тренированная на файлах CoNLLU, корпуса с [https://github.com/natasha/corus] -- C++
+- Словарь слов [OpenCorpora Dict](https://opencorpora.org)
+- Таггер: HMM, тренированная на файлах CoNLLU, корпуса [отсюда](https://github.com/natasha/corus) -- C++
 - Построение дерева зависимостей
     - статистика из CoNLLU файлов (3D matrix *dependency head* -> *to* -> *dependency relation*)
     - построение ориентированного графа из всех возможных зависимостей с весами из статистики
-    - нахождение минимального осьовного дерева из искуственного корня, ([https://codeforces.com/blog/entry/20079|алгоритм двух китайцев], [https://en.wikipedia.org/wiki/Edmonds%27_algorithm|Chu Liu Edmonds]) -- C++
+    - нахождение минимального осьовного дерева из искуственного корня, ([алгоритм двух китайцев](https://codeforces.com/blog/entry/20079), [Chu Liu Edmonds](https://en.wikipedia.org/wiki/Edmonds%27_algorithm) -- C++
 - Дерево зависимостей (или построенное на его основе другое синтаксическое дерево) как запрос к базе данных концептуальных зависимостей -- Haskell
