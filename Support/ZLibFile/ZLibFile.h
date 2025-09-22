@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <zlib.h>
 
@@ -114,8 +115,8 @@ public:
         return true;
     }
 
-    template<typename K, typename V>
-    bool write(const std::unordered_multimap<K, V>& m)
+    template<typename E>
+    bool write(const std::unordered_set<E>& m)
     {
         uint32_t size = m.size();
         if (!write(size))
@@ -123,9 +124,9 @@ public:
             return false;
         }
 
-        for(const auto& [k, v]: m)
+        for(const auto& e: m)
         {
-            if (!write(k) || !write(v))
+            if (!write(e))
             {
                 return false;
             }
@@ -134,8 +135,8 @@ public:
         return true;
     }
 
-    template<typename K, typename V>
-    bool read(std::unordered_multimap<K, V>& m)
+    template<typename E>
+    bool read(std::unordered_set<E>& m)
     {
         m.clear();
 
@@ -147,14 +148,13 @@ public:
 
         for (size_t i = 0; i < size; ++i)
         {
-            K k;
-            V v;
-            if (!read(k) || !read(v))
+            E e;
+            if (!read(e))
             {
                 return false;
             }
 
-            m.emplace(std::make_pair(k, v));
+            m.insert(e);
         }
 
         return true;

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <cstdio>
 
 #include "../Support/ZLibFile/ZLibFile.h"
@@ -156,16 +157,16 @@ TEST(ZLibFileTest, ReadWriteUnorderedMapS2S)
     }
 }
 
-TEST(ZLibFileTest, ReadWriteUnorderedMultimap)
+TEST(ZLibFileTest, ReadWriteUnorderedSet)
 {
     for (size_t t = 0; t < 100; ++t)
     {
-        std::unordered_multimap<size_t, uint16_t> m1;
+        std::unordered_set<uint16_t> s1;
         const size_t size = rand() % 1000;
 
         for (size_t i = 0; i < size; ++i)
         {
-            m1.emplace(std::make_pair(rand() % 100, rand()));
+            s1.insert(rand() % 100);
         }
 
         {
@@ -173,19 +174,19 @@ TEST(ZLibFileTest, ReadWriteUnorderedMultimap)
 
             EXPECT_TRUE(zfile.isOpen());
 
-            EXPECT_TRUE(zfile.write(m1));
+            EXPECT_TRUE(zfile.write(s1));
         }
 
         {
-            std::unordered_multimap<size_t, uint16_t> m2;
+            std::unordered_set<uint16_t> s2;
 
             ZLibFile zfile(fileName, false);
 
             EXPECT_TRUE(zfile.isOpen());
 
-            EXPECT_TRUE(zfile.read(m2));
+            EXPECT_TRUE(zfile.read(s2));
 
-            EXPECT_EQ(m1, m2);
+            EXPECT_EQ(s1, s2);
         }
 
         std::remove(fileName);
