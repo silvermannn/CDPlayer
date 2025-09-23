@@ -47,7 +47,10 @@ void Engine::reset(void)
     tagsCollection.reset();
     depRelsCollection.reset();
 
-    //unkWordOnly.words.push_back(depRelsCollection.unknownWord());
+    Word unknownWord;
+    unknownWord.word = wordsCollection.unknownWord();
+    unknownWord.tags = tagsCollection.unknownTag();
+    unkWordOnly.words.push_back(unknownWord);
 
     spdlog::debug("Service word {}, tag {}", tagsCollection.serviceTag(), wordsCollection.serviceWord());
     spdlog::debug("Unknown word {}, tag {}", tagsCollection.unknownTag(), wordsCollection.unknownWord());
