@@ -8,6 +8,8 @@ cddbFilesHS != find ./CDDB/ -type f -name '*.hs'
 
 editorFiles = libsupport.so ${libSupportHS} ${cddbFilesHS} ${editorFilesHS}
 
+hsDefaultFlags = -no-keep-hi-files -no-keep-o-files -Wall -Wextra -static
+
 editor: ${editorFiles}
 	ghc ${hsDefaultFlags} ${linkLibSupport} -lsupport -L. -O4 Editor/Main.hs -o editor
 	strip editor
