@@ -1,41 +1,6 @@
-libSupportFiles != find ./Support/ -type f -name '*.c*'
-
-libSupportHeaders != find ./Support/ -type f -name '*.h'
-
-libSupportHS != find ./Support/ -type f -name '*.hs'
-
-libSupportLibs = `pkg-config --libs --cflags icu-uc icu-io` -lz -lspdlog -lfmt
-
-libSupportCFLAGS = -Wextra -Wall -Wpedantic -shared -fPIC -std=c++23
-
-libsupport-d.so: $(libSupportFiles) $(libSupportHeaders)
-	g++ $(libSupportFiles) ${libSupportCFLAGS} ${libSupportLibs} -pg -g -o libsupport-d.so
-
-libsupport.so: $(libSupportFiles) $(libSupportHeaders)
-	g++ $(libSupportFiles) ${libSupportCFLAGS} ${libSupportLibs} -O4 -o libsupport.so
-
-testFilesCPP != find ./Tests/ -type f -name '*.cpp'
-
-testFilesHS != find ./Tests/ -type f -name '*.hs'
-
-linkLibSupport = -lsupport -L.
-
-testCFLAGS = -Wextra -Wall -Wpedantic -std=c++23 -lz -lgtest
-
-tests-debug: libsupport-d.so ${testFilesCPP}
-	g++ ${testFilesCPP} ${testCFLAGS} -lspdlog -lfmt -L. -lsupport-d -g -pg -o tests-debug
-	LD_LIBRARY_PATH=. time -v ./tests-debug
-	gprof tests gmon.out > analisys.txt
-
-tests: libsupport.so ${testFilesCPP}
-	g++ ${testFilesCPP} ${testCFLAGS} -lspdlog -lfmt ${linkLibSupport} -O4 -o tests
-	LD_LIBRARY_PATH=. time -v ./tests
-
-hsDefaultFlags = -no-keep-hi-files -no-keep-o-files -Wall -Wextra -static
-
-tests-hs: libsupport.so ${libSupportHS} ${testFilesHS}
-	ghc ${hsDefaultFlags} ${linkLibSupport} Tests/Main.hs -o tests-hs
-	LD_LIBRARY_PATH=. time -v ./tests-hs
+libsupport.so:
+	make -C Support libsupport.so
+	mv Support/libsupport.so libsupport.so
 
 editorFilesHS != find ./Editor/ -type f -name '*.hs'
 
@@ -44,7 +9,7 @@ cddbFilesHS != find ./CDDB/ -type f -name '*.hs'
 editorFiles = libsupport.so ${libSupportHS} ${cddbFilesHS} ${editorFilesHS}
 
 editor: ${editorFiles}
-	ghc ${hsDefaultFlags} ${linkLibSupport} -O4 Editor/Main.hs -o editor
+	ghc ${hsDefaultFlags} ${linkLibSupport} -lsupport -L. -O4 Editor/Main.hs -o editor
 	strip editor
 
 editor-prof: ${editorFiles}
