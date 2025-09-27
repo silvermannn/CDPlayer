@@ -33,7 +33,7 @@ parseWords ls = do
     m <- foldM parseWord M.empty ls
     return $ newDictionary m
 
-parseWord :: M.Map T.Text (S.Set (Tag Int)) -> T.Text -> Either T.Text (M.Map T.Text (S.Set (Tag Int)))
+parseWord :: M.Map T.Text (S.Set Tag) -> T.Text -> Either T.Text (M.Map T.Text (S.Set Tag))
 parseWord m "" = Right m
 parseWord m l | isRight (TR.decimal l) = Right m
 parseWord m l = do
@@ -41,7 +41,7 @@ parseWord m l = do
     parsed <- parseTags rest
     return $ M.insertWith S.union (T.toLower w) parsed m
 
-parseTags :: [T.Text] -> Either T.Text (S.Set (Tag Int))
+parseTags :: [T.Text] -> Either T.Text (S.Set Tag)
 parseTags ts = do
     (sPOSTag, sfs) <- maybeToEither "Cannot split to POS tag and features" $ uncons $ concatMap (filter (not . T.null) . T.split isSplit) ts
     posTag <- maybeToEither ("Tag " <> sPOSTag <> " not found in " <> T.intercalate ", " ts) $ M.lookup sPOSTag mapPOS >>= findItem uPOSTags

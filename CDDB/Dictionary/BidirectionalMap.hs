@@ -35,3 +35,6 @@ findItem (BidirectionalMap v) x = binarySearch 0 (V.length v)
             where
                 mid = (lo + hi) `div` 2
                 x' = v V.! mid
+
+lookupId :: BidirectionalMap a -> Int -> a
+lookupId (BidirectionalMap v) i = v V.! i

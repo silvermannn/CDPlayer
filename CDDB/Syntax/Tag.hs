@@ -1,12 +1,16 @@
+{-# LANGUAGE OverloadedStrings #-}
 module CDDB.Syntax.Tag where
 
-import Data.List.Extra (intercalate)
+import Data.Text (Text, intercalate)
 
-data Tag a = Tag a [(a, a)] deriving (Eq, Ord)
+import CDDB.Dictionary.BidirectionalMap
+import CDDB.Dictionary.UniversalDependencies
 
-type Tags a = [Tag a]
+data Tag = Tag Int [(Int, Int)] deriving (Eq, Ord, Show)
 
-instance Show a => Show (Tag a) where
-    show (Tag pos fs) = show pos ++ " (" ++ intercalate ", " (map s fs) ++ ")"
-        where
-            s (n, v) = show n ++ ": " ++ show v
+type Tags = [Tag]
+
+describeTag :: Tag -> Text
+describeTag (Tag pos fs) = lookupId uPOSTags pos <> " (" <> intercalate ", " (map showFeature fs) <> ")"
+    where
+        showFeature (n, v) = lookupId featureNames n <> ": " <> lookupId featureValues v
