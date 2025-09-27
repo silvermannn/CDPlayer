@@ -1,21 +1,17 @@
-libsupport.so:
-	make -C Support libsupport.so
-	mv Support/libsupport.so libsupport.so
-
 editorFilesHS != find ./Editor/ -type f -name '*.hs'
 
 cddbFilesHS != find ./CDDB/ -type f -name '*.hs'
 
-editorFiles = libsupport.so ${libSupportHS} ${cddbFilesHS} ${editorFilesHS}
+editorFiles = ${cddbFilesHS} ${editorFilesHS}
 
 hsDefaultFlags = -no-keep-hi-files -no-keep-o-files -Wall -Wextra -static
 
 editor: ${editorFiles}
-	ghc ${hsDefaultFlags} ${linkLibSupport} -lsupport -L. -O4 Editor/Main.hs -o editor
+	ghc ${hsDefaultFlags} -O4 Editor/Main.hs -o editor
 	strip editor
 
 editor-prof: ${editorFiles}
-	ghc ${hsDefaultFlags} ${linkLibSupport} -rtsopts -prof -fprof-auto -ticky -fdistinct-constructor-tables -O4 Editor/Main.hs -o editor-prof
+	ghc ${hsDefaultFlags} -rtsopts -prof -fprof-auto -ticky -fdistinct-constructor-tables -O4 Editor/Main.hs -o editor-prof
 	./editor-prof +RTS -l-augT -hc
 	eventlog2html editor-prof.eventlog
 

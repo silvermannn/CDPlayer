@@ -13,8 +13,6 @@ import Editor.Commands.Handlers.CDDB
 import Editor.Commands.Handlers.Rules
 import Editor.Commands.Handlers.Templates
 import Editor.Commands.Handlers.Runner
-import Editor.Commands.Handlers.SaveLoad
-import Editor.Commands.Handlers.Train
 import Editor.Commands.Handlers.Sentence
 import Editor.Commands.Handlers.Dictionary
 
@@ -55,18 +53,6 @@ commands = [
     CmdDescr ["delete","template"]             [CADString "name"]            CRDNothing               cmdDeleteTemplate          "Delete template from CD database.",
     CmdDescr ["run","tree"]                    []                            (CRDString "tree")       cmdRunTree                 "Run tree on CD database.",
     CmdDescr ["run","current","tree"]          []                            CRDNothing               cmdRunCurrentTree          "Run current tree on CD database.",
-
--- Working with support lib
-    CmdDescr ["save","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdSaveSentences           "Save parsed/loaded sentences.",
-    CmdDescr ["load","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdLoadSentences           "Load sentences.",
-    CmdDescr ["save","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdSaveEncoder             "Save word/tag encoder.",
-    CmdDescr ["load","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdLoadEncoder             "Load word/tag encoder.",
-    CmdDescr ["train","tagger"]                [CADFloat "smoothing factor"] CRDNothing               cmdTrainTagger             "Train tagger on sentences loaded.",
-    CmdDescr ["save","tagger"]                 [CADFilePath "path.gz"]       CRDNothing               cmdSaveTagger              "Save tagger.",
-    CmdDescr ["load","tagger"]                 [CADFilePath "path.gz"]       CRDNothing               cmdLoadTagger              "Load tagger.",
-    CmdDescr ["train","tree","builder"]        [CADFloat "smoothing factor"] CRDNothing               cmdTrainTreeBuilder        "Train tree builder on sentences loaded.",
-    CmdDescr ["save","tree","builder"]         [CADFilePath "path.gz"]       CRDNothing               cmdSaveTreeBuilder         "Save dependency tree builder.",
-    CmdDescr ["load","tree","builder"]         [CADFilePath "path.gz"]       CRDNothing               cmdLoadTreeBuilder         "Load dependency tree builder.",
 
 -- Working with sentences/tagging/dependency tree
     CmdDescr ["new","sentence"]                []                            (CRDString "sentence")   cmdNewSentence             "Start working with new sentence.",
