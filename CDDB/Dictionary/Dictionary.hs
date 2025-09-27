@@ -23,7 +23,7 @@ data Dictionary = Dictionary {
 unknownWord :: Text
 unknownWord = "<unknown>"
 
-newDictionary :: M.Map Text (S.Set Tag) -> Dictionary
+newDictionary :: M.Map Text TagSet -> Dictionary
 newDictionary m = Dictionary {
     wordsCollection = wc,
     tagsCollection = tc,

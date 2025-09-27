@@ -9,6 +9,7 @@ import Data.Bifunctor (bimap)
 
 import CDDB.Syntax.Tag
 import CDDB.Syntax.DependencyTree
+import CDDB.Syntax.TreeBuilder
 import CDDB.Dictionary.Dictionary
 
 data CurrentSentence = CurrentSentence {
@@ -43,3 +44,6 @@ tagSentence d cs = do
     return $ cs {wordIDsAndTags = Just widsAndTags}
     where
         widsAndTags = map (fromMaybe (unknownWordId d, S.empty)) $ map (findWord d) (tokenized cs)
+
+buildTree :: BuildRuleSet -> CurrentSentence -> IO CurrentSentence
+buildTree rs cs = undefined

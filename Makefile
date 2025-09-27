@@ -20,13 +20,5 @@ hlint:
 	open report.html
 
 clean:
-	rm -fv libsupport*.so
-	rm -fv test*
 	rm -fv editor*
-	rm -fv analisys*.txt
-	rm -fv *.eventlog
-	rm -fv gmon.out
 	rm -fv report.html
-	rm -fv *.dot
-	rm -fv *.svg
-	rm -fv *.log

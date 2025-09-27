@@ -7,27 +7,29 @@ import CDDB.Syntax.Tag
 
 type DependencyRelation = Int
 
-data DependencyTree = DependencyTree Tag (M.Map DependencyRelation DependencyTree) deriving Show
+data NodeInfo = NodeInfo Int Int Tag
+
+data DependencyTree = DependencyTree {
+        wordId :: Int,
+        sentencePos :: Int,
+        tag :: Tag,
+        children :: (M.Map DependencyRelation DependencyTree)
+    } deriving Show
 
 insertNode :: DependencyRelation -> DependencyTree -> DependencyTree -> DependencyTree
-insertNode r d (DependencyTree a ch) = DependencyTree a $ M.insert r d ch
+insertNode r d dt = dt {children = M.insert r d (children dt)}
 
-insertTag :: DependencyRelation -> Tag -> DependencyTree -> DependencyTree
-insertTag r t (DependencyTree a ch) = DependencyTree a $ M.insert r (DependencyTree t M.empty) ch
+insertTag :: DependencyRelation -> Int -> Int -> Tag -> DependencyTree -> DependencyTree
+insertTag r w pos t dt  = dt {children = M.insert r (DependencyTree w pos t M.empty) (children dt)}
 
-findAllAndModifyTrees :: (Tag -> Bool) -> (DependencyTree -> DependencyTree) -> DependencyTree -> [DependencyTree]
-findAllAndModifyTrees m f t@(DependencyTree a ch) = [f t | m a] ++ map (DependencyTree a) children
+findAllAndModifyTrees :: (Tag -> Bool) -> (DependencyTree -> DependencyTree) -> DependencyTree -> [(Int, Int, Tag, DependencyTree)]
+findAllAndModifyTrees m f dt@(DependencyTree w pos t ch) = [(w, pos, t, f dt) | m t] ++ [(w', pos', t', DependencyTree w pos t ch') | (w', pos', t', ch') <- children]
     where
-        children = [M.insert k d ch | (k, v) <- M.toList ch, d <- findAllAndModifyTrees m f v]
+        children = [(w', pos', t', M.insert k d ch) | (k, v) <- M.toList ch, (w', pos', t', d) <- findAllAndModifyTrees m f v]
 
-scoreDifference :: DependencyTree -> DependencyTree -> Int
-scoreDifference (DependencyTree a1 ch1) (DependencyTree a2 ch2) = undefined
-
-toTree :: DependencyRelation -> DependencyTree -> Tree (DependencyRelation, Tag)
+toTree :: DependencyRelation -> DependencyTree -> Tree (DependencyRelation, Int, Int, Tag)
 toTree root dt = go (root, dt)
     where
-        go (root, DependencyTree a ch) = Node (root, a) $ map go $ M.toList ch
+        go (root, DependencyTree m w pos ch) = Node (root, m, w, pos) $ map go $ M.toList ch
 
 showDependencyTree root dt = putStrLn $ drawTree $ fmap show $ toTree root dt
-
-tt = DependencyTree (Tag 3 []) (M.fromList [(100, DependencyTree (Tag 1 []) (M.fromList [])), (200, DependencyTree (Tag 2 []) (M.fromList []))])
