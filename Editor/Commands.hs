@@ -11,10 +11,10 @@ import Editor.Commands.Handlers.CDDB
 import Editor.Commands.Handlers.Rules
 import Editor.Commands.Handlers.Templates
 import Editor.Commands.Handlers.Runner
-import Editor.Commands.Handlers.Parse
 import Editor.Commands.Handlers.SaveLoad
 import Editor.Commands.Handlers.Train
 import Editor.Commands.Handlers.Sentence
+import Editor.Commands.Handlers.Dictionary
 
 commands :: CmdDescrs
 commands = [
@@ -55,9 +55,6 @@ commands = [
     CmdDescr ["run","current","tree"]          []                            CRDNothing               cmdRunCurrentTree          "Run current tree on CD database.",
 
 -- Working with support lib
-    CmdDescr ["parse","conllu"]                []                            (CRDFilePathList "path") (cmdParse "CoNLLU")        "Parse CoNNLU files or directories.",
-    CmdDescr ["parse","OpenCorpora", "dict"]   []                            (CRDFilePathList "path") (cmdParse "OpenCorporaDict") "Parse OpenCorpora dictionary files.",
-    CmdDescr ["parse","OpenCorpora", "corpus"] []                            (CRDFilePathList "path") (cmdParse "OpenCorporaCorp") "Parse OpenCorpora corpus files.",
     CmdDescr ["save","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdSaveSentences           "Save parsed/loaded sentences.",
     CmdDescr ["load","sentences"]              [CADFilePath "path.gz"]       CRDNothing               cmdLoadSentences           "Load sentences.",
     CmdDescr ["save","encoder"]                [CADFilePath "path.gz"]       CRDNothing               cmdSaveEncoder             "Save word/tag encoder.",
@@ -75,6 +72,9 @@ commands = [
     CmdDescr ["delete","sentences"]            []                            (CRDEIntList "num")      cmdDeleteSentences         "Delete specified or all sentences.",
     CmdDescr ["tag","sentence"]                []                            (CRDEIntList "num")      cmdTagSentence             "Tag specified or all sentences.",
     CmdDescr ["build","tree"]                  []                            (CRDEIntList "num")      cmdBuildSentenceTree       "Build dependency tree for specified or all sentences.",
+
+-- Working with new tree building
+    CmdDescr ["load","OpenCorpora", "dict"]    []                            (CRDFilePathList "path") cmdLoadDictionary          "Load OpenCorpora dictionary files.",
 
     CmdDescr ["quit"]                          []                            CRDNothing               cmdQuit                    "Quit program."
     ]
