@@ -22,18 +22,16 @@ fromList :: Ord a => [a] -> BidirectionalMap a
 fromList xs = fromSet $ S.fromList xs
 
 fromSet :: Ord a => S.Set a -> BidirectionalMap a
-fromSet s = BidirectionalMap $ V.unfoldrN (S.size s) extractMin s
-    where
-        extractMin s = S.minView s
+fromSet s = BidirectionalMap $ V.unfoldrN (S.size s) S.minView s
 
 findItem :: Ord a => BidirectionalMap a -> a -> Maybe Int
-findItem (BidirectionalMap v) x = binarySearch v x 0 (V.length v)
+findItem (BidirectionalMap v) x = binarySearch 0 (V.length v)
     where
-        binarySearch _ _ lo hi | lo >= hi = Nothing
-        binarySearch v x lo hi = case compare x x' of
-            LT -> binarySearch v x lo mid
+        binarySearch lo hi | lo >= hi = Nothing
+        binarySearch lo hi = case compare x x' of
+            LT -> binarySearch lo mid
             EQ -> Just mid
-            GT -> binarySearch v x (mid + 1) hi
+            GT -> binarySearch (mid + 1) hi
             where
                 mid = (lo + hi) `div` 2
                 x' = v V.! mid

@@ -25,7 +25,7 @@ matchTag t1 t2 = t1 == t2
 matchTagInSs t1 (t2, avail) = avail && t1 == t2
 
 mapSentence match f [] = []
-mapSentence match f (s:ss) | match s = [(s, f s:ss)] ++ (map (fmap (s:)) $ mapSentence match f ss)
+mapSentence match f (s:ss) | match s = (s, f s:ss): map (fmap (s:)) $ mapSentence match f ss
 mapSentence match f (s:ss)           = map (fmap (s:)) $ mapSentence match f ss
 
 mapRule (ww, ss, dt) (Rule r _ srct dstt w) = [(ww * w, ss', dt') | (t, ss') <- mapSentence (matchTagInSs dstt) (fmap $ const False) ss, dt' <- findAllAndModifyTrees (matchTag srct) (insertTag r (fst t)) dt]
@@ -34,13 +34,13 @@ mapRules rs p = (null app, p: app)
     where
         app = concatMap (mapRule p) rs
 
-checkFinished (_, ts, _) = not $ or $ map snd ts
+checkFinished (_, ts, _) = not $ any snd ts
 
 applyRules rs ps = finished ++ (if null res then ps else applyRules rs res)
     where
         app = map (mapRules rs) ps
         finished = concatMap snd app
-        res = concatMap snd $ filter fst $ app
+        res = concatMap snd $ filter fst app
 
 ts = [(Tag 1 [], True), (Tag 2 [], True)]
 

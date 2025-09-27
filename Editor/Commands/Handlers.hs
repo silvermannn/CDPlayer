@@ -3,7 +3,7 @@
 module Editor.Commands.Handlers where
 
 import Data.List
-import Data.Text (Text(..), pack)
+import Data.Text (Text, pack)
 import Text.Read (readEither)
 import Data.Maybe (mapMaybe)
 import Data.UUID (fromString)

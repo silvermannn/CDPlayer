@@ -19,7 +19,7 @@ insertTag :: DependencyRelation -> Tag -> DependencyTree -> DependencyTree
 insertTag r t (DependencyTree a ch) = DependencyTree a $ M.insert r (DependencyTree t M.empty) ch
 
 findAllAndModifyTrees :: (Tag -> Bool) -> (DependencyTree -> DependencyTree) -> DependencyTree -> [DependencyTree]
-findAllAndModifyTrees m f t@(DependencyTree a ch) = (if m a then [f t] else []) ++ map (DependencyTree a) children
+findAllAndModifyTrees m f t@(DependencyTree a ch) = [f t | m a] ++ map (DependencyTree a) children
     where
         children = [M.insert k d ch | (k, v) <- M.toList ch, d <- findAllAndModifyTrees m f v]
 
@@ -29,7 +29,7 @@ scoreDifference (DependencyTree a1 ch1) (DependencyTree a2 ch2) = undefined
 toTree :: DependencyRelation -> DependencyTree -> Tree (DependencyRelation, Tag)
 toTree root dt = go (root, dt)
     where
-        go (root, (DependencyTree a ch)) = Node (root, a) $ map go $ M.toList ch
+        go (root, DependencyTree a ch) = Node (root, a) $ map go $ M.toList ch
 
 showDependencyTree root dt = putStrLn $ drawTree $ fmap show $ toTree root dt
 

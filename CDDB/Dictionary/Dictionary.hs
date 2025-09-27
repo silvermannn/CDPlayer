@@ -18,6 +18,7 @@ data Dictionary = Dictionary {
     }
     deriving Show
 
+newDictionary :: M.Map Text (S.Set (Tag Int)) -> Dictionary
 newDictionary m = Dictionary {
     wordsCollection = wc,
     tagsCollection = tc,
@@ -27,3 +28,8 @@ newDictionary m = Dictionary {
         wc = fromSet $ M.keysSet m
         tc = fromSet $ S.unions $ M.elems m
         ts = V.replicate (size wc) S.empty
+
+findWord :: Dictionary -> Text -> Maybe (Int, S.Set Int)
+findWord d w = do
+    wordId <- findItem (wordsCollection d) w
+    return (wordId, wordTags d V.! wordId)

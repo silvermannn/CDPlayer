@@ -1,13 +1,14 @@
 module Editor.Sentence where
 
 import Data.Maybe (catMaybes, fromMaybe)
-import Data.List.Extra (chunksOf, intercalate)
+import Data.List.Extra (chunksOf, intercalate, lower)
 import Data.List ((!?))
 import Data.Char (toLower)
 import Data.Tree
 
 import CDDB.Syntax.Tag
 import CDDB.Syntax.DependencyTree
+import CDDB.Dictionary.Dictionary
 
 import Support.Support
 
@@ -25,7 +26,7 @@ data CurrentSentence = CurrentSentence {
 newSentence :: String -> CurrentSentence
 newSentence ss = CurrentSentence {
         original = ss,
-        tokenized = words $ map toLower ss,
+        tokenized = words $ lower ss,
         wordIDs = Nothing,
         ctagged = Nothing,
         tagged = Nothing,
@@ -44,12 +45,12 @@ showSentence (n, cs) = do
     putStrLn $ "Compound tags:\t\t[" ++ intercalate "," (maybe [] (map show) (ctagged cs)) ++ "]"
     --putStrLn $ "Tag IDs:\t\t[" ++ intercalate "," (maybe [] (map show) (tagged cs)) ++ "]"
     tags <- describeTags $ fromMaybe [] (tagged cs)
-    putStrLn $ "Tags:\n" ++ intercalate "\n" (zipWith showWordAndTag (map (fromMaybe unknownWord) ws) (tags)) ++ "\n  |_______\n"
+    putStrLn $ "Tags:\n" ++ intercalate "\n" (zipWith showWordAndTag (map (fromMaybe unknownWord) ws) tags) ++ "\n  |_______\n"
     case deptree cs of
         Nothing -> putStrLn "No dependency tree built yet."
         Just dt -> do
             putStrLn "Dependency edges:"
-            putStrLn $ show $ edges cs
+            print (edges cs)
             --putStrLn "Dependency tree IDs:"
             --putStrLn $ show $ deptree cs
             --putStrLn $ drawDTTree show 0 dt

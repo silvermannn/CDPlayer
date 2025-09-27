@@ -27,5 +27,6 @@ initialProgramState settings = ProgramState
             currentRules = [],
             isNotSaved = True,
             currentTemplate = Nothing,
+            currentDictionary = Nothing,
             currentSentences = []
         }

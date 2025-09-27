@@ -12,11 +12,8 @@ import Data.Either (isRight)
 import Data.Either.Extra (maybeToEither)
 import Data.List (uncons)
 import Data.Maybe (fromMaybe)
-import Data.Bitraversable (bimapM)
 
 import Control.Monad
-
-import Debug.Trace
 
 import CDDB.Dictionary.Dictionary
 import CDDB.Dictionary.BidirectionalMap
@@ -26,14 +23,17 @@ import CDDB.Syntax.Tag
 
 -- https://opencorpora.org/
 
+parseText :: [FilePath] -> IO (Either T.Text Dictionary)
 parseText paths = do
     fileContent <- mapM TIO.readFile paths
     return $ parseWords (concatMap T.lines fileContent)
 
+parseWords :: [T.Text] -> Either T.Text Dictionary
 parseWords ls = do
     m <- foldM parseWord M.empty ls
     return $ newDictionary m
 
+parseWord :: M.Map T.Text (S.Set (Tag Int)) -> T.Text -> Either T.Text (M.Map T.Text (S.Set (Tag Int)))
 parseWord m "" = Right m
 parseWord m l | isRight (TR.decimal l) = Right m
 parseWord m l = do
@@ -41,17 +41,18 @@ parseWord m l = do
     parsed <- parseTags rest
     return $ M.insertWith S.union (T.toLower w) parsed m
 
+parseTags :: [T.Text] -> Either T.Text (S.Set (Tag Int))
 parseTags ts = do
-    (sPOSTag, sfs) <- maybeToEither ("Cannot split to POS tag and features") $ uncons $ filter (not . T.null) $ concatMap (T.split isSplit) ts
+    (sPOSTag, sfs) <- maybeToEither "Cannot split to POS tag and features" $ uncons $ concatMap (filter (not . T.null) . T.split isSplit) ts
     posTag <- maybeToEither ("Tag " <> sPOSTag <> " not found in " <> T.intercalate ", " ts) $ M.lookup sPOSTag mapPOS >>= findItem uPOSTags
-    mainFeaturesS <- maybeToEither ("Cannot map features in " <> T.intercalate ", " ts) $ mapM (flip M.lookup mapFeatures) sfs
+    mainFeaturesS <- maybeToEither ("Cannot map features in " <> T.intercalate ", " ts) $ mapM (`M.lookup` mapFeatures) sfs
     featurePairs <- Right $ featuresS (concat mainFeaturesS) sPOSTag
-    featureNames <- maybeToEither ("Cannot map feature names in " <> T.intercalate ", " (map fst featurePairs)) $ mapM (findItem featureNames . fst) featurePairs
-    featureValues <- maybeToEither ("Cannot map feature values in " <> T.intercalate ", " (map snd featurePairs)) $ mapM (findItem featureValues . snd) featurePairs
-    return $ S.singleton $ Tag posTag $ zip featureNames featureValues
+    names <- maybeToEither ("Cannot map feature names in " <> T.intercalate ", " (map fst featurePairs)) $ mapM (findItem featureNames . fst) featurePairs
+    values <- maybeToEither ("Cannot map feature values in " <> T.intercalate ", " (map snd featurePairs)) $ mapM (findItem featureValues . snd) featurePairs
+    return $ S.singleton $ Tag posTag $ zip names values
     where
         isSplit c = c == ' ' || c == ','
-        featuresS m t = m ++ (fromMaybe [] $ M.lookup t mapPOSAddition)
+        featuresS m t = m ++ fromMaybe [] (M.lookup t mapPOSAddition)
 
 mapPOS :: M.Map T.Text T.Text
 mapPOS = M.fromList [
@@ -76,6 +77,7 @@ mapPOS = M.fromList [
     ("VERB", "VERB")
     ]
 
+mapPOSAddition :: M.Map T.Text [(T.Text, T.Text)]
 mapPOSAddition = M.fromList [
     ("ADJS", [("Variant", "Short")]),
     ("GRND", [("VerbForm","Ger")]),
@@ -84,6 +86,7 @@ mapPOSAddition = M.fromList [
     ("PRTS", [("VerbForm","Part"),("Variant", "Short")])
     ]
 
+mapFeatures :: M.Map T.Text [(T.Text, T.Text)]
 mapFeatures = M.fromList [
     ("Ques", [("PronType", "Int")]),
     ("Dmns", [("PronType", "Dem")]),
