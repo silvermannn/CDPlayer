@@ -3,6 +3,7 @@
 module Editor.Commands.Types where
 
 import Data.UUID
+import qualified Data.Text as T
 
 import Editor.State
 
@@ -33,7 +34,7 @@ data CmdArg = CAString String | CAInt Int | CABool Bool | CAFloat Float deriving
 
 data CmdRest = CRStringList [String] | CRString String | CRIntList [Int]  | CRUUIDList [UUID] | CRTree String  | CRNothing deriving (Show, Eq)
 
-type CommandHandler = ProgramState -> [CmdArg] -> CmdRest -> IO (Either String ProgramState)
+type CommandHandler = ProgramState -> [CmdArg] -> CmdRest -> IO (Either T.Text ProgramState)
 
 describeCommand :: CmdDescr -> String
 describeCommand (CmdDescr kw ma ra _ _) = unwords kw ++ " " ++ unwords (map describeCommandDef ma) ++ " " ++ describeCommandRest ra

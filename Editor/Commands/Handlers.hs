@@ -1,8 +1,9 @@
-{-# LANGUAGE NoGeneralizedNewtypeDeriving, DerivingStrategies #-}
+{-# LANGUAGE NoGeneralizedNewtypeDeriving, DerivingStrategies, OverloadedStrings #-}
 
 module Editor.Commands.Handlers where
 
 import Data.List
+import Data.Text (Text(..), pack)
 import Text.Read (readEither)
 import Data.Maybe (mapMaybe)
 import Data.UUID (fromString)
@@ -15,15 +16,15 @@ import Editor.Commands.Types
 filterCommandDescr :: [CmdDescr] -> [String] -> [CmdDescr]
 filterCommandDescr cds ss = filter (and . zipWith isPrefixOf ss . keywords) cds
 
-runInput :: ProgramState -> [String] -> CmdDescrs -> IO (Either String ProgramState)
+runInput :: ProgramState -> [String] -> CmdDescrs -> IO (Either Text ProgramState)
 runInput state argss cds = case filterCommandDescr cds argss of
     [cd] -> callArgs state argss cd
     []   -> return $ Left "Command not found"
     _    -> return $ Left "Many commmands fit input"
     where
-        callArgs :: ProgramState -> [String] -> CmdDescr -> IO (Either String ProgramState)
+        callArgs :: ProgramState -> [String] -> CmdDescr -> IO (Either Text ProgramState)
         callArgs pa strings cd = case applyArgs of
-            Left err -> return $ Left err
+            Left err -> return $ Left $ pack err
             Right (as', rs') -> handler cd pa as' rs'
             where
                 applyArgs = do

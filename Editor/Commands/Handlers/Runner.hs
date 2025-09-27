@@ -1,5 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Editor.Commands.Handlers.Runner where
 
+import Data.Text (pack)
 import Text.Read (readEither)
 
 import CDDB.Logging
@@ -12,7 +14,7 @@ import Editor.Commands.Types
 
 cmdRunTree :: CommandHandler
 cmdRunTree state [] (CRString s) =  case readEither s of
-    Left err -> return $ Left err
+    Left err -> return $ Left $ pack err
     Right tree -> if null results
         then return $ Left "Nothing happened..."
         else do

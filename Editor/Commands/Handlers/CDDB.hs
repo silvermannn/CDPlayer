@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Editor.Commands.Handlers.CDDB where
 
 import Data.Time (getCurrentTime)

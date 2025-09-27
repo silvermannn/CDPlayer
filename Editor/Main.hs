@@ -3,6 +3,8 @@
 
 module Main where
 
+import Data.Text (unpack)
+
 import System.Console.Haskeline
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Catch (catch, SomeException)
@@ -44,7 +46,7 @@ main = do
                 Just input -> flip catch exceptonHandler $ do
                     res <- liftIO $ runMainCommand input state
                     case res of
-                        Left errorMessage -> outputStrLn errorMessage >> loop state
+                        Left errorMessage -> outputStrLn (unpack errorMessage) >> loop state
                         Right state' -> loop state'
 
         exceptonHandler :: SomeException -> InputT IO ()

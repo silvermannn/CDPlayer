@@ -5,23 +5,25 @@ import qualified Data.Set as S
 import qualified Data.Vector.Strict as V
 import Data.Text
 import Data.Maybe (fromJust)
+import Data.Bifunctor (bimap)
 
 import CDDB.Dictionary.BidirectionalMap
 
+import CDDB.Syntax.Tag
+
 data Dictionary = Dictionary {
         wordsCollection :: !(BidirectionalMap Text),
-        tagsCollection :: !(BidirectionalMap Text),
-        wordTags :: !(V.Vector [Text])
+        tagsCollection :: !(BidirectionalMap (Tag Int)),
+        wordTags :: !(V.Vector (S.Set Int))
     }
     deriving Show
 
 newDictionary m = Dictionary {
     wordsCollection = wc,
     tagsCollection = tc,
-    wordTags = V.accum (++) ts $ fmap (\(a, b) -> (fromJust (findItem wc a), b)) $ M.toList m
+    wordTags = V.accum S.union ts $ fmap (bimap (fromJust . findItem wc) (S.map (fromJust . findItem tc))) (M.toList m)
     }
     where
         wc = fromSet $ M.keysSet m
-        tc = fromSet $ S.unions $ fmap S.fromList $ M.elems m
-        ts = V.replicate (size wc) mempty
-
+        tc = fromSet $ S.unions $ M.elems m
+        ts = V.replicate (size wc) S.empty

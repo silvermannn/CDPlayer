@@ -2,7 +2,7 @@ module CDDB.Syntax.Tag where
 
 import Data.List.Extra (intercalate)
 
-data Tag a = Tag a [(a, a)] deriving (Eq)
+data Tag a = Tag a [(a, a)] deriving (Eq, Ord)
 
 type Tags a = [Tag a]
 

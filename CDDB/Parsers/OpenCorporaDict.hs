@@ -6,8 +6,13 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Text.Read as TR
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 import Data.Either (isRight)
+import Data.Either.Extra (maybeToEither)
+import Data.List (uncons)
+import Data.Maybe (fromMaybe)
+import Data.Bitraversable (bimapM)
 
 import Control.Monad
 
@@ -17,30 +22,36 @@ import CDDB.Dictionary.Dictionary
 import CDDB.Dictionary.BidirectionalMap
 import CDDB.Dictionary.UniversalDependencies
 
+import CDDB.Syntax.Tag
+
 -- https://opencorpora.org/
 
-parseText path = do
-    fileContent <- TIO.readFile path
-    return $ parseWords (T.lines fileContent)
+parseText paths = do
+    fileContent <- mapM TIO.readFile paths
+    return $ parseWords (concatMap T.lines fileContent)
 
-parseWords ls = d
-    where
-        d = newDictionary m
-        m = foldr parseWord M.empty ls
+parseWords ls = do
+    m <- foldM parseWord M.empty ls
+    return $ newDictionary m
 
-parseWord "" m = m
-parseWord l m | isRight (TR.decimal l) = m
-parseWord l m = M.insertWith (++) w (parserTags rest) m
-    where
-        (w: rest) = T.splitOn "\t" l
+parseWord m "" = Right m
+parseWord m l | isRight (TR.decimal l) = Right m
+parseWord m l = do
+    (w, rest) <- maybeToEither ("No \\t in " <> l) $ uncons $ T.splitOn "\t" l
+    parsed <- parseTags rest
+    return $ M.insertWith S.union (T.toLower w) parsed m
 
-parserTags ts = ts
+parseTags ts = do
+    (sPOSTag, sfs) <- maybeToEither ("Cannot split to POS tag and features") $ uncons $ filter (not . T.null) $ concatMap (T.split isSplit) ts
+    posTag <- maybeToEither ("Tag " <> sPOSTag <> " not found in " <> T.intercalate ", " ts) $ M.lookup sPOSTag mapPOS >>= findItem uPOSTags
+    mainFeaturesS <- maybeToEither ("Cannot map features in " <> T.intercalate ", " ts) $ mapM (flip M.lookup mapFeatures) sfs
+    featurePairs <- Right $ featuresS (concat mainFeaturesS) sPOSTag
+    featureNames <- maybeToEither ("Cannot map feature names in " <> T.intercalate ", " (map fst featurePairs)) $ mapM (findItem featureNames . fst) featurePairs
+    featureValues <- maybeToEither ("Cannot map feature values in " <> T.intercalate ", " (map snd featurePairs)) $ mapM (findItem featureValues . snd) featurePairs
+    return $ S.singleton $ Tag posTag $ zip featureNames featureValues
     where
-        (sPOSTag: sfs) = concatMap (T.split isSplit) ts
         isSplit c = c == ' ' || c == ','
-        posTag = M.lookup sPOSTag mapPOS >>= findItem uPOSTags
-        features = map (flip M.lookup mapFeatures) sfs
-        additionalFeatures = M.lookup sPOSTag mapPOSAddition
+        featuresS m t = m ++ (fromMaybe [] $ M.lookup t mapPOSAddition)
 
 mapPOS :: M.Map T.Text T.Text
 mapPOS = M.fromList [
@@ -66,90 +77,116 @@ mapPOS = M.fromList [
     ]
 
 mapPOSAddition = M.fromList [
-    ("ADJS", [("variant", "short")]),
-    ("GRND", [("verbform","ger")]),
-    ("INFN", [("verbform","inf")]),
-    ("PRTF", [("verbform","part")]),
-    ("PRTS", [("verbform","part"),("variant", "short")])
+    ("ADJS", [("Variant", "Short")]),
+    ("GRND", [("VerbForm","Ger")]),
+    ("INFN", [("VerbForm","Inf")]),
+    ("PRTF", [("VerbForm","Part")]),
+    ("PRTS", [("VerbForm","Part"),("Variant", "Short")])
     ]
 
 mapFeatures = M.fromList [
-    ("Ques", ("prontype", "int")),
-    ("Dmns", ("prontype", "dem")),
+    ("Ques", [("PronType", "Int")]),
+    ("Dmns", [("PronType", "Dem")]),
 
-    ("anim", ("animacy", "anim")),
-    ("inan", ("animacy", "inan")),
+    ("anim", [("Animacy", "Anim")]),
+    ("inan", [("Animacy", "Inan")]),
 
-    ("sing", ("number", "sing")),
-    ("plur", ("number", "plur")),
-    ("Sgtm", ("number", "sing")),
-    ("Pltm", ("number", "plur")),
+    ("sing", [("Number", "Sing")]),
+    ("plur", [("Number", "Plur")]),
+    ("Sgtm", [("Number", "Stan")]),
+    ("Pltm", [("Number", "Ptan")]),
 
-    ("Anum", ("numtype", "ord")),
-    ("Coll", ("numtype", "sets")),
+    ("Anum", [("NumType", "Ord")]),
+    ("Coll", [("NumType", "Sets")]),
 
-    ("masc", ("gender", "masc")),
-    ("femn", ("gender", "fem")),
-    ("neut", ("gender", "neut")),
+    ("masc", [("Gender", "Masc")]),
+    ("femn", [("Gender", "Fem")]),
+    ("neut", [("Gender", "Neut")]),
+    ("ms-f", [("Gender", "Com")]),
+    ("Ms-f", [("Gender", "Com")]),
+    ("GNdr", [("Gender", "Com")]),
 
-    ("impf", ("aspect", "imp")),
-    ("perf", ("aspect", "perf")),
+    ("impf", [("Aspect", "Imp")]),
+    ("perf", [("Aspect", "Perf")]),
 
-    ("pres", ("tense", "pres")),
-    ("past", ("tense", "past")),
-    ("futr", ("tense", "fut")),
+    ("pres", [("Tense", "Pres")]),
+    ("past", [("Tense", "Past")]),
+    ("futr", [("Tense", "Fut")]),
 
-    ("actv", ("voice", "act")),
-    ("pssv", ("voice", "pass")),
+    ("actv", [("Voice", "Act")] ),
+    ("pssv", [("Voice", "Pass")]),
 
-    ("impr", ("mood", "imp")),
-    ("indc", ("mood", "ind")),
+    ("impr", [("Mood", "Imp")]),
+    ("indc", [("Mood", "Ind")]),
 
-    ("Impe", ("subcat", "indir")),
-    ("Impx", ("subcat", "indir")),
-    ("intr", ("subcat", "intr")),
-    ("tran", ("subcat", "tran")),
+    ("Impe", [("Subcat", "Indir")]),
+    ("Impx", [("Subcat", "Indir")]),
+    ("intr", [("Subcat", "Intr")]),
+    ("tran", [("Subcat", "Tran")]),
 
-    ("excl", ("clusivity", "ex")),
-    ("incl", ("clusivity", "in")),
+    ("excl", [("Clusivity", "Ex")]),
+    ("incl", [("Clusivity", "In")]),
 
-    ("nomn", ("case", "nom")),
-    ("gent", ("case", "gen")),
-    ("gen1", ("case", "gen")),
-    ("gen2", ("case", "gen")),
-    ("datv", ("case", "dat")),
-    ("accs", ("case", "acc")),
-    ("acc2", ("case", "acc")),
-    ("ablt", ("case", "abl")),
-    ("loct", ("case", "loc")),
-    ("loc1", ("case", "loc")),
-    ("loc2", ("case", "loc")),
-    ("voct", ("case", "voc")),
+    ("nomn", [("Case", "Nom")]),
+    ("gent", [("Case", "Gen")]),
+    ("gen1", [("Case", "Gen")]),
+    ("gen2", [("Case", "Gen")]),
+    ("datv", [("Case", "Dat")]),
+    ("accs", [("Case", "Acc")]),
+    ("acc2", [("Case", "Acc")]),
+    ("ablt", [("Case", "Abl")]),
+    ("loct", [("Case", "Loc")]),
+    ("loc1", [("Case", "Loc")]),
+    ("loc2", [("Case", "Loc")]),
+    ("voct", [("Case", "Voc")]),
 
-    ("Fixd", ("decl", "zero")),
+    ("Fixd", [("Decl", "Zero")]),
 
-    ("1per", ("person", "1")),
-    ("2per", ("person", "2")),
-    ("3per", ("person", "3")),
+    ("1per", [("Person", "1")]),
+    ("2per", [("Person", "2")]),
+    ("3per", [("Person", "3")]),
 
-    ("Abbr", ("abbr", "yes")),
-    ("Init", ("abbr", "yes")),
-    ("Name", ("nametype", "giv")),
-    ("Surn", ("nametype", "sur")),
-    ("Patr", ("nametype", "pat")),
-    ("Orgn", ("nametype", "com")),
-    ("Trad", ("nametype", "com")),
-    ("Geox", ("nametype", "geo")),
+    ("Abbr", [("Abbr", "Yes")]),
+    ("Init", [("Abbr", "Yes")]),
+    ("Name", [("NameType", "Giv")]),
+    ("Surn", [("NameType", "Sur")]),
+    ("Patr", [("NameType", "Pat")]),
+    ("Orgn", [("NameType", "Com")]),
+    ("Trad", [("NameType", "Com")]),
+    ("Geox", [("NameType", "Geo")]),
 
-    ("Supr", ("degree", "sup")),
-    ("Cmp",  ("degree", "cmp")),
-    ("Cmp2", ("degree", "cmp")),
-    ("Poss", ("poss", "yes")),
+    ("Supr", [("Degree", "Sup")]),
+    ("Cmp",  [("Degree", "Cmp")]),
+    ("Cmp2", [("Degree", "Cmp")]),
+    ("Poss", [("Poss", "Yes")]),
 
-    ("Erro", ("typo", "yes")),
-    ("Dist", ("style", "vrnc")),
-    ("Slng", ("style", "slng")),
-    ("Arch", ("style", "arch")),
-    ("Infr", ("style", "vrnc")),
-    ("Litr", ("style", "form"))
+    ("Erro", [("Typo", "Yes")]),
+    ("Dist", [("Style", "Vrnc")]),
+    ("Slng", [("Style", "Slng")]),
+    ("Arch", [("Style", "Arch")]),
+    ("Infr", [("Style", "Vrnc")]),
+    ("Litr", [("Style", "Form")]),
+
+    ("Adjx", []),
+    ("Af-p", []),
+    ("Anph", []),
+    ("Apro", []),
+    ("Coun", []),
+    ("Fimp", []),
+    ("INFN", []),
+    ("Inmx", []),
+    ("Hypo", []),
+    ("Prdx", []),
+    ("Prnt", []),
+    ("Qual", []),
+    ("Subx", []),
+    ("V-be", []),
+    ("V-en", []),
+    ("V-ie", []),
+    ("V-bi", []),
+    ("V-sh", []),
+    ("V-oy", []),
+    ("V-ej", []),
+    ("V-ey", []),
+    ("Vpre", [])
     ]
