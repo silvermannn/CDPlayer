@@ -5,6 +5,7 @@ import CDDB.CDDB
 import CDDB.Rules
 import CDDB.Dictionary.Dictionary
 import CDDB.Syntax.TreeBuilder
+import CDDB.Syntax.DependencyTree
 
 import Editor.Settings
 import Editor.Sentence
@@ -17,6 +18,7 @@ data ProgramState = ProgramState {
         isNotSaved :: Bool,
         currentTemplate :: Maybe Name,
         currentDictionary :: Maybe Dictionary,
+        currentTrees :: [DependencyTree],
         currentParseRules :: BuildRuleSet,
         currentSentences :: [CurrentSentence]
     }
@@ -30,6 +32,7 @@ initialProgramState settings = ProgramState
             isNotSaved = True,
             currentTemplate = Nothing,
             currentDictionary = Nothing,
+            currentTrees = [],
             currentParseRules = BuildRuleSet [],
             currentSentences = []
         }

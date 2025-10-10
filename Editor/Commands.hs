@@ -61,8 +61,9 @@ commands = [
     CmdDescr ["tag","sentence"]                []                            (CRDEIntList "num")      cmdTagSentence             "Tag specified or all sentences.",
     CmdDescr ["build","tree"]                  []                            (CRDEIntList "num")      cmdBuildSentenceTree       "Build dependency tree for specified or all sentences.",
 
--- Working with new tree building
+--  Working with new tree building
     CmdDescr ["load","OpenCorpora", "dict"]    []                            (CRDFilePathList "path") cmdLoadDictionary          "Load OpenCorpora dictionary files.",
+    CmdDescr ["load","conllu"]                 []                            (CRDFilePathList "path") cmdLoadCoNLLU              "Load CoNLLU sentences.",
 
     CmdDescr ["quit"]                          []                            CRDNothing               cmdQuit                    "Quit program."
     ]
